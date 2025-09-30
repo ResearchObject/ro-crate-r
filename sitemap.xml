@@ -1,0 +1,25 @@
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/LICENSE.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/reference/add_entity.html</loc></url>
+<url><loc>/reference/add_entity_value.html</loc></url>
+<url><loc>/reference/dot-capture_extra_entities.html</loc></url>
+<url><loc>/reference/dot-find_id_index.html</loc></url>
+<url><loc>/reference/dot-is_valid_url.html</loc></url>
+<url><loc>/reference/dot-validate_entity.html</loc></url>
+<url><loc>/reference/dot-validate_entity_overview.html</loc></url>
+<url><loc>/reference/entity.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/is_rocrate.html</loc></url>
+<url><loc>/reference/print.rocrate.html</loc></url>
+<url><loc>/reference/read_rocrate.html</loc></url>
+<url><loc>/reference/remove_entity.html</loc></url>
+<url><loc>/reference/rocrate.html</loc></url>
+<url><loc>/reference/rocrateR-package.html</loc></url>
+<url><loc>/reference/rocrate_5s.html</loc></url>
+<url><loc>/reference/write_rocrate.html</loc></url>
+</urlset>
+
