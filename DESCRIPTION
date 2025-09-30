@@ -1,0 +1,23 @@
+Package: rocrateR
+Title: RO-Crate R Package Wrapper
+Version: 0.0.1.9000
+Authors@R: c(
+    person(given = "Roberto",
+           family = "Villegas-Diaz",
+           role = c("aut", "cre"),
+           email = "r.villegas-diaz@outlook.com",
+           comment = c(ORCID = "0000-0001-5036-8661")),
+    person("Research Object community", role = c("cph")))
+Description: R package for creating, manipulating and reading RO-Crates. Latest
+    supported version  1.2 of the specification. 
+License: MIT + file LICENSE
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Encoding: UTF-8
+Language: en-GB
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: 
+    jsonlite,
+    tibble

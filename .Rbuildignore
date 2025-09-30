@@ -1,0 +1,7 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.github$
+^codecov.yml$
+^cran-comments.md$
+^README.Rmd$
+^LICENSE.md$
