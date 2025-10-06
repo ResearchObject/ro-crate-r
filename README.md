@@ -5,26 +5,32 @@
 
 <!-- badges: start -->
 
-[![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/rocrateR)](https://CRAN.R-project.org/package=rocrateR)
-[![R-CMD-check](https://github.com/villegar/ro-crate-r/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/villegar/ro-crate-r/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/ResearchObject/ro-crate-r/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ResearchObject/ro-crate-r/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://codecov.io/gh/villegar/ro-crate-r/graph/badge.svg)](https://app.codecov.io/gh/villegar/ro-crate-r)
+coverage](https://codecov.io/gh/ResearchObject/ro-crate-r/graph/badge.svg)](https://app.codecov.io/gh/ResearchObject/ro-crate-r)
 <!-- badges: end -->
 
-The goal of rocrateR is to provide an R package for creating,
-manipulating and reading RO-Crates. Latest supported version 1.2 of the
-specification.
+The goal of `{rocrateR}` is to provide an R package for creating,
+manipulating and reading RO-Crates. Latest supported version of the
+specification: <https://w3id.org/ro/crate/1.2>.
 
 ## 0. Installation
 
-You can install the development version of rocrateR like so:
+You can install the released version of `{rocrateR}` from
+[CRAN](https://cran.r-project.org/package=rocrateR) with:
+
+``` r
+install.packages("rocrateR")
+```
+
+And the development version from
+[GitHub](https://github.com/ResearchObject/ro-crate-r/) with:
 
 ``` r
 # install.packages("pak")
-pak::pkg_install("ResearchObject/ro-crate-r@main")
+pak::pkg_install("ResearchObject/ro-crate-r@dev")
 ```
 
 ## 1. First RO-Crate
@@ -61,7 +67,7 @@ print(my_first_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-09-20",
+#>       "datePublished": "2025-10-06",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -104,7 +110,7 @@ readLines(tmp)
 #> [16] "      \"@type\": \"Dataset\","                             
 #> [17] "      \"name\": \"\","                                     
 #> [18] "      \"description\": \"\","                              
-#> [19] "      \"datePublished\": \"2025-09-20\","                  
+#> [19] "      \"datePublished\": \"2025-10-06\","                  
 #> [20] "      \"license\": {"                                      
 #> [21] "        \"@id\": \"http://spdx.org/licenses/CC-BY-4.0\""   
 #> [22] "      }"                                                   
@@ -116,7 +122,7 @@ readLines(tmp)
 unlink(tmp)
 ```
 
-## 2. Adding additional entities
+## 2. Including additional entities
 
 In the previous section we created a very basic RO-Crate with the
 `rocrateR::rocrate()` function; however, you are likely to include
@@ -186,7 +192,7 @@ print(my_second_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-09-20",
+#>       "datePublished": "2025-10-06",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       },
@@ -210,4 +216,60 @@ print(my_second_ro_crate)
 #>     }
 #>   ]
 #> }
+```
+
+## 3. Validation (experimental)
+
+As you develop your RO-Crates, you might want to validate them. There
+are few validators online (some of which can be found at
+<https://www.researchobject.org/ro-crate/tools>), here we will explore
+the Python package
+[`rocrate-validator`](https://github.com/crs4/rocrate-validator). For
+installation details, please visit
+<https://github.com/crs4/rocrate-validator>.
+
+Note that we will rely on
+[`{reticulate}`](https://cran.r-project.org/package=reticulate) to
+install and execute the validator within R:
+
+### 3.1. Install [`{reticulate}`](https://cran.r-project.org/package=reticulate)
+
+``` r
+pak::pkg_install("reticulate")
+```
+
+### 3.2. Install [`rocrate-validator`](https://github.com/crs4/rocrate-validator)
+
+``` r
+reticulate::py_install("roc-validator", env = "rocrateR")
+```
+
+### 3.3. Create example RO-Crate and validate it
+
+``` r
+basic_ro_crate <- rocrateR::rocrate()
+
+# store crate inside temporal directory
+tmp <- file.path(tempdir(), "ro-crate-metadata.json")
+basic_ro_crate |>
+  rocrateR::write_rocrate(tmp)
+# wrap crate into zip file (expected by validator)
+tmp_zip <- paste(tmp, ".zip")
+zip(tmp_zip, tmp)
+
+# validate (note the name of the module: rocrate_validator)
+reticulate::use_virtualenv("rocrateR")
+rocrate_validator <- reticulate::import("rocrate_validator")
+status <- rocrate_validator$utils$validate_rocrate_uri(tmp_zip)
+
+if (status) {
+  message("RO-Crate is valid!")
+} else {
+  message("RO-Crate is invalid!")
+}
+#> RO-Crate is valid!
+
+# delete temporal files
+unlink(tmp)
+unlink(tmp_zip)
 ```
