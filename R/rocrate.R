@@ -111,7 +111,7 @@ rocrate_5s <- function(...,
   v5scrate_id <- paste0("https://w3id.org/5s-crate/", v5scrate)
   prof_5scrate <- list(
     `@id` = v5scrate_id,
-    `@type` = "Profile",
+    `@type` = c("CreativeWork", "Profile"),
     name = "Five Safes RO-Crate profile"
   )
 
