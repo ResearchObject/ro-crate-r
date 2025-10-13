@@ -6,7 +6,7 @@
 \alias{rocrateR-package}
 \title{rocrateR: RO-Crate R Package Wrapper}
 \description{
-R package for creating, manipulating and reading RO-Crates. Latest supported version 1.2 of the specification.
+R package for creating, manipulating and reading RO-Crates. Latest supported version of the specification: https://w3id.org/ro/crate/1.2.
 }
 \author{
 \strong{Maintainer}: Roberto Villegas-Diaz \email{r.villegas-diaz@outlook.com} (\href{https://orcid.org/0000-0001-5036-8661}{ORCID})
