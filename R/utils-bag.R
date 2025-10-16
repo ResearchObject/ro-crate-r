@@ -25,6 +25,8 @@ bag_rocrate <- function(x, ...) {
 #'     archiving/compressing the RO-Crate bag (default: `-r9X`, see 
 #'     `zip -h` in the terminal for more details).
 #'
+#' @returns String with full path to the final RO-Crate bag.
+#' 
 #' @export
 bag_rocrate.character <- function(x, ..., force_bag = FALSE, zip_flags = "-r9X") {
   # check a valid path was given
@@ -44,7 +46,7 @@ bag_rocrate.character <- function(x, ..., force_bag = FALSE, zip_flags = "-r9X")
   
   # create sub-directories
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
-  on.exit(unlink(tmp_dir, recursive = TRUE, force = TRUE))
+  on.exit(unlink(dirname(tmp_dir), recursive = TRUE, force = TRUE))
   
   # copy files inside the temporary directory
   rocrate_files_status <- rocrate_files |>
@@ -82,17 +84,20 @@ bag_rocrate.character <- function(x, ..., force_bag = FALSE, zip_flags = "-r9X")
   message("RO-Crate successfully 'bagged'!\nFor details, see: ", output_bag)
   
   # attempt to delete the temporary directory created to bag the RO-Crate
-  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+  unlink(dirname(tmp_dir), recursive = TRUE, force = TRUE)
+  
+  # return path to RO-Crate bag invisibly
+  return(invisible(output_bag))
 }
 
 #' @rdname bag_rocrate
 #' 
-#' @param path String with path to the root of the RO-Crate (default: `NULL`).
+#' @param path String with path to the root of the RO-Crate.
 #' @param overwrite Boolean flag to indicate if the RO-Crate metadata descriptor
 #'     file should be overwritten if already inside `path` (default: `FALSE`).
 #'
 #' @export
-bag_rocrate.rocrate <- function(x, ..., path = NULL, overwrite = FALSE, force_bag = FALSE, zip_flags = "-r9X") {
+bag_rocrate.rocrate <- function(x, ..., path, overwrite = FALSE, force_bag = FALSE, zip_flags = "-r9X") {
   # check the `x` object
   is_rocrate(x)
   # check a valid path was given
@@ -102,7 +107,7 @@ bag_rocrate.rocrate <- function(x, ..., path = NULL, overwrite = FALSE, force_ba
   # check if the given path contains an RO-Crate metadata descriptor file
   if (file.exists(file.path(path, "ro-crate-metadata.json"))){
     if (overwrite) {
-      warning("Overwritting the RO-Crate metadata descriptor file!")
+      warning("Overwriting the RO-Crate metadata descriptor file!")
     } else {
       stop("The given `path` already contains an RO-Crate metadata descriptor ",
            "file, `ro-crate-metadata.json`. To ignore this check, set ",
