@@ -2,18 +2,9 @@
 % Please edit documentation in R/utils-entity.R
 \name{.validate_entity}
 \alias{.validate_entity}
-\alias{.validate_entity.character}
-\alias{.validate_entity.list}
-\alias{.validate_entity.numeric}
 \title{Validate entity}
 \usage{
 .validate_entity(x, ..., ent_name = NULL, required = c("@id", "@type"))
-
-\method{validate_entity}{character}(x, ..., ent_name = NULL, required = "type")
-
-\method{validate_entity}{list}(x, ..., ent_name = NULL, required = c("@id", "@type"))
-
-\method{validate_entity}{numeric}(x, ..., ent_name = NULL, required = "type")
 }
 \arguments{
 \item{x}{New entity. If a single value (e.g., \code{character}, \code{numeric}) is
