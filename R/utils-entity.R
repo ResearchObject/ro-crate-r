@@ -55,13 +55,11 @@
 #'     (default: `c("@id", "@type")`)
 #'
 #' @returns Boolean value to indicate if the given entity is valid.
-#' @rdname dot-validate_entity
 #' @keywords internal
 .validate_entity <- function(x, ..., ent_name = NULL, required = c("@id", "@type")) {
   UseMethod(".validate_entity", x)
 }
 
-#' @rdname dot-validate_entity
 #' @method validate_entity character
 #' @keywords internal
 .validate_entity.character <- function(x, ..., ent_name = NULL, required = "type") {
@@ -70,7 +68,6 @@
     .validate_entity_overview(required, ent_name)
 }
 
-#' @rdname dot-validate_entity
 #' @method validate_entity list
 #' @keywords internal
 .validate_entity.list <- function(x, ..., ent_name = NULL, required = c("@id", "@type")) {
@@ -79,7 +76,6 @@
     .validate_entity_overview(required, ent_name)
 }
 
-#' @rdname dot-validate_entity
 #' @method validate_entity numeric
 #' @keywords internal
 .validate_entity.numeric <- function(x, ..., ent_name = NULL, required = "type") {
