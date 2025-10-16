@@ -10,7 +10,7 @@
 \item{x}{New entity. If a single value (e.g., \code{character}, \code{numeric}) is
 given, this is assumed to be the entity's \verb{@id}, if a \code{list} is given,
 this is assumed to be a complete entity. Other options are objects of
-type \code{person} and \code{organisation} (equivalenly \code{organization}).}
+type \code{person} and \code{organisation} (equivalently \code{organization}).}
 
 \item{...}{Optional additional entity values/properties. Used when \code{x} is
 a single value.}
