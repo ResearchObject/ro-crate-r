@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# rocrateR: RO-Crate R Package Wrapper
+# rocrateR: RO-Crate R Package Wrapper <img src="inst/images/logo.png" alt="logo" align="right" height=200px/>
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/rocrateR)](https://CRAN.R-project.org/package=rocrateR)
