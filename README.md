@@ -218,7 +218,73 @@ print(my_second_ro_crate)
 #> }
 ```
 
-## 3. Validation (experimental)
+## 3. Create an RO-Crate Bag
+
+Here we will explore the BagIt file packaging format, which is the
+recommended to use for *bagging* RO-Crates. BagIt is described in [RFC
+8493](https://tools.ietf.org/html/rfc8493):
+
+> \[BagIt is\] … a set of hierarchical file layout conventions for
+> storage and transfer of arbitrary digital content. A “bag” has just
+> enough structure to enclose descriptive metadata “tags” and a file
+> “payload” but does not require knowledge of the payload’s internal
+> semantics. This BagIt format is suitable for reliable storage and
+> transfer.
+
+In this package, the function `rocrateR::bag_rocrate` will take either a
+`path` pointing to the root of an RO-Crate (must have at least an
+RO-Crate metadata descriptor file, `ro-crate-metadata.json`) or an
+RO-Crate object created with `rocrateR::rocrate` (and alternatives), as
+shown in step 1.
+
+For more details, run the following command:
+
+``` r
+?rocrateR::bag_rocrate
+```
+
+------------------------------------------------------------------------
+
+Here we will create an RO-Crate bag inside temporary directory:
+
+``` r
+basic_ro_crate <- rocrateR::rocrate()
+
+# create temporary directory
+tmp_dir <- file.path(tempdir(), paste0("rocrate-", digest::digest(Sys.time())))
+dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+# then, we can create the RO-Crate bag
+path_to_rocrate_bag <- basic_ro_crate |>
+  rocrateR::bag_rocrate(path = tmp_dir)
+#> RO-Crate successfully 'bagged'!
+#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmpt2xmUG/rocrate-547222a530869c27d7caa4da5e83182b/rocrate-93bbbcdcd6d4e38ced4189b1ebe27215.zip
+```
+
+We can explore the contents of the RO-Crate bag with the following
+commands:
+
+``` r
+# extract files in temporary directory
+unzip(path_to_rocrate_bag, exdir = file.path(tmp_dir, "ROC"))
+
+# create tree with the files
+fs::dir_tree(file.path(tmp_dir, "ROC"))
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmpt2xmUG/rocrate-547222a530869c27d7caa4da5e83182b/ROC
+#> └── rocrate-93bbbcdcd6d4e38ced4189b1ebe27215
+#>     ├── bagit.txt
+#>     ├── data
+#>     │   └── ro-crate-metadata.json
+#>     ├── manifest-sha512.txt
+#>     └── tagmanifest-sha512.txt
+```
+
+``` r
+# delete temporary directory
+unlink(tmp_dir, recursive = TRUE, force = TRUE)
+```
+
+## 4. Validation (experimental)
 
 As you develop your RO-Crates, you might want to validate them. There
 are few validators online (some of which can be found at
@@ -232,19 +298,19 @@ Note that we will rely on
 [`{reticulate}`](https://cran.r-project.org/package=reticulate) to
 install and execute the validator within R:
 
-### 3.1. Install [`{reticulate}`](https://cran.r-project.org/package=reticulate)
+### 4.1. Install [`{reticulate}`](https://cran.r-project.org/package=reticulate)
 
 ``` r
 pak::pkg_install("reticulate")
 ```
 
-### 3.2. Install [`rocrate-validator`](https://github.com/crs4/rocrate-validator)
+### 4.2. Install [`rocrate-validator`](https://github.com/crs4/rocrate-validator)
 
 ``` r
 reticulate::py_install("roc-validator", env = "rocrateR")
 ```
 
-### 3.3. Create example RO-Crate and validate it
+### 4.3. Create example RO-Crate and validate it
 
 ``` r
 basic_ro_crate <- rocrateR::rocrate()
