@@ -71,6 +71,10 @@ bag_rocrate.character <- function(x, ..., force_bag = FALSE, zip_flags = "-r9X")
   # create bag manifest and stored one level above `tmp_dir`
   bagit_manifest(tmp_dir, rocrate_files)
   
+  # create BagIt tagmanifest
+  bagit_tagmanifest(dirname(tmp_dir), 
+                    list.files(dirname(tmp_dir), pattern = "txt$"))
+  
   # create BagIt fetch file
   bagit_fetch(tmp_dir)
   
@@ -149,4 +153,17 @@ bagit_manifest <- function(path, files, algo = "sha512") {
   writeLines(manifest_lines, 
              con = file.path(dirname(path), paste0("manifest-", algo, ".txt")))
   return(invisible(manifest_lines))
+}
+
+#' @keywords internal
+bagit_tagmanifest <- function(path, files, algo = "sha512") {
+  tagmanifest_lines <- sapply(files, function(f) {
+    # generate checksum
+    checksum <- digest::digest(file.path(path, f), algo = algo, file = TRUE)
+    # combine checksum with file path & name
+    paste0(checksum, " ", f)
+  })
+  writeLines(tagmanifest_lines, 
+             con = file.path(path, paste0("tagmanifest-", algo, ".txt")))
+  return(invisible(tagmanifest_lines))
 }
