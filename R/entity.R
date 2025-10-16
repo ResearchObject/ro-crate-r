@@ -117,7 +117,7 @@ add_entity_value <- function(rocrate, id, key, value, overwrite = TRUE) {
 #' @param x New entity. If a single value (e.g., `character`, `numeric`) is
 #'     given, this is assumed to be the entity's `@id`, if a `list` is given,
 #'     this is assumed to be a complete entity. Other options are objects of
-#'     type `person` and `organisation` (equivalenly `organization`).
+#'     type `person` and `organisation` (equivalently `organization`).
 #' @param ... Optional additional entity values/properties. Used when `x` is
 #'     a single value.
 #'
