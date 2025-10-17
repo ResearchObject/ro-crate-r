@@ -167,3 +167,86 @@ bagit_tagmanifest <- function(path, files, algo = "sha512") {
              con = file.path(path, paste0("tagmanifest-", algo, ".txt")))
   return(invisible(tagmanifest_lines))
 }
+
+#' Check if path points to a valid RO-Crate bag
+#'
+#' @param path String with full path to a compressed file contain an RO-Crate 
+#'     bag, see \link[rocrateR]{bag_rocrate} for details. Alternatively, a path
+#'     to a directory containing an RO-Crate bag.
+#' @param algo String with algorithm used to generate the RO-Crate bag 
+#'     (default: `"sha512"`).
+#'
+#' @returns Returns invisibly the RO-Crate pointed by `path`.
+#' @export
+is_rocrate_bag <- function(path, algo = "sha512") {
+  # initialise return object
+  ro_crate <- NULL
+  
+  # check if path is a directory or file
+  idx <- c(dir.exists(path), file.exists(path))
+  if (!all(idx)){
+    stop("The given `path` is invalid!")
+  } else if(idx[1]) { # path is a valid directory
+    # no extra steps required
+  } else if (idx[2]) { # path is a valid file
+    # check if file has .zip extension
+    if (!grepl("zip$", path, ignore.case = TRUE)) {
+      stop("The given `path` does not point to a .zip file!")
+    }
+    
+    # create temporary directory
+    tmp_dir <- file.path(tempdir(), digest::digest(Sys.time()))
+    on.exit(unlink(dirname(tmp_dir), recursive = TRUE, force = TRUE))
+    
+    # extract contents inside temporary directory
+    unzip(path, exdir = tmp_dir)
+    
+    # list directories inside the RO-Crate bag
+    rocrate_bag_dir <- list.dirs(tmp_dir, recursive = FALSE, full.names = FALSE)
+    
+    # check if the RO-Crate bag has only a root directory
+    if (length(rocrate_bag_dir) == 0) {
+      rocrate_bag_dir <- "."
+    }
+    
+    # check if the RO-Crate bag has more than one directory, only 1 is expected
+    if (length(unique(rocrate_bag_dir)) > 1) {
+      stop("A valid RO-Crate bag should have ONE and ONLY ONE root directory!",
+           "\nThe given path has the following: ",
+           paste0("  - ", unique(rocrate_bag_dir), "\n"))
+    }
+    
+    # update path
+    path <- file.path(tmp_dir, rocrate_bag_dir)
+  }
+  # call the .validate_rocrate_bag function
+  ro_crate <- .validate_rocrate_bag(path, algo = algo)
+  return(invisible(ro_crate))
+}
+
+#' @keywords internal
+.validate_rocrate_bag <- function(path, algo = "sha512") {
+  # list files inside the given path / top level only
+  rocrate_bag_files <- list.files(path, recursive = FALSE)
+  
+  # check that at least the following files & directory are in the given path
+  expected_files_dir <- c("bagit.txt", "data", paste0("manifest-", algo, ".txt"))
+  idx <- expected_files_dir %in% rocrate_bag_files
+  if (!all(idx)) {
+    stop("The given `path` is missing the following:",
+         paste0("  - ", expected_files_dir[idx], "\n"))
+  }
+  
+  # list files inside the given path / all levels
+  rocrate_bag_files <- list.files(path, recursive = TRUE)
+  
+}
+
+unbag_rocrate <- function(path, output = path) {
+  # check a valid path was given
+  if (!file.exists(path)) {
+    stop("The given path, `path`, does not exist!")
+  }
+  
+  # check if
+}
