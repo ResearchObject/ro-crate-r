@@ -10,7 +10,8 @@
 #' @param ... Additional parameters, see below.
 #' 
 #' @export
-#'
+#' 
+#' @family bag_rocrate
 # @examples
 bag_rocrate <- function(x, ...) {
   UseMethod("bag_rocrate", x)
@@ -174,79 +175,215 @@ bagit_tagmanifest <- function(path, files, algo = "sha512") {
 #'     bag, see \link[rocrateR]{bag_rocrate} for details. Alternatively, a path
 #'     to a directory containing an RO-Crate bag.
 #' @param algo String with algorithm used to generate the RO-Crate bag 
-#'     (default: `"sha512"`).
+#'     (default: `"sha512"`). See \link[digest]{digest} for more details.
+#' @param bagit_version String with version of BagIt used to generate the 
+#'     RO-Crate bag (default: `"1.0"`). 
+#'     See \url{https://www.rfc-editor.org/info/rfc8493} for more details.
 #'
 #' @returns Returns invisibly the RO-Crate pointed by `path`.
 #' @export
-is_rocrate_bag <- function(path, algo = "sha512") {
-  # initialise return object
+#' 
+#' @family bag_rocrate
+is_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
+  # initialise object that will be returned
   ro_crate <- NULL
   
-  # check if path is a directory or file
+  # check if given path is a directory or a file
   idx <- c(dir.exists(path), file.exists(path))
-  if (!all(idx)){
+  if (all(!idx)){
     stop("The given `path` is invalid!")
   } else if(idx[1]) { # path is a valid directory
     # no extra steps required
   } else if (idx[2]) { # path is a valid file
-    # check if file has .zip extension
-    if (!grepl("zip$", path, ignore.case = TRUE)) {
-      stop("The given `path` does not point to a .zip file!")
-    }
-    
     # create temporary directory
     tmp_dir <- file.path(tempdir(), digest::digest(Sys.time()))
     on.exit(unlink(dirname(tmp_dir), recursive = TRUE, force = TRUE))
     
-    # extract contents inside temporary directory
-    unzip(path, exdir = tmp_dir)
-    
-    # list directories inside the RO-Crate bag
-    rocrate_bag_dir <- list.dirs(tmp_dir, recursive = FALSE, full.names = FALSE)
-    
-    # check if the RO-Crate bag has only a root directory
-    if (length(rocrate_bag_dir) == 0) {
-      rocrate_bag_dir <- "."
-    }
-    
-    # check if the RO-Crate bag has more than one directory, only 1 is expected
-    if (length(unique(rocrate_bag_dir)) > 1) {
-      stop("A valid RO-Crate bag should have ONE and ONLY ONE root directory!",
-           "\nThe given path has the following: ",
-           paste0("  - ", unique(rocrate_bag_dir), "\n"))
-    }
-    
-    # update path
-    path <- file.path(tmp_dir, rocrate_bag_dir)
+    # extract contents of the RO-Crate bag inside temporary directory AND
+    # update path, so it points to the contents of the RO-Crate bag
+    path <- unbag_rocrate(path, output = tmp_dir, quiet = TRUE)
   }
   # call the .validate_rocrate_bag function
   ro_crate <- .validate_rocrate_bag(path, algo = algo)
   return(invisible(ro_crate))
 }
 
+#' Verify if a given path points to a valid RO-Crate bag
+#'
+#' @inheritParams is_rocrate_bag
+#'
+#' @returns Returns invisibly the RO-Crate pointed by `path`.
 #' @keywords internal
-.validate_rocrate_bag <- function(path, algo = "sha512") {
+.validate_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
   # list files inside the given path / top level only
   rocrate_bag_files <- list.files(path, recursive = FALSE)
   
   # check that at least the following files & directory are in the given path
-  expected_files_dir <- c("bagit.txt", "data", paste0("manifest-", algo, ".txt"))
-  idx <- expected_files_dir %in% rocrate_bag_files
+  expected_contents <- c("bagit.txt", "data", paste0("manifest-", algo, ".txt"))
+  idx <- expected_contents %in% rocrate_bag_files
   if (!all(idx)) {
     stop("The given `path` is missing the following:",
-         paste0("  - ", expected_files_dir[idx], "\n"))
+         paste0("  - ", expected_contents[idx], "\n"))
   }
   
   # list files inside the given path / all levels
   rocrate_bag_files <- list.files(path, recursive = TRUE)
   
+  # check for valid BagIt declaration
+  valid_bagit_declaration <- .validate_bagit_declaration(path, algo, bagit_version)
+  
+  # check integrity of manifest file
+  valid_bagit_manifest <- .validate_bagit_manifest(path, algo)
+  
+  # check integrity of tagmanifest file (if found) 
+  if (file.exists(file.path(path, paste0("tagmanifest-", algo, ".txt")))) {
+    valid_bagit_tagmanifest <- 
+      .validate_bagit_manifest(path, algo, manifest_suffix = "tagmanifest")
+  } else {
+    valid_bagit_tagmanifest <- list(status = TRUE)
+  }
+  
+  # validation overview
+  idx <- c(
+    valid_bagit_declaration$status,
+    valid_bagit_manifest$status,
+    valid_bagit_tagmanifest$status
+  )
+  
+  if (any(!idx)) {
+    error_message <- "Invalid RO-Crate bag! The following issues were found:\n"
+    # BagIt declaration (required)
+    if (!idx[1]) {
+      error_message <- paste0(
+        error_message,
+        " BagIt declaration (bagit.txt) missing the following:\n",
+        paste0("  - ", valid_bagit_declaration$errors, collapse = "\n")
+      )
+    }
+    # BagIt manifest (required)
+    if (!idx[2]) {
+      error_message <- paste0(
+        error_message,
+        " BagIt manifest contains invalid file(s):\n",
+        paste0("  - ", valid_bagit_manifest$errors, collapse = "\n")
+      )
+    }
+    # BagIt tagmanifest (optional)
+    if (!idx[1]) {
+      error_message <- paste0(
+        error_message,
+        " BagIt tagmanifest contains invalid file(s):\n",
+        paste0("  - ", valid_bagit_tagmanifest$errors, collapse = "\n")
+      )
+    }
+    # print error message and stop execution
+    stop(error_message)
+  }
+  
+  # if no errors where found, load the and return the RO-Crate in the bag
+  rocrate_contents <- file.path(path, "data/ro-crate-metadata.json") |>
+    rocrateR::read_rocrate()
+  return(rocrate_contents)
 }
 
-unbag_rocrate <- function(path, output = path) {
+#' Validate BagIt declaration
+#' 
+#' @inheritParams is_rocrate_bag
+#' 
+#' @returns A list with `status` and `errors` identified.
+#' @keywords internal
+#' @rdname bagit_declaration
+.validate_bagit_declaration <- function(path, algo = "sha512", bagit_version = "1.0") {
+  # load the BagIt declaration file
+  bagit_declaration_txt <- readLines(file.path(path, "bagit.txt"))
+  # expect lines
+  expected_bagit_declaration <- c(paste0("BagIt-version: ", bagit_version), 
+                                  "Tag-File-Character-Encoding: UTF-8")
+  valid_bagit_declaration_validity <- 
+    expected_bagit_declaration %in% bagit_declaration_txt
+  # return list with status: TRUE = all lines found, FALSE = missing line AND
+  # errors: vector of the missing lines (if any)
+  list(
+    status = all(valid_bagit_declaration_validity),
+    errors = expected_bagit_declaration[!valid_bagit_declaration_validity]
+  )
+}
+
+#' Validate BagIt declaration
+#' 
+#' @inheritParams is_rocrate_bag
+#' @param manifest_suffix String with suffix for the manifest file (default: 
+#'     `"manifest"`).
+#' 
+#' @returns A list with `status` and `errors` identified.
+#' @keywords internal
+#' @rdname bagit_manifest
+.validate_bagit_manifest <- function(path, algo = "sha512", manifest_suffix = "manifest") {
+  # load the manifest file
+  manifest_filename <- paste0(manifest_suffix, "-", algo, ".txt")
+  bagit_manifest_txt <- file.path(path, manifest_filename) |>
+    utils::read.table(header = FALSE, sep = " ", col.names = c("checksum", "filename"))
+  # check all the files in the manifest file
+  bagit_manifest_txt_validity <- seq_len(nrow(bagit_manifest_txt)) |>
+    sapply(function(i) {
+      est_checksum <- file.path(path, bagit_manifest_txt[i, "filename"]) |>
+        digest::digest(algo = algo, file = TRUE)
+      est_checksum ==  bagit_manifest_txt[i, "checksum"]
+    })
+  # return list with status: TRUE = all valid, FALSE = invalid file found AND
+  # errors: vector of invalid files (if any)
+  list(
+    status = all(bagit_manifest_txt_validity),
+    errors = bagit_manifest_txt[!bagit_manifest_txt_validity, "filename"]
+  )
+}
+
+#' 'Unbag' (extract) RO-Crate packed with BagIt
+#'
+#' @param path String with path to compressed file containing an RO-Crate bag.
+#' @param output String with target path where the contents will be extracted 
+#'     (default: `path` - same path as input).
+#' @param quiet Boolean flag to indicate if messages should be supressed 
+#'     (default: `FALSE` - display messages).
+#'
+#' @export
+#' 
+#' @returns String with path to root of the RO-Crate, invisibly.
+#' 
+#' @family bag_rocrate
+unbag_rocrate <- function(path, output = path, quiet = FALSE) {
   # check a valid path was given
   if (!file.exists(path)) {
     stop("The given path, `path`, does not exist!")
   }
   
-  # check if
+  # check if file has .zip extension
+  if (!grepl("zip$", path, ignore.case = TRUE)) {
+    stop("The given `path` does not point to a .zip file!")
+  }
+  
+  # extract contents inside the `output` path
+  utils::unzip(path, exdir = output)
+  
+  # list directories inside the RO-Crate bag
+  rocrate_bag_dir <- list.dirs(output, recursive = FALSE, full.names = FALSE)
+  
+  # check if the RO-Crate bag has only a root directory
+  if (length(rocrate_bag_dir) == 0) {
+    rocrate_bag_dir <- "."
+  }
+  
+  # check if the RO-Crate bag has more than one directory, only 1 is expected
+  if (length(unique(rocrate_bag_dir)) > 1) {
+    stop("A valid RO-Crate bag should have ONE and ONLY ONE root directory!",
+         "\nThe given path has the following: ",
+         paste0("  - ", unique(rocrate_bag_dir), "\n"))
+  }
+  
+  if (!quiet) {
+    message("RO-Crate bag successfully extracted! For details, see:\n", output)
+  }
+  
+  # path to root of the RO-Crate bag
+  return(invisible(file.path(output, rocrate_bag_dir)))
 }
