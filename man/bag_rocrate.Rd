@@ -47,3 +47,9 @@ Bag the contents of an RO-Crate using the BagIt file packaging format v1.0.
 For more details see the definition:
 \url{https://datatracker.ietf.org/doc/html/rfc8493}
 }
+\seealso{
+Other bag_rocrate: 
+\code{\link{is_rocrate_bag}()},
+\code{\link{unbag_rocrate}()}
+}
+\concept{bag_rocrate}
