@@ -98,7 +98,8 @@
   msg <- ""
   if (!is.null(ent_name))
     msg <- paste0("===== Checking: ", ent_name, " =====\n")
-  msg <- paste0(msg, "Missing: \n", paste0("- ", required[!has_elements], collapse = "\n"))
-  stop(msg)
+  msg <- paste0(msg, "Missing: \n", 
+                paste0(" - ", required[!has_elements], collapse = "\n"))
+  warning(msg, call. = FALSE)
 }
 
