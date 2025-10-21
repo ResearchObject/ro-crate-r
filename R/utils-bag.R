@@ -19,6 +19,8 @@ bag_rocrate <- function(x, ...) {
 
 #' @rdname bag_rocrate
 #' 
+#' @param output String with path where the RO-Crate bag will be stored 
+#'     (default: `x` - same path as the input value).
 #' @param force_bag Boolean flag to indicate whether the force the creation of
 #'     a 'bag' even if not all the files were successfully bagged  
 #'     (default: `FALSE` ~ check if all the files were copied successfully).
@@ -29,7 +31,7 @@ bag_rocrate <- function(x, ...) {
 #' @returns String with full path to the final RO-Crate bag.
 #' 
 #' @export
-bag_rocrate.character <- function(x, ..., force_bag = FALSE, zip_flags = "-r9X") {
+bag_rocrate.character <- function(x, ..., output = x, force_bag = FALSE, zip_flags = "-r9X") {
   # check a valid path was given
   if (!dir.exists(x)) {
     stop("The given path, `x`, does not exist!\n",
@@ -93,7 +95,7 @@ bag_rocrate.character <- function(x, ..., force_bag = FALSE, zip_flags = "-r9X")
   bagit_fetch(tmp_dir)
   
   # compress bag contents inside original path
-  output_bag <- file.path(x, paste0(rocrate_id, ".zip"))
+  output_bag <- file.path(output, paste0(rocrate_id, ".zip"))
   bag_files <- list.files(dirname(tmp_dir), 
                           full.names = TRUE,
                           recursive = TRUE)
@@ -115,7 +117,7 @@ bag_rocrate.character <- function(x, ..., force_bag = FALSE, zip_flags = "-r9X")
 #'     file should be overwritten if already inside `path` (default: `FALSE`).
 #'
 #' @export
-bag_rocrate.rocrate <- function(x, ..., path, overwrite = FALSE, force_bag = FALSE, zip_flags = "-r9X") {
+bag_rocrate.rocrate <- function(x, ..., path, output = path, overwrite = FALSE, force_bag = FALSE, zip_flags = "-r9X") {
   # check the `x` object
   is_rocrate(x)
   # check a valid path was given
@@ -137,12 +139,18 @@ bag_rocrate.rocrate <- function(x, ..., path, overwrite = FALSE, force_bag = FAL
   write_rocrate(x, file.path(path, "ro-crate-metadata.json"))
   
   # call the bag method for the given `path`
-  bag_rocrate(path, force_bag = force_bag, zip_flags = zip_flags)
+  bag_rocrate(path, output = output, force_bag = force_bag, zip_flags = zip_flags)
 }
 
+#' Generate BagIt declaration
+#' 
+#' @param path String with path where the BagIt declaration will be stored.
+#' @param version String with BagIt version (default: `"1.0"`)/
+#'
 #' @keywords internal
-bagit_declaration <- function(path) {
-  declaration_lines <- c("BagIt-version: 1.0", 
+#' @source https://www.rfc-editor.org/rfc/rfc8493.html#section-2.2.2
+bagit_declaration <- function(path, version = "1.0") {
+  declaration_lines <- c(paste0("BagIt-version: ", version), 
                          "Tag-File-Character-Encoding: UTF-8")
   writeLines(declaration_lines, 
              con = file.path(dirname(path), "bagit.txt"))
@@ -338,7 +346,7 @@ is_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
   # load the manifest file
   manifest_filename <- paste0(manifest_suffix, "-", algo, ".txt")
   bagit_manifest_txt <- file.path(path, manifest_filename) |>
-    utils::read.table(header = FALSE, sep = " ", col.names = c("checksum", "filename"))
+    utils::read.table(header = FALSE, col.names = c("checksum", "filename"))
   # check all the files in the manifest file
   bagit_manifest_txt_validity <- seq_len(nrow(bagit_manifest_txt)) |>
     sapply(function(i) {
@@ -376,6 +384,11 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
   # check if file has .zip extension
   if (!grepl("zip$", path, ignore.case = TRUE)) {
     stop("The given `path` does not point to a .zip file!", call. = FALSE)
+  }
+  
+  # check if the `output` directory exists, if not, then it creates it
+  if (dir.exists(output)) {
+    dir.create(output, showWarnings = FALSE, recursive = TRUE)
   }
   
   # extract contents inside the `output` path
