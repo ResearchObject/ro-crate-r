@@ -38,8 +38,10 @@ is_rocrate <- function(rocrate) {
     unlist()
 
   # validate @graph entities
-  valid_entities <- ro_crate_graph |>
-    sapply(.validate_entity.list, ent_name = graph_ids)
+  valid_entities <- seq_along(ro_crate_graph) |>
+    sapply(function(i) {
+      .validate_entity.list(ro_crate_graph[[i]], ent_name = graph_ids[i])
+    })
 
   # check lengths of @ids and number of entities, must be the same
   valid_length_graph <- length(graph_ids) == length(valid_entities)
