@@ -9,7 +9,7 @@
 \arguments{
 \item{rocrate}{RO-Crate object, see \link{rocrate}.}
 
-\item{id}{String with the ID of the RO-Crate entity within \verb{@graph}}
+\item{id}{String with the ID of the RO-Crate entity within \verb{@graph}.}
 }
 \value{
 Boolean vector with index for entity with \verb{@id}.

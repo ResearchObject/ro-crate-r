@@ -8,12 +8,13 @@
 \usage{
 bag_rocrate(x, ...)
 
-\method{bag_rocrate}{character}(x, ..., force_bag = FALSE, zip_flags = "-r9X")
+\method{bag_rocrate}{character}(x, ..., output = x, force_bag = FALSE, zip_flags = "-r9X")
 
 \method{bag_rocrate}{rocrate}(
   x,
   ...,
   path,
+  output = path,
   overwrite = FALSE,
   force_bag = FALSE,
   zip_flags = "-r9X"
@@ -25,6 +26,9 @@ metadata descriptor file, \code{ro-crate-metadata.json}. Alternatively, an
 object with the \link[rocrateR]{rocrate} class.}
 
 \item{...}{Additional parameters, see below.}
+
+\item{output}{String with path where the RO-Crate bag will be stored
+(default: \code{x} - same path as the input value).}
 
 \item{force_bag}{Boolean flag to indicate whether the force the creation of
 a 'bag' even if not all the files were successfully bagged

@@ -4,15 +4,15 @@
 \alias{unbag_rocrate}
 \title{'Unbag' (extract) RO-Crate packed with BagIt}
 \usage{
-unbag_rocrate(path, output = path, quiet = FALSE)
+unbag_rocrate(path, output = dirname(path), quiet = FALSE)
 }
 \arguments{
 \item{path}{String with path to compressed file containing an RO-Crate bag.}
 
 \item{output}{String with target path where the contents will be extracted
-(default: \code{path} - same path as input).}
+(default: \code{dirname(path)} - same directory as input \code{path}).}
 
-\item{quiet}{Boolean flag to indicate if messages should be supressed
+\item{quiet}{Boolean flag to indicate if messages should be suppressed
 (default: \code{FALSE} - display messages).}
 }
 \value{

@@ -9,7 +9,7 @@ add_entity_value(rocrate, id, key, value, overwrite = TRUE)
 \arguments{
 \item{rocrate}{RO-Crate object, see \link{rocrate}.}
 
-\item{id}{String with the ID of the RO-Crate entity within \verb{@graph}}
+\item{id}{String with the ID of the RO-Crate entity within \verb{@graph}.}
 
 \item{key}{String with the \code{key} of the entity with \code{id} to be modified.}
 
