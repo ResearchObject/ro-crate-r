@@ -29,3 +29,29 @@ print.rocrate <- function(x, ...) {
   # return (invisibly) the input object
   invisible(x)
 }
+
+#' Print RO-Crate entity
+#'
+#' Print RO-Crate entity, S3 method for class 'entity'.
+#'
+#' @param x RO-Crate entity object, see [rocrateR::entity].
+#' @param ... Optional arguments, not used.
+#'
+#' @returns Invisibly the input RO-Crate entity, `x`.
+#' @export
+#'
+#' @examples
+#' rocrateR::rocrate() |>
+#'   rocrateR::get_entity("./")
+print.entity <- function(x, ...) {
+  # check the `x` object
+  .validate_entity(x)
+  
+  # display formatted RO-Crate entity
+  message("RO-Crate entity:",
+          "\n @id = '", getElement(x, "@id"), "'",
+          "\n @type = '", getElement(x, "@type"), "'"
+          )
+  # return (invisibly) the input object
+  invisible(x)
+}
