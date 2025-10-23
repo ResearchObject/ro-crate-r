@@ -47,6 +47,24 @@
   # return(idx)
 }
 
+#' Find `@type` index in RO-Crate
+#'
+#' Find `@type` index in RO-Crate. Useful to retrieve entities with a particular 
+#' type in the RO-Crate.
+#'
+#' @inheritParams add_entity_value
+#'
+#' @returns Boolean vector with index for entity(ies) with `@type`.
+#' @keywords internal
+.find_type_index <- function(rocrate, type) {
+  # check the `rocrate` object
+  is_rocrate(rocrate)
+  
+  # find the index in `@graph` with the matching {type} (at least one entry)
+  getElement(rocrate, "@graph") |>
+    sapply(\(x) type %in% getElement(x, "@type"))
+}
+
 #' Validate entity
 #'
 #' @inheritParams entity
