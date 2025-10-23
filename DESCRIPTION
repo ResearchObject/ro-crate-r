@@ -23,3 +23,5 @@ Imports:
     digest,
     jsonlite,
     tibble
+Depends: 
+    R (>= 4.1.0)
