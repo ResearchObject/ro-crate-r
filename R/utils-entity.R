@@ -86,6 +86,12 @@
     .validate_entity_overview(required, ent_name)
 }
 
+#' @method validate_entity entity
+#' @keywords internal
+.validate_entity.entity <- function(x, ..., ent_name = NULL, required = c("@id", "@type")) {
+  NextMethod()
+}
+
 #' @method validate_entity list
 #' @keywords internal
 .validate_entity.list <- function(x, ..., ent_name = NULL, required = c("@id", "@type")) {
