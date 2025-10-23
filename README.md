@@ -67,7 +67,7 @@ print(my_first_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-16",
+#>       "datePublished": "2025-10-23",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -110,7 +110,7 @@ readLines(tmp)
 #> [16] "      \"@type\": \"Dataset\","                             
 #> [17] "      \"name\": \"\","                                     
 #> [18] "      \"description\": \"\","                              
-#> [19] "      \"datePublished\": \"2025-10-16\","                  
+#> [19] "      \"datePublished\": \"2025-10-23\","                  
 #> [20] "      \"license\": {"                                      
 #> [21] "        \"@id\": \"http://spdx.org/licenses/CC-BY-4.0\""   
 #> [22] "      }"                                                   
@@ -192,7 +192,7 @@ print(my_second_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-16",
+#>       "datePublished": "2025-10-23",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       },
@@ -243,7 +243,7 @@ For more details, run the following command:
 ?rocrateR::bag_rocrate
 ```
 
-------------------------------------------------------------------------
+### 3.1. `rocrateR::bag_rocrate()`
 
 Here we will create an RO-Crate bag inside temporary directory:
 
@@ -258,25 +258,80 @@ dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 path_to_rocrate_bag <- basic_ro_crate |>
   rocrateR::bag_rocrate(path = tmp_dir)
 #> RO-Crate successfully 'bagged'!
-#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmpt2xmUG/rocrate-547222a530869c27d7caa4da5e83182b/rocrate-93bbbcdcd6d4e38ced4189b1ebe27215.zip
+#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp3fbZMG/rocrate-5430066e0edfce7c352a773154a051dd/rocrate-fa5ac5b0f34edfdbf6fd47bad3fb08de.zip
 ```
+
+### 3.2. `rocrateR::is_rocrate_bag()`
+
+We can use the function `rocrateR::is_rocrate_bag()` to verify that a
+given path points to a ZIP file or a directory with a valid RO-Crate
+bag. The expected files are
+
+- `bagit.txt` with the BagIt
+  [https://www.rfc-editor.org/rfc/rfc8493.html#section-2.2.2](definition)
+- `data` directory with
+  [https://www.rfc-editor.org/rfc/rfc8493.html#section-2.1.2](payload)
+  of the RO-Crate
+- `manifest-[algorithm].txt` with the checksum for each file inside the
+  `data` directory; .
+
+``` r
+basic_ro_crate_contents <- path_to_rocrate_bag |>
+  rocrateR::is_rocrate_bag()
+#> Valid RO-Crate found!
+```
+
+And then, the RO-Crate can be displayed
+
+``` r
+print(basic_ro_crate_contents)
+#> {
+#>   "@context": "https://w3id.org/ro/crate/1.2/context",
+#>   "@graph": [
+#>     {
+#>       "@id": "ro-crate-metadata.json",
+#>       "@type": "CreativeWork",
+#>       "about": {
+#>         "@id": "./"
+#>       },
+#>       "conformsTo": {
+#>         "@id": "https://w3id.org/ro/crate/1.2"
+#>       }
+#>     },
+#>     {
+#>       "@id": "./",
+#>       "@type": "Dataset",
+#>       "name": "",
+#>       "description": "",
+#>       "datePublished": "2025-10-23",
+#>       "license": {
+#>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
+#>       }
+#>     }
+#>   ]
+#> }
+```
+
+### 3.3. `rocrateR::unbag_rocrate()`
 
 We can explore the contents of the RO-Crate bag with the following
 commands:
 
 ``` r
 # extract files in temporary directory
-unzip(path_to_rocrate_bag, exdir = file.path(tmp_dir, "ROC"))
+path_to_rocrate_bag_contents <- path_to_rocrate_bag |>
+  rocrateR::unbag_rocrate(output = file.path(tmp_dir, "ROC"))
+#> RO-Crate bag successfully extracted! For details, see:
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp3fbZMG/rocrate-5430066e0edfce7c352a773154a051dd/ROC
 
 # create tree with the files
-fs::dir_tree(file.path(tmp_dir, "ROC"))
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmpt2xmUG/rocrate-547222a530869c27d7caa4da5e83182b/ROC
-#> └── rocrate-93bbbcdcd6d4e38ced4189b1ebe27215
-#>     ├── bagit.txt
-#>     ├── data
-#>     │   └── ro-crate-metadata.json
-#>     ├── manifest-sha512.txt
-#>     └── tagmanifest-sha512.txt
+fs::dir_tree(path_to_rocrate_bag_contents)
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp3fbZMG/rocrate-5430066e0edfce7c352a773154a051dd/ROC/rocrate-fa5ac5b0f34edfdbf6fd47bad3fb08de
+#> ├── bagit.txt
+#> ├── data
+#> │   └── ro-crate-metadata.json
+#> ├── manifest-sha512.txt
+#> └── tagmanifest-sha512.txt
 ```
 
 ``` r

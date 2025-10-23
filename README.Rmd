@@ -141,7 +141,7 @@ For more details, run the following command:
 ?rocrateR::bag_rocrate
 ```
 
------
+### 3.1. `rocrateR::bag_rocrate()` 
 
 Here we will create an RO-Crate bag inside temporary directory:
 
@@ -157,6 +157,31 @@ path_to_rocrate_bag <- basic_ro_crate |>
   rocrateR::bag_rocrate(path = tmp_dir)
 ```
 
+
+### 3.2. `rocrateR::is_rocrate_bag()`
+
+We can use the function `rocrateR::is_rocrate_bag()` to verify that a given path
+points to a ZIP file or a directory with a valid RO-Crate bag. The expected 
+files are
+
+- `bagit.txt` with the BagIt [https://www.rfc-editor.org/rfc/rfc8493.html#section-2.2.2](definition)
+- `data` directory with [https://www.rfc-editor.org/rfc/rfc8493.html#section-2.1.2](payload) of the RO-Crate
+- `manifest-[algorithm].txt` with the checksum for each file inside the `data` directory; .
+
+```{r}
+basic_ro_crate_contents <- path_to_rocrate_bag |>
+  rocrateR::is_rocrate_bag()
+```
+
+And then, the RO-Crate can be displayed
+
+```{r}
+print(basic_ro_crate_contents)
+```
+
+
+### 3.3. `rocrateR::unbag_rocrate()`
+
 We can explore the contents of the RO-Crate bag with the following commands:
 
 ```{r, echo=FALSE, eval=FALSE}
@@ -166,10 +191,11 @@ unzip(path_to_rocrate_bag, list = TRUE)
 
 ```{r}
 # extract files in temporary directory
-unzip(path_to_rocrate_bag, exdir = file.path(tmp_dir, "ROC"))
+path_to_rocrate_bag_contents <- path_to_rocrate_bag |>
+  rocrateR::unbag_rocrate(output = file.path(tmp_dir, "ROC"))
 
 # create tree with the files
-fs::dir_tree(file.path(tmp_dir, "ROC"))
+fs::dir_tree(path_to_rocrate_bag_contents)
 ```
 
 ```{r}
