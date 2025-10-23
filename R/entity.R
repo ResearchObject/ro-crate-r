@@ -66,7 +66,7 @@ add_entity <- function(rocrate, entity, overwrite = FALSE) {
 #' pair `{key}`-`{value}` within `@graph`.
 #'
 #' @inheritParams is_rocrate
-#' @param id String with the ID of the RO-Crate entity within `@graph`
+#' @param id String with the ID of the RO-Crate entity within `@graph`.
 #' @param key String with the `key` of the entity with `id` to be modified.
 #' @param value String with the `value` for `key`.
 #' @param overwrite Boolean flag to indicate if the existing value (if any),
@@ -158,6 +158,105 @@ entity.default <- function(x, ...) {
   # attach 'entity' as a new class
   class(new_entity) <- c("entity", class(new_entity))
   return(new_entity)
+}
+
+#' Get entity(ies)
+#'
+#' @inheritParams is_rocrate
+#' @param id String with the ID of the RO-Crate entity within `@graph` 
+#'     (optional if `type` is provided). Alternatively, an entity object / list
+#'     with `@id` and `@type`.
+#' @param type String with the type of the RO-Crate entity(ies) within `@graph`
+#'     to retrieve (optional if `id` is provided).
+#'
+#' @returns List with found entity object(s).
+#' @export
+#' 
+#' @examples
+#' basic_crate <- rocrateR::rocrate()
+#'
+#' # create entity for an organisation
+#' organisation_uol <- rocrateR::entity(
+#'   x = "https://ror.org/04xs57h96",
+#'   type = "Organization",
+#'   name = "University of Liverpool",
+#'   url = "http://www.liv.ac.uk"
+#' )
+#'
+#' # create an entity for a person
+#' person_rvd <- rocrateR::entity(
+#'   x = "https://orcid.org/0000-0001-5036-8661",
+#'   type = "Person",
+#'   name = "Roberto Villegas-Diaz",
+#'   affiliation = list(`@id` = organisation_uol$`@id`)
+#' )
+#'
+#' basic_crate_person <- basic_crate |>
+#'   rocrateR::add_entity(person_rvd) |>
+#'   rocrateR::add_entity_value(id = "./", key = "author", value = list(`@id` = person_rvd$`@id`)) |>
+#'   rocrateR::add_entity(organisation_uol) |>
+#'   rocrateR::get_entity(person_rvd)
+#'   
+#' basic_crate_person[[1]]$name == person_rvd$name
+#' basic_crate_person[[1]]$`@id` == person_rvd$`@id`
+get_entity <- function(rocrate, id = NULL, type = NULL) {
+  # check the `rocrate` object
+  is_rocrate(rocrate)
+  
+  # if `id` is given as an entity object / list, extract @id and @type
+  if (is.list(id)) {
+    type <- getElement(id, "@type")
+    id <- getElement(id, "@id")
+  }
+  
+  # check that either `id` or `type` were provided
+  if (all(is.null(id), is.null(type))) {
+    stop("You must provide a value for either `id` or `type`!",
+         call. = FALSE)
+  }
+  
+  # initialise local variables
+  idx_by_id <- idx_by_type <- NULL
+  
+  # if `id` was provided, then find elements with that @id
+  if (!is.null(id)) {
+    idx_by_id <- .find_id_index(rocrate, id)
+  }
+  # if `type` was provided, then find elements with that @type
+  if (!is.null(type)) {
+    idx_by_type <- .find_type_index(rocrate, type)
+  }
+  
+  # combine (if both id and type were provided) the indices
+  idx <- NULL
+  if (!is.null(id) && !is.null(type)) {
+    idx <- idx_by_id & idx_by_type
+  } else if (!is.null(id)) {
+    idx <- idx_by_id
+  } else if (!is.null(type)) {
+    idx <- idx_by_type
+  }
+  if (sum(idx) > 0) { # at least one entity was found
+    matching_entities <- rocrate$`@graph`[idx] |>
+      lapply(function(x) {
+        class(x) <- unique(c("entity", class(x)))
+        return(x)
+      })
+    return(matching_entities)
+  } else {
+    msg <- "No entities were found with "
+    msg_id <- paste0("@id = '", id, "'")
+    msg_type <- paste0("@type = '", type, "'")
+    warning(msg,
+            ifelse(is.null(id), "", msg_id),
+            ifelse(!is.null(id) && !is.null(type), " and ", ""),
+            ifelse(is.null(type), "", msg_type),
+            "!",
+            call. = FALSE)
+  }
+  
+  # return an empty entity, in case no valid entity was found
+  structure(list(), class = c("entity",  "list"))
 }
 
 #' Remove entity
