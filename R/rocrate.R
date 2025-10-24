@@ -41,15 +41,15 @@ rocrate <- function(...,
   new_ro_crate <- list(
     `@context` = context,
     `@graph` = list(
-      list(
-        `@id` = "ro-crate-metadata.json",
-        `@type` = "CreativeWork",
+      rocrateR::entity(
+        x = "ro-crate-metadata.json",
+        type = "CreativeWork",
         about = list(`@id` = "./"),
         conformsTo = list(`@id` = conformsTo)
       ),
-      list(
-        `@id` = "./",
-        `@type` = "Dataset",
+      rocrateR::entity(
+        x = "./",
+        type = "Dataset",
         name = name,
         description = description,
         datePublished = as.character(datePublished),
