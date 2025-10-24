@@ -25,11 +25,23 @@ test_that("is_rocrate works", {
 
   # modify entity to remove @type
   basic_crate$`@graph`[[1]]$`@type` <- NULL
-  expect_error(basic_crate |>
-                 rocrateR::is_rocrate())
+  expect_warning(basic_crate |> rocrateR::is_rocrate())
 
   # set invalid context value
   basic_crate$`@context` <- "My awesome, but non-standard context"
-  expect_error(basic_crate |>
-                 rocrateR::is_rocrate())
+  expect_error(
+    expect_warning(
+      basic_crate |> rocrateR::is_rocrate()
+    )
+  )
+  
+  # drop @graph from a valid RO-Crate
+  basic_crate_v4 <- rocrateR::rocrate()
+  basic_crate_v4$`@graph` <- NULL
+  expect_error(rocrateR::is_rocrate(basic_crate_v4))
+  
+  # drop @type from one of the entities
+  basic_crate_v5 <- rocrateR::rocrate()
+  basic_crate_v5$`@graph`[[2]]$`@type` <- NULL
+  expect_warning(rocrateR::is_rocrate(basic_crate_v5))
 })
