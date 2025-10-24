@@ -22,7 +22,8 @@ You can install the released version of `{rocrateR}` from
 [CRAN](https://cran.r-project.org/package=rocrateR) with:
 
 ``` r
-install.packages("rocrateR")
+# install.packages("pak")
+pak::pak("dsROCrate")
 ```
 
 And the development version from
@@ -30,7 +31,7 @@ And the development version from
 
 ``` r
 # install.packages("pak")
-pak::pkg_install("ResearchObject/ro-crate-r@dev")
+pak::pak("ResearchObject/ro-crate-r@dev")
 ```
 
 ## 1. First RO-Crate
@@ -67,7 +68,7 @@ print(my_first_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-23",
+#>       "datePublished": "2025-10-24",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -110,7 +111,7 @@ readLines(tmp)
 #> [16] "      \"@type\": \"Dataset\","                             
 #> [17] "      \"name\": \"\","                                     
 #> [18] "      \"description\": \"\","                              
-#> [19] "      \"datePublished\": \"2025-10-23\","                  
+#> [19] "      \"datePublished\": \"2025-10-24\","                  
 #> [20] "      \"license\": {"                                      
 #> [21] "        \"@id\": \"http://spdx.org/licenses/CC-BY-4.0\""   
 #> [22] "      }"                                                   
@@ -192,7 +193,7 @@ print(my_second_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-23",
+#>       "datePublished": "2025-10-24",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       },
@@ -258,7 +259,7 @@ dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 path_to_rocrate_bag <- basic_ro_crate |>
   rocrateR::bag_rocrate(path = tmp_dir)
 #> RO-Crate successfully 'bagged'!
-#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp3fbZMG/rocrate-5430066e0edfce7c352a773154a051dd/rocrate-fa5ac5b0f34edfdbf6fd47bad3fb08de.zip
+#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp4Hd9uu/rocrate-ba46989af64f46fb63c24acfbff27fcb/rocrate-2abe2afed5da4d58cf88c05e6d367305.zip
 ```
 
 ### 3.2. `rocrateR::is_rocrate_bag()`
@@ -303,7 +304,7 @@ print(basic_ro_crate_contents)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-23",
+#>       "datePublished": "2025-10-24",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -322,11 +323,11 @@ commands:
 path_to_rocrate_bag_contents <- path_to_rocrate_bag |>
   rocrateR::unbag_rocrate(output = file.path(tmp_dir, "ROC"))
 #> RO-Crate bag successfully extracted! For details, see:
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp3fbZMG/rocrate-5430066e0edfce7c352a773154a051dd/ROC
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp4Hd9uu/rocrate-ba46989af64f46fb63c24acfbff27fcb/ROC
 
 # create tree with the files
 fs::dir_tree(path_to_rocrate_bag_contents)
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp3fbZMG/rocrate-5430066e0edfce7c352a773154a051dd/ROC/rocrate-fa5ac5b0f34edfdbf6fd47bad3fb08de
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp4Hd9uu/rocrate-ba46989af64f46fb63c24acfbff27fcb/ROC/rocrate-2abe2afed5da4d58cf88c05e6d367305
 #> ├── bagit.txt
 #> ├── data
 #> │   └── ro-crate-metadata.json

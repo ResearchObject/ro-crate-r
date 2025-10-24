@@ -28,14 +28,15 @@ The goal of `{rocrateR}` is to provide an R package for creating, manipulating a
 You can install the released version of `{rocrateR}` from [CRAN](https://cran.r-project.org/package=rocrateR) with:
 
 ``` r
-install.packages("rocrateR")
+# install.packages("pak")
+pak::pak("dsROCrate")
 ```
 
 And the development version from [GitHub](https://github.com/ResearchObject/ro-crate-r/) with:
 
 ``` r
 # install.packages("pak")
-pak::pkg_install("ResearchObject/ro-crate-r@dev")
+pak::pak("ResearchObject/ro-crate-r@dev")
 ```
 
 ## 1. First RO-Crate
