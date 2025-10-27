@@ -344,3 +344,21 @@ remove_entity <- function(rocrate, entity) {
 
   return(rocrate)
 }
+
+#' Wrapper for \link[rocrateR]{remove_entity}
+#' 
+#' Wrapper for \link[rocrateR]{remove_entity}, can be use to remove multiple 
+#' entities.
+#'
+#' @inheritParams remove_entity
+#'
+#' @returns Updated RO-Crate.
+#' @export
+remove_entities <- function(rocrate, entity) {
+  for (i in seq_along(entity)) {
+    # call the add_entity function
+    rocrate <- rocrate |>
+      rocrateR::remove_entity(entity[[i]])
+  }
+  return(rocrate)
+}
