@@ -112,6 +112,35 @@ add_entity_value <- function(rocrate, id, key, value, overwrite = TRUE) {
   return(rocrate)
 }
 
+#' Wrapper for \link[rocrateR]{add_entity}
+#' 
+#' Wrapper for \link[rocrateR]{add_entity}, can be use to add multiple entities.
+#'
+#' @inheritParams add_entity
+#' @param entity List with entity objects.
+#' @param quiet Boolean flag to indicate if status messages should be hidden
+#'     (default: `FALSE`).
+#'
+#' @returns Updated RO-Crate with the new entities.
+#' @export
+add_entities <- function(rocrate, entity, overwrite = FALSE, quiet = FALSE) {
+  for (i in seq_along(entity)) {
+    if (!quiet) {
+      # extract entity @id, if missing, then use index, `i`
+      ent_id <- getElement(entity[[i]], "@id")
+      ent_id <- ifelse(is.null(ent_id), 
+                       paste0("with index=", i), 
+                       paste0("with @id='", ent_id, "'")
+                       )
+      message("Adding entity ", ent_id, "...\n")
+    }
+    # call the add_entity function
+    rocrate <- rocrate |>
+      rocrateR::add_entity(entity[[i]], overwrite = overwrite)
+  }
+  return(rocrate)
+}
+
 #' Create a data entity
 #'
 #' @param x New entity. If a single value (e.g., `character`, `numeric`) is
