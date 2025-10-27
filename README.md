@@ -68,7 +68,7 @@ print(my_first_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-24",
+#>       "datePublished": "2025-10-27",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -111,7 +111,7 @@ readLines(tmp)
 #> [16] "      \"@type\": \"Dataset\","                             
 #> [17] "      \"name\": \"\","                                     
 #> [18] "      \"description\": \"\","                              
-#> [19] "      \"datePublished\": \"2025-10-24\","                  
+#> [19] "      \"datePublished\": \"2025-10-27\","                  
 #> [20] "      \"license\": {"                                      
 #> [21] "        \"@id\": \"http://spdx.org/licenses/CC-BY-4.0\""   
 #> [22] "      }"                                                   
@@ -193,7 +193,7 @@ print(my_second_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-24",
+#>       "datePublished": "2025-10-27",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       },
@@ -219,7 +219,216 @@ print(my_second_ro_crate)
 #> }
 ```
 
-## 3. Create an RO-Crate Bag
+## 3. Wrangle RO-Crate
+
+Previously, we covered how to include additional entities, other valid
+operations are to extract (`rocrateR::get_entity()`) and remove
+(`rocrateR::remove_entities()`).
+
+### 3.1. Set up
+
+``` r
+# create basic RO-Crate
+basic_ro_crate <- rocrateR::rocrate()
+
+# create some entities for a project and datasets
+dataset_entities <- seq_len(5) |>
+  lapply(\(x) rocrateR::entity(x, type = "Dataset", name = paste0("Data ", x)))
+project_entity <- rocrateR::entity(
+  "#proj101", 
+  type = "Project", 
+  name = "Project 101",
+  hasPart = dataset_entities |>
+      lapply(\(x) list(`@id` = x[["@id"]]))
+  )
+
+# add project and entities to the RO-Crate
+basic_ro_crate <- basic_ro_crate |>
+  rocrateR::add_entity(project_entity) |>
+  # note that here we are using `rocrateR::add_entities` and `rocrateR::add_entity`
+  rocrateR::add_entities(dataset_entities)
+#> Adding entity with @id='1'...
+#> Adding entity with @id='2'...
+#> Adding entity with @id='3'...
+#> Adding entity with @id='4'...
+#> Adding entity with @id='5'...
+
+print(basic_ro_crate)
+#> {
+#>   "@context": "https://w3id.org/ro/crate/1.2/context",
+#>   "@graph": [
+#>     {
+#>       "@id": "ro-crate-metadata.json",
+#>       "@type": "CreativeWork",
+#>       "about": {
+#>         "@id": "./"
+#>       },
+#>       "conformsTo": {
+#>         "@id": "https://w3id.org/ro/crate/1.2"
+#>       }
+#>     },
+#>     {
+#>       "@id": "./",
+#>       "@type": "Dataset",
+#>       "name": "",
+#>       "description": "",
+#>       "datePublished": "2025-10-27",
+#>       "license": {
+#>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
+#>       }
+#>     },
+#>     {
+#>       "@id": "#proj101",
+#>       "@type": "Project",
+#>       "name": "Project 101",
+#>       "hasPart": [
+#>         {
+#>           "@id": 1
+#>         },
+#>         {
+#>           "@id": 2
+#>         },
+#>         {
+#>           "@id": 3
+#>         },
+#>         {
+#>           "@id": 4
+#>         },
+#>         {
+#>           "@id": 5
+#>         }
+#>       ]
+#>     },
+#>     {
+#>       "@id": 1,
+#>       "@type": "Dataset",
+#>       "name": "Data 1"
+#>     },
+#>     {
+#>       "@id": 2,
+#>       "@type": "Dataset",
+#>       "name": "Data 2"
+#>     },
+#>     {
+#>       "@id": 3,
+#>       "@type": "Dataset",
+#>       "name": "Data 3"
+#>     },
+#>     {
+#>       "@id": 4,
+#>       "@type": "Dataset",
+#>       "name": "Data 4"
+#>     },
+#>     {
+#>       "@id": 5,
+#>       "@type": "Dataset",
+#>       "name": "Data 5"
+#>     }
+#>   ]
+#> }
+```
+
+### 3.2. Extract entity
+
+We can extract entities via the `@id`, `@type` or both:
+
+#### 3.2.1. Extract using `@id`
+
+``` r
+basic_ro_crate_project <- basic_ro_crate |>
+  rocrateR::get_entity(id = "#proj101")
+
+print(basic_ro_crate_project)
+#> [[1]]
+#> RO-Crate entity:
+#>  @id = '#proj101'
+#>  @type = 'Project'
+```
+
+#### 3.2.2. Extract using `@type`
+
+``` r
+basic_ro_crate_datasets <- basic_ro_crate |>
+  rocrateR::get_entity(type = "Dataset")
+
+print(basic_ro_crate_datasets)
+#> [[1]]
+#> RO-Crate entity:
+#>  @id = './'
+#>  @type = 'Dataset'
+#> 
+#> [[2]]
+#> RO-Crate entity:
+#>  @id = '1'
+#>  @type = 'Dataset'
+#> 
+#> [[3]]
+#> RO-Crate entity:
+#>  @id = '2'
+#>  @type = 'Dataset'
+#> 
+#> [[4]]
+#> RO-Crate entity:
+#>  @id = '3'
+#>  @type = 'Dataset'
+#> 
+#> [[5]]
+#> RO-Crate entity:
+#>  @id = '4'
+#>  @type = 'Dataset'
+#> 
+#> [[6]]
+#> RO-Crate entity:
+#>  @id = '5'
+#>  @type = 'Dataset'
+```
+
+#### 3.2.3. Extract using `@id` and `@type`
+
+``` r
+basic_ro_crate_dataset_root <- basic_ro_crate |>
+  rocrateR::get_entity(id = "./", type = "Dataset")
+
+print(basic_ro_crate_dataset_root)
+#> [[1]]
+#> RO-Crate entity:
+#>  @id = './'
+#>  @type = 'Dataset'
+```
+
+### 3.3. Remove entity
+
+Similarly, we can remove entities from an RO-Crate:
+
+#### 3.3.1. Remove using scalar `@id`
+
+``` r
+basic_ro_crate_alt <- basic_ro_crate |>
+  rocrateR::remove_entity("#proj101")
+#> Removing the entity with @id = '#proj101'.
+```
+
+#### 3.3.2. Remove using `entity` object
+
+``` r
+basic_ro_crate_alt <- basic_ro_crate |>
+  rocrateR::remove_entity(project_entity)
+#> Removing the entity with @id = '#proj101'.
+```
+
+#### 3.3.3. Remove multiple entities
+
+``` r
+basic_ro_crate_alt <- basic_ro_crate |>
+  rocrateR::remove_entities(dataset_entities)
+#> Removing the entity with @id = '1'.
+#> Removing the entity with @id = '2'.
+#> Removing the entity with @id = '3'.
+#> Removing the entity with @id = '4'.
+#> Removing the entity with @id = '5'.
+```
+
+## 4. Create an RO-Crate Bag
 
 Here we will explore the BagIt file packaging format, which is the
 recommended to use for *bagging* RO-Crates. BagIt is described in [RFC
@@ -244,11 +453,12 @@ For more details, run the following command:
 ?rocrateR::bag_rocrate
 ```
 
-### 3.1. `rocrateR::bag_rocrate()`
+### 4.1. `rocrateR::bag_rocrate()`
 
 Here we will create an RO-Crate bag inside temporary directory:
 
 ``` r
+# create basic RO-Crate
 basic_ro_crate <- rocrateR::rocrate()
 
 # create temporary directory
@@ -259,10 +469,10 @@ dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 path_to_rocrate_bag <- basic_ro_crate |>
   rocrateR::bag_rocrate(path = tmp_dir)
 #> RO-Crate successfully 'bagged'!
-#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp4Hd9uu/rocrate-ba46989af64f46fb63c24acfbff27fcb/rocrate-2abe2afed5da4d58cf88c05e6d367305.zip
+#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp3lnH4A/rocrate-c13e5e298979aa6eced8bd5e6d84d3c4/rocrate-92cb32e017ce9694ca07225268e98416.zip
 ```
 
-### 3.2. `rocrateR::is_rocrate_bag()`
+### 4.2. `rocrateR::is_rocrate_bag()`
 
 We can use the function `rocrateR::is_rocrate_bag()` to verify that a
 given path points to a ZIP file or a directory with a valid RO-Crate
@@ -304,7 +514,7 @@ print(basic_ro_crate_contents)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-24",
+#>       "datePublished": "2025-10-27",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -313,7 +523,7 @@ print(basic_ro_crate_contents)
 #> }
 ```
 
-### 3.3. `rocrateR::unbag_rocrate()`
+### 4.3. `rocrateR::unbag_rocrate()`
 
 We can explore the contents of the RO-Crate bag with the following
 commands:
@@ -323,11 +533,11 @@ commands:
 path_to_rocrate_bag_contents <- path_to_rocrate_bag |>
   rocrateR::unbag_rocrate(output = file.path(tmp_dir, "ROC"))
 #> RO-Crate bag successfully extracted! For details, see:
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp4Hd9uu/rocrate-ba46989af64f46fb63c24acfbff27fcb/ROC
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp3lnH4A/rocrate-c13e5e298979aa6eced8bd5e6d84d3c4/ROC
 
 # create tree with the files
 fs::dir_tree(path_to_rocrate_bag_contents)
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp4Hd9uu/rocrate-ba46989af64f46fb63c24acfbff27fcb/ROC/rocrate-2abe2afed5da4d58cf88c05e6d367305
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp3lnH4A/rocrate-c13e5e298979aa6eced8bd5e6d84d3c4/ROC/rocrate-92cb32e017ce9694ca07225268e98416
 #> ├── bagit.txt
 #> ├── data
 #> │   └── ro-crate-metadata.json
@@ -340,7 +550,7 @@ fs::dir_tree(path_to_rocrate_bag_contents)
 unlink(tmp_dir, recursive = TRUE, force = TRUE)
 ```
 
-## 4. Validation (experimental)
+## 5. Validation (experimental)
 
 As you develop your RO-Crates, you might want to validate them. There
 are few validators online (some of which can be found at
@@ -354,19 +564,19 @@ Note that we will rely on
 [`{reticulate}`](https://cran.r-project.org/package=reticulate) to
 install and execute the validator within R:
 
-### 4.1. Install [`{reticulate}`](https://cran.r-project.org/package=reticulate)
+### 5.1. Install [`{reticulate}`](https://cran.r-project.org/package=reticulate)
 
 ``` r
 pak::pkg_install("reticulate")
 ```
 
-### 4.2. Install [`rocrate-validator`](https://github.com/crs4/rocrate-validator)
+### 5.2. Install [`rocrate-validator`](https://github.com/crs4/rocrate-validator)
 
 ``` r
 reticulate::py_install("roc-validator", env = "rocrateR")
 ```
 
-### 4.3. Create example RO-Crate and validate it
+### 5.3. Create example RO-Crate and validate it
 
 ``` r
 basic_ro_crate <- rocrateR::rocrate()
