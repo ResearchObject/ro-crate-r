@@ -125,5 +125,6 @@
   msg <- paste0(msg, "Missing: \n", 
                 paste0(" - ", required[!has_elements], collapse = "\n"))
   warning(msg, call. = FALSE)
+  return(FALSE)
 }
 
