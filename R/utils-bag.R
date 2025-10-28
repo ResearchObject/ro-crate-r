@@ -68,15 +68,15 @@ bag_rocrate.character <- function(x, ..., output = x, force_bag = FALSE, zip_fla
     })
   
   # check that all the files were copied, unless force_bag = TRUE
-  if (!all(rocrate_files_status)) {
-    if (!force) {
+  if (!all(rocrate_files_status) || force_bag) {
+    if (!force_bag) {
       stop("It was not possible to bag all your files!\nMissing file(s):\n",
            paste0(" - ", rocrate_files[!rocrate_files_status], collapse = "\n"),
            "\n\nTo ignore this check, set `force_bag = TRUE`.", call. = FALSE)
     } else {
       warning("Forcing the creation of the RO-Crate bag! ",
-              "Not all the files were copied: \n", 
-              paste0("- ", rocrate_files[!rocrate_files_status], "\n"), 
+              "Note that this will ignore checking if all files were copied",
+              "into the RO-Crate bag",
               call. = FALSE)
     }
   }
