@@ -12,6 +12,7 @@ test_that("bag_rocrate works", {
   
   # use invalid path
   expect_error(rocrateR::bag_rocrate(basic_crate, path = "/invalid/path"))
+  expect_error(rocrateR::bag_rocrate("/invalid/path"))
   
   # write RO-Crate to temporary file
   tmp_file <- file.path(tmp_dir, "ro-crate-metadata.json")
@@ -33,7 +34,7 @@ test_that("bag_rocrate works", {
   expect_warning(rocrate_bag_filename <- basic_crate |>
                    rocrateR::bag_rocrate(path = tmp_dir,
                                          overwrite = TRUE,
-                                         force_bag = FALSE))
+                                         force_bag = TRUE))
   # check that the RO-Crate bag exists
   expect_true(file.exists(rocrate_bag_filename))
   
