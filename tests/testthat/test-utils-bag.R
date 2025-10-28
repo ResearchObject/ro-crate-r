@@ -31,10 +31,14 @@ test_that("bag_rocrate works", {
   expect_error(rocrateR::bag_rocrate(basic_crate, path = tmp_dir))
   
   # force creation of bag
-  expect_warning(rocrate_bag_filename <- basic_crate |>
-                   rocrateR::bag_rocrate(path = tmp_dir,
-                                         overwrite = TRUE,
-                                         force_bag = TRUE))
+  expect_warning( # warning because force_bag = TRUE
+    expect_warning( # warning because overwrite = TRUE
+      rocrate_bag_filename <- basic_crate |>
+        rocrateR::bag_rocrate(path = tmp_dir,
+                              overwrite = TRUE,
+                              force_bag = TRUE)
+      )
+  )
   # check that the RO-Crate bag exists
   expect_true(file.exists(rocrate_bag_filename))
   
@@ -133,6 +137,18 @@ test_that("is_rocrate_bag works", {
   # compare object read from the bag and original RO-Crate
   expect_equal(basic_crate_from_bag, basic_crate)
   
+  # extract RO-Crate bag
+  expect_message(
+    rocrate_bag_contents <- rocrateR::unbag_rocrate(rocrate_bag_filename)
+  )
+  # delete the tagmanifest file and validate RO-Crate bag
+  expect_true(file.exists(file.path(rocrate_bag_contents, "tagmanifest-sha512.txt")))
+  unlink(file.path(rocrate_bag_contents, "tagmanifest-sha512.txt"))
+  expect_false(file.exists(file.path(rocrate_bag_contents, "tagmanifest-sha512.txt")))
+  expect_message(
+    basic_crate_from_bag <- rocrateR::is_rocrate_bag(rocrate_bag_contents)
+  )
+  
   # create invalid bag for testing purposes
   dir.create(file.path(tmp_dir, "INVALID/data"), recursive = TRUE, 
              showWarnings = FALSE)
@@ -140,6 +156,17 @@ test_that("is_rocrate_bag works", {
   idx <- file.path(tmp_dir, "INVALID", 
             c("bagit.txt", "manifest-sha512.txt", "tagmanifest-sha512.txt")) |>
     file.create(showWarnings = FALSE)
+  # create data dir
+  dir.create(file.path(tmp_dir, "INVALID/data"), 
+             showWarnings = FALSE, 
+             recursive = TRUE)
+  idx <- file.path(tmp_dir, "INVALID/data/ro-crate-metadata.json") |>
+    file.create(showWarnings = FALSE)
+  # populate invalid manifest and tagmanifest files
+  writeLines("1234 data/ro-crate-metadata.json",
+             file.path(tmp_dir, "INVALID/manifest-sha512.txt"))
+  writeLines("1234 bagit.txt",
+             file.path(tmp_dir, "INVALID/tagmanifest-sha512.txt"))
   # check invalid RO-Crate bag
   expect_error(rocrateR::is_rocrate_bag(file.path(tmp_dir, "INVALID")))
   
