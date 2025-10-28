@@ -2,7 +2,7 @@
 #'
 #' Create a new RO-Crate object. This object includes basic skeleton for the
 #' RO-Crate metadata descriptor (`ro-crate-metadata.json`) file, as described
-#' in the official documentation: https://w3id.org/ro/crate/1.2 >
+#' in the official documentation: https://w3id.org/ro/crate/1.2/ >
 #' [Root Data Entity](https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity.html).
 #'
 #' @param ... Optional entities to include in the RO-Crate (e.g., author).

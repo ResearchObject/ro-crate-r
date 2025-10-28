@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/ResearchObject/ro-crate-r/graph/badge.svg)](https://app.codecov.io/gh/ResearchObject/ro-crate-r)
 <!-- badges: end -->
 
-The goal of `{rocrateR}` is to provide an R package for creating, manipulating and reading RO-Crates. Latest supported version of the specification: https://w3id.org/ro/crate/1.2.
+The goal of `{rocrateR}` is to provide an R package for creating, manipulating and reading RO-Crates. Latest supported version of the specification: https://w3id.org/ro/crate/1.2/.
 
 ## 0. Installation
 
@@ -77,7 +77,7 @@ unlink(tmp)
 
 ## 2. Including additional entities
 
-In the previous section we created a very basic RO-Crate with the `rocrateR::rocrate()` function; however, you are likely to include additional entities in your RO-Crate. Entities must contain at least two components `@id` and `@type` (see [https://w3id.org/ro/crate/1.2](https://w3id.org/ro/crate/1.2) for details).
+In the previous section we created a very basic RO-Crate with the `rocrateR::rocrate()` function; however, you are likely to include additional entities in your RO-Crate. Entities must contain at least two components `@id` and `@type` (see [https://w3id.org/ro/crate/1.2/](https://w3id.org/ro/crate/1.2/) for details).
 
 For example, a contextual entity can be defined as follows:
 
@@ -210,7 +210,8 @@ basic_ro_crate_alt <- basic_ro_crate |>
 ## 4. Create an RO-Crate Bag
 
 Here we will explore the BagIt file packaging format, which is the recommended
-to use for _bagging_ RO-Crates. BagIt is described in [RFC 8493](https://tools.ietf.org/html/rfc8493):
+to use for _bagging_ RO-Crates. BagIt is described in 
+[RFC 8493](https://doi.org/10.17487/RFC8493):
 
 > [BagIt is] … a set of hierarchical file layout conventions for storage and transfer of arbitrary digital content. A “bag” has just enough structure to enclose descriptive metadata “tags” and a file “payload” but does not require knowledge of the payload’s internal semantics. This BagIt format is suitable for reliable storage and transfer.
 

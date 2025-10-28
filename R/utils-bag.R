@@ -2,7 +2,7 @@
 #' 
 #' Bag the contents of an RO-Crate using the BagIt file packaging format v1.0.
 #' For more details see the definition: 
-#' \url{https://datatracker.ietf.org/doc/html/rfc8493}
+#' \doi{10.17487/RFC8493}
 #'
 #' @param x A string to a path containing at the very minimum an RO-Crate
 #'     metadata descriptor file, `ro-crate-metadata.json`. Alternatively, an
@@ -200,7 +200,7 @@ bagit_tagmanifest <- function(path, files, algo = "sha512") {
 #'     (default: `"sha512"`). See \link[digest]{digest} for more details.
 #' @param bagit_version String with version of BagIt used to generate the 
 #'     RO-Crate bag (default: `"1.0"`). 
-#'     See \url{https://www.rfc-editor.org/info/rfc8493} for more details.
+#'     See \doi{10.17487/RFC8493} for more details.
 #'
 #' @returns Returns invisibly the RO-Crate pointed by `path`.
 #' @export

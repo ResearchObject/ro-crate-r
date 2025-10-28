@@ -14,7 +14,7 @@ coverage](https://codecov.io/gh/ResearchObject/ro-crate-r/graph/badge.svg)](http
 
 The goal of `{rocrateR}` is to provide an R package for creating,
 manipulating and reading RO-Crates. Latest supported version of the
-specification: <https://w3id.org/ro/crate/1.2>.
+specification: <https://w3id.org/ro/crate/1.2/>.
 
 ## 0. Installation
 
@@ -68,7 +68,7 @@ print(my_first_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-27",
+#>       "datePublished": "2025-10-28",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -111,7 +111,7 @@ readLines(tmp)
 #> [16] "      \"@type\": \"Dataset\","                             
 #> [17] "      \"name\": \"\","                                     
 #> [18] "      \"description\": \"\","                              
-#> [19] "      \"datePublished\": \"2025-10-27\","                  
+#> [19] "      \"datePublished\": \"2025-10-28\","                  
 #> [20] "      \"license\": {"                                      
 #> [21] "        \"@id\": \"http://spdx.org/licenses/CC-BY-4.0\""   
 #> [22] "      }"                                                   
@@ -128,7 +128,7 @@ unlink(tmp)
 In the previous section we created a very basic RO-Crate with the
 `rocrateR::rocrate()` function; however, you are likely to include
 additional entities in your RO-Crate. Entities must contain at least two
-components `@id` and `@type` (see <https://w3id.org/ro/crate/1.2> for
+components `@id` and `@type` (see <https://w3id.org/ro/crate/1.2/> for
 details).
 
 For example, a contextual entity can be defined as follows:
@@ -193,7 +193,7 @@ print(my_second_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-27",
+#>       "datePublished": "2025-10-28",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       },
@@ -272,7 +272,7 @@ print(basic_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-27",
+#>       "datePublished": "2025-10-28",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -432,7 +432,7 @@ basic_ro_crate_alt <- basic_ro_crate |>
 
 Here we will explore the BagIt file packaging format, which is the
 recommended to use for *bagging* RO-Crates. BagIt is described in [RFC
-8493](https://tools.ietf.org/html/rfc8493):
+8493](https://doi.org/10.17487/RFC8493):
 
 > \[BagIt is\] … a set of hierarchical file layout conventions for
 > storage and transfer of arbitrary digital content. A “bag” has just
@@ -469,7 +469,7 @@ dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 path_to_rocrate_bag <- basic_ro_crate |>
   rocrateR::bag_rocrate(path = tmp_dir)
 #> RO-Crate successfully 'bagged'!
-#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp3lnH4A/rocrate-c13e5e298979aa6eced8bd5e6d84d3c4/rocrate-92cb32e017ce9694ca07225268e98416.zip
+#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp9sZFGp/rocrate-8281e19f5e9c38872cb6113e1c00bff5/rocrate-e99905b0719453c23ebb519c9959bcdd.zip
 ```
 
 ### 4.2. `rocrateR::is_rocrate_bag()`
@@ -514,7 +514,7 @@ print(basic_ro_crate_contents)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-27",
+#>       "datePublished": "2025-10-28",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -533,11 +533,11 @@ commands:
 path_to_rocrate_bag_contents <- path_to_rocrate_bag |>
   rocrateR::unbag_rocrate(output = file.path(tmp_dir, "ROC"))
 #> RO-Crate bag successfully extracted! For details, see:
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp3lnH4A/rocrate-c13e5e298979aa6eced8bd5e6d84d3c4/ROC
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp9sZFGp/rocrate-8281e19f5e9c38872cb6113e1c00bff5/ROC
 
 # create tree with the files
 fs::dir_tree(path_to_rocrate_bag_contents)
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp3lnH4A/rocrate-c13e5e298979aa6eced8bd5e6d84d3c4/ROC/rocrate-92cb32e017ce9694ca07225268e98416
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp9sZFGp/rocrate-8281e19f5e9c38872cb6113e1c00bff5/ROC/rocrate-e99905b0719453c23ebb519c9959bcdd
 #> ├── bagit.txt
 #> ├── data
 #> │   └── ro-crate-metadata.json
