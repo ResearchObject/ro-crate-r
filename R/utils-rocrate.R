@@ -44,7 +44,7 @@ is_rocrate <- function(rocrate) {
     })
 
   # check lengths of @ids and number of entities, must be the same
-  valid_length_graph <- length(graph_ids) == length(valid_entities)
+  valid_length_graph <- length(graph_ids) == sum(valid_entities == TRUE)
 
   # has an RO-Crate Metadata descriptor entity
   has_rocrate_meta <- "ro-crate-metadata.json" %in% graph_ids
