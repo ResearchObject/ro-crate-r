@@ -232,6 +232,20 @@ test_that("unbag_rocrate works", {
   # compare with the original RO-Crate
   expect_equal(basic_crate_from_bag, basic_crate)
   
+  # add new directory in root of RO-Crate
+  dir.create(file.path(rocrate_bag_files, "not_a_crate"))
+  # create new zip file with the additional directory
+  new_roc_zip_file <- file.path(dirname(rocrate_bag_files), "test_roc2.zip")
+  expect_false(file.exists(new_roc_zip_file))
+  zip(new_roc_zip_file, rocrate_bag_files)
+  expect_true(file.exists(new_roc_zip_file))
+  expect_error(
+    temp_roc_files <- rocrateR::unbag_rocrate(new_roc_zip_file)
+  )
+  # delete new zip
+  unlink(new_roc_zip_file, force = TRUE)
+  expect_false(file.exists(new_roc_zip_file))
+  
   # delete temporary directory
   unlink(tmp_dir, recursive = TRUE, force = TRUE)
   
