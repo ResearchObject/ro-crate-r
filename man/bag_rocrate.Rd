@@ -49,7 +49,7 @@ String with full path to the final RO-Crate bag.
 \description{
 Bag the contents of an RO-Crate using the BagIt file packaging format v1.0.
 For more details see the definition:
-\url{https://datatracker.ietf.org/doc/html/rfc8493}
+\doi{10.17487/RFC8493}
 }
 \seealso{
 Other bag_rocrate: 

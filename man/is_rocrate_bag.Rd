@@ -16,7 +16,7 @@ to a directory containing an RO-Crate bag.}
 
 \item{bagit_version}{String with version of BagIt used to generate the
 RO-Crate bag (default: \code{"1.0"}).
-See \url{https://www.rfc-editor.org/info/rfc8493} for more details.}
+See \doi{10.17487/RFC8493} for more details.}
 }
 \value{
 Returns invisibly the RO-Crate pointed by \code{path}.

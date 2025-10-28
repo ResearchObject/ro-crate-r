@@ -22,7 +22,7 @@ bagit_declaration(path, version = "1.0")
 
 \item{bagit_version}{String with version of BagIt used to generate the
 RO-Crate bag (default: \code{"1.0"}).
-See \url{https://www.rfc-editor.org/info/rfc8493} for more details.}
+See \doi{10.17487/RFC8493} for more details.}
 }
 \value{
 A list with \code{status} and \code{errors} identified.
