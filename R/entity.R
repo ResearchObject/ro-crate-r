@@ -198,7 +198,7 @@ entity.default <- function(x, ...) {
 #' @param type String with the type of the RO-Crate entity(ies) within `@graph`
 #'     to retrieve (optional if `id` is provided).
 #'
-#' @returns List with found entity object(s).
+#' @returns List with found entity object(s), if any, `NULL` otherwise.
 #' @export
 #' 
 #' @examples
@@ -284,8 +284,8 @@ get_entity <- function(rocrate, id = NULL, type = NULL) {
             call. = FALSE)
   }
   
-  # return an empty entity, in case no valid entity was found
-  structure(list(), class = c("entity",  "list"))
+  # return NULL invisibly, if no entities were found
+  return(invisible(NULL))
 }
 
 #' Remove entity
