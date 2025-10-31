@@ -10,6 +10,14 @@
 
 R package for creating, manipulating and reading RO-Crates. Latest supported version of the specification: \url{https://w3id.org/ro/crate/1.2/}.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/ResearchObject/ro-crate-r/}
+  \item Report bugs at \url{https://github.com/ResearchObject/ro-crate-r/issues/}
+}
+
+}
 \author{
 \strong{Maintainer}: Roberto Villegas-Diaz \email{r.villegas-diaz@outlook.com} (\href{https://orcid.org/0000-0001-5036-8661}{ORCID})
 
