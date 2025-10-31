@@ -17,7 +17,7 @@ with \verb{@id} and \verb{@type}.}
 to retrieve (optional if \code{id} is provided).}
 }
 \value{
-List with found entity object(s).
+List with found entity object(s), if any, \code{NULL} otherwise.
 }
 \description{
 Get entity(ies)

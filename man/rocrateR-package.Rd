@@ -6,6 +6,8 @@
 \alias{rocrateR-package}
 \title{rocrateR: RO-Crate R Package Wrapper}
 \description{
+\if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
+
 R package for creating, manipulating and reading RO-Crates. Latest supported version of the specification: \url{https://w3id.org/ro/crate/1.2/}.
 }
 \author{
