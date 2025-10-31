@@ -51,3 +51,4 @@ rsconnect/
 *.Rproj
 
 .DS_Store
+docs
