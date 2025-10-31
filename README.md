@@ -496,7 +496,7 @@ dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 path_to_rocrate_bag <- basic_ro_crate |>
   rocrateR::bag_rocrate(path = tmp_dir)
 #> RO-Crate successfully 'bagged'!
-#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//RtmpOQ9QWd/rocrate-c7e0ace051a85c6d81998344a058a520/rocrate-379419d26e8b361a43544fa851839839.zip
+#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp1XrJxt/rocrate-3058b7790e4f463353d63eef7a39a68f/rocrate-74377f861ec7b87b0f160f176eebde37.zip
 ```
 
 ### 5.2. `rocrateR::is_rocrate_bag()`
@@ -560,11 +560,11 @@ commands:
 path_to_rocrate_bag_contents <- path_to_rocrate_bag |>
   rocrateR::unbag_rocrate(output = file.path(tmp_dir, "ROC"))
 #> RO-Crate bag successfully extracted! For details, see:
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//RtmpOQ9QWd/rocrate-c7e0ace051a85c6d81998344a058a520/ROC
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp1XrJxt/rocrate-3058b7790e4f463353d63eef7a39a68f/ROC
 
 # create tree with the files
 fs::dir_tree(path_to_rocrate_bag_contents)
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//RtmpOQ9QWd/rocrate-c7e0ace051a85c6d81998344a058a520/ROC/rocrate-379419d26e8b361a43544fa851839839
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp1XrJxt/rocrate-3058b7790e4f463353d63eef7a39a68f/ROC/rocrate-74377f861ec7b87b0f160f176eebde37
 #> ├── bagit.txt
 #> ├── data
 #> │   └── ro-crate-metadata.json
