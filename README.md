@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# rocrateR: RO-Crate R Package Wrapper <img src="inst/images/logo.png" alt="logo" align="right" height=200px/>
+# rocrateR: RO-Crate R Package Wrapper <img src="man/figures/logo.png" alt="logo" align="right" height=200px/>
 
 <!-- badges: start -->
 
@@ -68,7 +68,7 @@ print(my_first_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-28",
+#>       "datePublished": "2025-10-31",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -111,7 +111,7 @@ readLines(tmp)
 #> [16] "      \"@type\": \"Dataset\","                             
 #> [17] "      \"name\": \"\","                                     
 #> [18] "      \"description\": \"\","                              
-#> [19] "      \"datePublished\": \"2025-10-28\","                  
+#> [19] "      \"datePublished\": \"2025-10-31\","                  
 #> [20] "      \"license\": {"                                      
 #> [21] "        \"@id\": \"http://spdx.org/licenses/CC-BY-4.0\""   
 #> [22] "      }"                                                   
@@ -193,7 +193,7 @@ print(my_second_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-28",
+#>       "datePublished": "2025-10-31",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       },
@@ -272,7 +272,7 @@ print(basic_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-28",
+#>       "datePublished": "2025-10-31",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -469,7 +469,7 @@ dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 path_to_rocrate_bag <- basic_ro_crate |>
   rocrateR::bag_rocrate(path = tmp_dir)
 #> RO-Crate successfully 'bagged'!
-#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp9sZFGp/rocrate-8281e19f5e9c38872cb6113e1c00bff5/rocrate-e99905b0719453c23ebb519c9959bcdd.zip
+#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp5nOLzg/rocrate-650a59d174de47ab371376816d51bd1d/rocrate-4077e698e44a0bff8be45b8fa35ea037.zip
 ```
 
 ### 4.2. `rocrateR::is_rocrate_bag()`
@@ -514,7 +514,7 @@ print(basic_ro_crate_contents)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-28",
+#>       "datePublished": "2025-10-31",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -533,11 +533,11 @@ commands:
 path_to_rocrate_bag_contents <- path_to_rocrate_bag |>
   rocrateR::unbag_rocrate(output = file.path(tmp_dir, "ROC"))
 #> RO-Crate bag successfully extracted! For details, see:
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp9sZFGp/rocrate-8281e19f5e9c38872cb6113e1c00bff5/ROC
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp5nOLzg/rocrate-650a59d174de47ab371376816d51bd1d/ROC
 
 # create tree with the files
 fs::dir_tree(path_to_rocrate_bag_contents)
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp9sZFGp/rocrate-8281e19f5e9c38872cb6113e1c00bff5/ROC/rocrate-e99905b0719453c23ebb519c9959bcdd
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp5nOLzg/rocrate-650a59d174de47ab371376816d51bd1d/ROC/rocrate-4077e698e44a0bff8be45b8fa35ea037
 #> ├── bagit.txt
 #> ├── data
 #> │   └── ro-crate-metadata.json
