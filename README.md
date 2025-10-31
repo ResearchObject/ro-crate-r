@@ -16,6 +16,20 @@ The goal of `{rocrateR}` is to provide an R package for creating,
 manipulating and reading RO-Crates. Latest supported version of the
 specification: <https://w3id.org/ro/crate/1.2/>.
 
+#### What is an RO-Crate?
+
+> An RO-Crate is an integrated view through which you can see an entire
+> Research Object; the methods, the data, the output and the outcomes of
+> a project or a piece of work. Linking all this together enables the
+> sharing of research outputs with their context, as a coherent whole.
+>
+> RO-Crates link data and metadata no matter where they are stored – so
+> that from a paper, you can find the data, and from the data, you can
+> find its authors, and so on.
+
+For more details, please visit:
+<https://www.researchobject.org/ro-crate/about_ro_crate>
+
 ## 0. Installation
 
 You can install the released version of `{rocrateR}` from
@@ -23,7 +37,7 @@ You can install the released version of `{rocrateR}` from
 
 ``` r
 # install.packages("pak")
-pak::pak("dsROCrate")
+pak::pak("rocrateR")
 ```
 
 And the development version from
@@ -34,7 +48,20 @@ And the development version from
 pak::pak("ResearchObject/ro-crate-r@dev")
 ```
 
-## 1. First RO-Crate
+## 1. Functions Overview
+
+| Function | Purpose |
+|----|----|
+| `rocrate()` | Create an empty or initialized RO-Crate |
+| `entity()` | Define a new entity (Person, Dataset, etc.) |
+| `add_entity()` / `add_entities()` | Add entities to a crate |
+| `get_entity()` | Retrieve entities by `@id` or `@type` |
+| `remove_entity()` / `remove_entities()` | Remove one or more entities |
+| `write_rocrate()` | Save RO-Crate to disk |
+| `bag_rocrate()` / `is_rocrate_bag()` / `unbag_rocrate()` | Bagging and unbagging RO-Crates |
+| `validate_rocrate()` *(planned)* | Validate RO-Crate using external Python validator |
+
+## 2. First RO-Crate
 
 The following command creates an RO-Crate Metadata descriptor
 (`ro-crate-metadata.json`). This should be stored inside the root (`./`)
@@ -123,7 +150,7 @@ readLines(tmp)
 unlink(tmp)
 ```
 
-## 2. Including additional entities
+## 3. Including additional entities
 
 In the previous section we created a very basic RO-Crate with the
 `rocrateR::rocrate()` function; however, you are likely to include
@@ -219,13 +246,13 @@ print(my_second_ro_crate)
 #> }
 ```
 
-## 3. Wrangle RO-Crate
+## 4. Wrangle RO-Crate
 
 Previously, we covered how to include additional entities, other valid
 operations are to extract (`rocrateR::get_entity()`) and remove
 (`rocrateR::remove_entities()`).
 
-### 3.1. Set up
+### 4.1. Set up
 
 ``` r
 # create basic RO-Crate
@@ -328,11 +355,11 @@ print(basic_ro_crate)
 #> }
 ```
 
-### 3.2. Extract entity
+### 4.2. Extract entity
 
 We can extract entities via the `@id`, `@type` or both:
 
-#### 3.2.1. Extract using `@id`
+#### 4.2.1. Extract using `@id`
 
 ``` r
 basic_ro_crate_project <- basic_ro_crate |>
@@ -345,7 +372,7 @@ print(basic_ro_crate_project)
 #>  @type = 'Project'
 ```
 
-#### 3.2.2. Extract using `@type`
+#### 4.2.2. Extract using `@type`
 
 ``` r
 basic_ro_crate_datasets <- basic_ro_crate |>
@@ -383,7 +410,7 @@ print(basic_ro_crate_datasets)
 #>  @type = 'Dataset'
 ```
 
-#### 3.2.3. Extract using `@id` and `@type`
+#### 4.2.3. Extract using `@id` and `@type`
 
 ``` r
 basic_ro_crate_dataset_root <- basic_ro_crate |>
@@ -396,11 +423,11 @@ print(basic_ro_crate_dataset_root)
 #>  @type = 'Dataset'
 ```
 
-### 3.3. Remove entity
+### 4.3. Remove entity
 
 Similarly, we can remove entities from an RO-Crate:
 
-#### 3.3.1. Remove using scalar `@id`
+#### 4.3.1. Remove using scalar `@id`
 
 ``` r
 basic_ro_crate_alt <- basic_ro_crate |>
@@ -408,7 +435,7 @@ basic_ro_crate_alt <- basic_ro_crate |>
 #> Removing the entity with @id = '#proj101'.
 ```
 
-#### 3.3.2. Remove using `entity` object
+#### 4.3.2. Remove using `entity` object
 
 ``` r
 basic_ro_crate_alt <- basic_ro_crate |>
@@ -416,7 +443,7 @@ basic_ro_crate_alt <- basic_ro_crate |>
 #> Removing the entity with @id = '#proj101'.
 ```
 
-#### 3.3.3. Remove multiple entities
+#### 4.3.3. Remove multiple entities
 
 ``` r
 basic_ro_crate_alt <- basic_ro_crate |>
@@ -428,7 +455,7 @@ basic_ro_crate_alt <- basic_ro_crate |>
 #> Removing the entity with @id = '5'.
 ```
 
-## 4. Create an RO-Crate Bag
+## 5. Create an RO-Crate Bag
 
 Here we will explore the BagIt file packaging format, which is the
 recommended to use for *bagging* RO-Crates. BagIt is described in [RFC
@@ -453,7 +480,7 @@ For more details, run the following command:
 ?rocrateR::bag_rocrate
 ```
 
-### 4.1. `rocrateR::bag_rocrate()`
+### 5.1. `rocrateR::bag_rocrate()`
 
 Here we will create an RO-Crate bag inside temporary directory:
 
@@ -469,10 +496,10 @@ dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 path_to_rocrate_bag <- basic_ro_crate |>
   rocrateR::bag_rocrate(path = tmp_dir)
 #> RO-Crate successfully 'bagged'!
-#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp5nOLzg/rocrate-650a59d174de47ab371376816d51bd1d/rocrate-4077e698e44a0bff8be45b8fa35ea037.zip
+#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//RtmpOQ9QWd/rocrate-c7e0ace051a85c6d81998344a058a520/rocrate-379419d26e8b361a43544fa851839839.zip
 ```
 
-### 4.2. `rocrateR::is_rocrate_bag()`
+### 5.2. `rocrateR::is_rocrate_bag()`
 
 We can use the function `rocrateR::is_rocrate_bag()` to verify that a
 given path points to a ZIP file or a directory with a valid RO-Crate
@@ -523,7 +550,7 @@ print(basic_ro_crate_contents)
 #> }
 ```
 
-### 4.3. `rocrateR::unbag_rocrate()`
+### 5.3. `rocrateR::unbag_rocrate()`
 
 We can explore the contents of the RO-Crate bag with the following
 commands:
@@ -533,11 +560,11 @@ commands:
 path_to_rocrate_bag_contents <- path_to_rocrate_bag |>
   rocrateR::unbag_rocrate(output = file.path(tmp_dir, "ROC"))
 #> RO-Crate bag successfully extracted! For details, see:
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp5nOLzg/rocrate-650a59d174de47ab371376816d51bd1d/ROC
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//RtmpOQ9QWd/rocrate-c7e0ace051a85c6d81998344a058a520/ROC
 
 # create tree with the files
 fs::dir_tree(path_to_rocrate_bag_contents)
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp5nOLzg/rocrate-650a59d174de47ab371376816d51bd1d/ROC/rocrate-4077e698e44a0bff8be45b8fa35ea037
+#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//RtmpOQ9QWd/rocrate-c7e0ace051a85c6d81998344a058a520/ROC/rocrate-379419d26e8b361a43544fa851839839
 #> ├── bagit.txt
 #> ├── data
 #> │   └── ro-crate-metadata.json
@@ -550,7 +577,7 @@ fs::dir_tree(path_to_rocrate_bag_contents)
 unlink(tmp_dir, recursive = TRUE, force = TRUE)
 ```
 
-## 5. Validation (experimental)
+## 6. Validation (experimental)
 
 As you develop your RO-Crates, you might want to validate them. There
 are few validators online (some of which can be found at
@@ -560,23 +587,26 @@ the Python package
 installation details, please visit
 <https://github.com/crs4/rocrate-validator>.
 
-Note that we will rely on
-[`{reticulate}`](https://cran.r-project.org/package=reticulate) to
-install and execute the validator within R:
+⚠️ The validation workflow depends on Python’s
+[`rocrate-validator`](https://github.com/crs4/rocrate-validator). Ensure
+you have a working Python installation and
+[`{reticulate}`](https://cran.r-project.org/package=reticulate)
+configured correctly (`reticulate::py_config()`). On Windows, you may
+need to restart R after installation.
 
-### 5.1. Install [`{reticulate}`](https://cran.r-project.org/package=reticulate)
+### 6.1. Install [`{reticulate}`](https://cran.r-project.org/package=reticulate)
 
 ``` r
 pak::pkg_install("reticulate")
 ```
 
-### 5.2. Install [`rocrate-validator`](https://github.com/crs4/rocrate-validator)
+### 6.2. Install [`rocrate-validator`](https://github.com/crs4/rocrate-validator)
 
 ``` r
 reticulate::py_install("roc-validator", env = "rocrateR")
 ```
 
-### 5.3. Create example RO-Crate and validate it
+### 6.3. Create example RO-Crate and validate it
 
 ``` r
 basic_ro_crate <- rocrateR::rocrate()
