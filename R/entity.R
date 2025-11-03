@@ -177,6 +177,8 @@ entity <- function(x, ...) {
 
 #' @export
 entity.default <- function(x, ...) {
+  # define local bindings
+  id <- type <- NULL
   args <- list(...)
   new_entity <- list(
     `@id` = c(x, getElement(args, "id"))[1],
