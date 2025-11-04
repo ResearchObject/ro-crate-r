@@ -95,7 +95,7 @@ print(my_first_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-31",
+#>       "datePublished": "2025-11-04",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -138,7 +138,7 @@ readLines(tmp)
 #> [16] "      \"@type\": \"Dataset\","                             
 #> [17] "      \"name\": \"\","                                     
 #> [18] "      \"description\": \"\","                              
-#> [19] "      \"datePublished\": \"2025-10-31\","                  
+#> [19] "      \"datePublished\": \"2025-11-04\","                  
 #> [20] "      \"license\": {"                                      
 #> [21] "        \"@id\": \"http://spdx.org/licenses/CC-BY-4.0\""   
 #> [22] "      }"                                                   
@@ -220,7 +220,7 @@ print(my_second_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-31",
+#>       "datePublished": "2025-11-04",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       },
@@ -299,7 +299,7 @@ print(basic_ro_crate)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-31",
+#>       "datePublished": "2025-11-04",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -496,7 +496,7 @@ dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 path_to_rocrate_bag <- basic_ro_crate |>
   rocrateR::bag_rocrate(path = tmp_dir)
 #> RO-Crate successfully 'bagged'!
-#> For details, see: /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp1XrJxt/rocrate-3058b7790e4f463353d63eef7a39a68f/rocrate-74377f861ec7b87b0f160f176eebde37.zip
+#> For details, see: /tmp/RtmpJDledw/rocrate-dc0b8f71bc4ab2e85c9c47e17b4c6cfc/rocrate-198ae50c2d60ae04b7a9a2da24243c5e.zip
 ```
 
 ### 5.2. `rocrateR::is_rocrate_bag()`
@@ -506,9 +506,9 @@ given path points to a ZIP file or a directory with a valid RO-Crate
 bag. The expected files are
 
 - `bagit.txt` with the BagIt
-  [https://www.rfc-editor.org/rfc/rfc8493.html#section-2.2.2](definition)
+  [definition](https://www.rfc-editor.org/rfc/rfc8493.html#section-2.2.2)
 - `data` directory with
-  [https://www.rfc-editor.org/rfc/rfc8493.html#section-2.1.2](payload)
+  [payload](https://www.rfc-editor.org/rfc/rfc8493.html#section-2.1.2)
   of the RO-Crate
 - `manifest-[algorithm].txt` with the checksum for each file inside the
   `data` directory; .
@@ -541,7 +541,7 @@ print(basic_ro_crate_contents)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2025-10-31",
+#>       "datePublished": "2025-11-04",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -560,11 +560,11 @@ commands:
 path_to_rocrate_bag_contents <- path_to_rocrate_bag |>
   rocrateR::unbag_rocrate(output = file.path(tmp_dir, "ROC"))
 #> RO-Crate bag successfully extracted! For details, see:
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp1XrJxt/rocrate-3058b7790e4f463353d63eef7a39a68f/ROC
+#> /tmp/RtmpJDledw/rocrate-dc0b8f71bc4ab2e85c9c47e17b4c6cfc/ROC
 
 # create tree with the files
 fs::dir_tree(path_to_rocrate_bag_contents)
-#> /var/folders/59/4_l6kbyj2qsczmk2b52qg_f40000gn/T//Rtmp1XrJxt/rocrate-3058b7790e4f463353d63eef7a39a68f/ROC/rocrate-74377f861ec7b87b0f160f176eebde37
+#> /tmp/RtmpJDledw/rocrate-dc0b8f71bc4ab2e85c9c47e17b4c6cfc/ROC/.
 #> ├── bagit.txt
 #> ├── data
 #> │   └── ro-crate-metadata.json

@@ -272,8 +272,8 @@ We can use the function `rocrateR::is_rocrate_bag()` to verify that a given path
 points to a ZIP file or a directory with a valid RO-Crate bag. The expected 
 files are
 
-- `bagit.txt` with the BagIt [https://www.rfc-editor.org/rfc/rfc8493.html#section-2.2.2](definition)
-- `data` directory with [https://www.rfc-editor.org/rfc/rfc8493.html#section-2.1.2](payload) of the RO-Crate
+- `bagit.txt` with the BagIt [definition](https://www.rfc-editor.org/rfc/rfc8493.html#section-2.2.2)
+- `data` directory with [payload](https://www.rfc-editor.org/rfc/rfc8493.html#section-2.1.2) of the RO-Crate
 - `manifest-[algorithm].txt` with the checksum for each file inside the `data` directory; .
 
 ```{r}
