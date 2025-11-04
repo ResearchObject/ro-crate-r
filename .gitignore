@@ -38,3 +38,4 @@ rsconnect/
 .DS_Store
 docs
 CRAN-SUBMISSION
+cran-comments.md
