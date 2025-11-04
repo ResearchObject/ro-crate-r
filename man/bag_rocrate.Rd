@@ -8,17 +8,9 @@
 \usage{
 bag_rocrate(x, ...)
 
-\method{bag_rocrate}{character}(x, ..., output = x, force_bag = FALSE, zip_flags = "-r9X")
+\method{bag_rocrate}{character}(x, ..., output = x, force_bag = FALSE)
 
-\method{bag_rocrate}{rocrate}(
-  x,
-  ...,
-  path,
-  output = path,
-  overwrite = FALSE,
-  force_bag = FALSE,
-  zip_flags = "-r9X"
-)
+\method{bag_rocrate}{rocrate}(x, ..., path, output = path, overwrite = FALSE, force_bag = FALSE)
 }
 \arguments{
 \item{x}{A string to a path containing at the very minimum an RO-Crate
@@ -33,10 +25,6 @@ object with the \link[rocrateR]{rocrate} class.}
 \item{force_bag}{Boolean flag to indicate whether the force the creation of
 a 'bag' even if not all the files were successfully bagged
 (default: \code{FALSE} ~ check if all the files were copied successfully).}
-
-\item{zip_flags}{String of characters with the flags to be used when
-archiving/compressing the RO-Crate bag (default: \code{-r9X}, see
-\code{zip -h} in the terminal for more details).}
 
 \item{path}{String with path to the root of the RO-Crate.}
 
