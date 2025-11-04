@@ -36,4 +36,5 @@ hex_logo <- function(subplot = system.file("images/ro-crate-w-text.png",
 }
 
 # pak::pak("emilioxavier/hexSticker")
-hex_logo("inst/images/ro-crate-w-text.png", output = "inst/images/logo.png", package = "", u_size = 6.8, dpi = 600)
+hex_logo("inst/images/ro-crate-w-text.png", output = "man/figures/logo_hq.png", package = "", u_size = 6.8, dpi = 600)
+hex_logo("inst/images/ro-crate-w-text.png", output = "man/figures/logo.png", package = "", u_size = 3.5, dpi = 300)
