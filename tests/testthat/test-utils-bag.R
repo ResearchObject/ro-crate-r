@@ -69,7 +69,7 @@ test_that("bag_rocrate works", {
                                   recursive = TRUE)
   ## subset files in the data/ directory
   rocrate_bag_files <- 
-    basename(rocrate_bag_files[grepl("/data/", rocrate_bag_files)])
+    basename(rocrate_bag_files[grepl("data/", rocrate_bag_files)])
   ## list files in the original input directory
   tmp_dir_files <- list.files(tmp_dir, recursive = TRUE)
   ## subset files in the RO-Crate bag, excluding the bag itself
@@ -83,6 +83,11 @@ test_that("bag_rocrate works", {
   
   # check if the temporary directory was successfully deleted
   expect_false(dir.exists(tmp_dir))
+  
+  # delete temporary directory used for validation
+  unlink(file.path(dirname(tmp_dir), "VALIDATION"), 
+         recursive = TRUE, force = TRUE)
+  expect_false(dir.exists(file.path(dirname(tmp_dir), "VALIDATION")))
 })
 
 test_that("is_rocrate_bag works", {
@@ -237,7 +242,7 @@ test_that("unbag_rocrate works", {
   # create new zip file with the additional directory
   new_roc_zip_file <- file.path(dirname(rocrate_bag_files), "test_roc2.zip")
   expect_false(file.exists(new_roc_zip_file))
-  zip(new_roc_zip_file, rocrate_bag_files)
+  zip::zip(new_roc_zip_file, rocrate_bag_files, mode = "cherry-pick")
   expect_true(file.exists(new_roc_zip_file))
   expect_error(
     temp_roc_files <- rocrateR::unbag_rocrate(new_roc_zip_file)
