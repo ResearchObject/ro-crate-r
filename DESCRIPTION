@@ -24,6 +24,7 @@ RoxygenNote: 7.3.3
 Imports: 
     digest,
     jsonlite,
-    tibble
+    tibble,
+    zip
 Depends: 
     R (>= 4.1.0)
