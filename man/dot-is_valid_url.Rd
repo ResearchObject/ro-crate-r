@@ -21,17 +21,4 @@ Boolean value indicating if the given string (`x) is a valid URL.
 \description{
 Validate URL
 }
-\examples{
-url <- c(
-  "w3id.org/ro/crate/1.2/context",
-  "http://w3id.org/ro/crate/1.2",
-  "http://w3id.org/ro/crate/1.2/context",
-  "https://w3id.org/ro/crate/1.2/context",
-  "123",
-  "https://w3id.org/ro/crate/1.1/context",
-  "https://w3id.org/ro/crate/1.0/context"
-)
-rocrateR:::.is_valid_url(url)
-rocrateR:::.is_valid_url(url, suffix = "/context")
-}
 \keyword{internal}
