@@ -93,11 +93,15 @@ bag_rocrate.character <- function(x, ..., output = x, force_bag = FALSE) {
   
   # compress bag contents inside original path
   output_bag <- file.path(output, paste0(rocrate_id, ".zip"))
+  ## create version of `output_ba` with absolute/normalised path
+  output_bag_nor <- file.path(normalizePath(output), paste0(rocrate_id, ".zip"))
+  ## list files within the `tmp_dir`
   bag_files <- list.files(dirname(tmp_dir),
                           include.dirs = TRUE,
                           full.names = FALSE,
                           recursive = FALSE)
-  zip::zip(output_bag, files = bag_files,
+  ## compress RO-Crate bag contents in a zip file
+  zip::zip(output_bag_nor, files = bag_files,
            mode = "cherry-pick", root = dirname(tmp_dir))
   
   message("RO-Crate successfully 'bagged'!\nFor details, see: ", output_bag)
@@ -393,15 +397,12 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
   # extract contents inside the `output` path
   zip::unzip(path, exdir = output)
   
-  # list directories inside the RO-Crate bag
-  rocrate_bag_dir <- list.dirs(output, recursive = FALSE, full.names = FALSE)
-  ## filter out the payload directory (./data):
-  rocrate_bag_dir <- rocrate_bag_dir[!grepl("data", rocrate_bag_dir)]
+  # get root directory
+  zip_root <- .get_zip_root(path)
   
-  # check if the RO-Crate bag has only a root directory
-  if (length(rocrate_bag_dir) == 0) {
-    rocrate_bag_dir <- "."
-  }
+  # list directories inside the RO-Crate bag
+  rocrate_bag_dir <- list.dirs(file.path(output, zip_root), 
+                               recursive = FALSE, full.names = FALSE)
   
   # check if the RO-Crate bag has more than one directory, only 1 is expected
   if (length(unique(rocrate_bag_dir)) > 1) {
@@ -411,9 +412,10 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
   }
   
   if (!quiet) {
-    message("RO-Crate bag successfully extracted! For details, see:\n", output)
+    message("RO-Crate bag successfully extracted! For details, see:\n", 
+            file.path(output, zip_root))
   }
   
   # path to root of the RO-Crate bag
-  return(invisible(file.path(output, rocrate_bag_dir)))
+  return(invisible(file.path(output, zip_root)))
 }
