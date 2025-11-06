@@ -190,6 +190,7 @@ test_that("unbag_rocrate works", {
   tmp_dir <- file.path(tempdir(), 
                        paste0("rocrate-tests-", digest::digest(Sys.time())))
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+  on.exit(unlink(tmp_dir, recursive = TRUE, force = TRUE))
   
   # missing path
   expect_error(rocrateR::unbag_rocrate())
@@ -229,9 +230,13 @@ test_that("unbag_rocrate works", {
   rocrate_bag_files <- rocrateR::unbag_rocrate(rocrate_bag_filename,
                                                output = tmp_dir)
   
+  # delete RO-Crate file
+  unlink(rocrate_bag_filename, force = TRUE)
+  expect_false(file.exists(rocrate_bag_filename))
+  
   # read RO-Crate metadata descriptor file
   basic_crate_from_bag <- file.path(rocrate_bag_files, 
-                                      "data/ro-crate-metadata.json") |>
+                                    "data/ro-crate-metadata.json") |>
     rocrateR::read_rocrate()
   
   # compare with the original RO-Crate
@@ -244,8 +249,14 @@ test_that("unbag_rocrate works", {
   expect_false(file.exists(new_roc_zip_file))
   zip::zip(new_roc_zip_file, rocrate_bag_files, mode = "cherry-pick")
   expect_true(file.exists(new_roc_zip_file))
+  # create temporary directory
+  tmp_dir_v2 <- file.path(tempdir(), 
+                       paste0("rocrate-tests-", digest::digest(Sys.time())))
+  dir.create(tmp_dir_v2, showWarnings = FALSE, recursive = TRUE)
+  on.exit(unlink(tmp_dir_v2, recursive = TRUE, force = TRUE))
   expect_error(
-    temp_roc_files <- rocrateR::unbag_rocrate(new_roc_zip_file)
+    temp_roc_files <- rocrateR::unbag_rocrate(new_roc_zip_file, 
+                                              output = tmp_dir_v2)
   )
   # delete new zip
   unlink(new_roc_zip_file, force = TRUE)
@@ -253,7 +264,9 @@ test_that("unbag_rocrate works", {
   
   # delete temporary directory
   unlink(tmp_dir, recursive = TRUE, force = TRUE)
+  unlink(tmp_dir_v2, recursive = TRUE, force = TRUE)
   
   # check if the temporary directory was successfully deleted
   expect_false(dir.exists(tmp_dir))
+  expect_false(dir.exists(tmp_dir_v2))
 })
