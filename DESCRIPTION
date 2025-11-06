@@ -1,6 +1,6 @@
 Package: rocrateR
 Title: RO-Crate R Package Wrapper
-Version: 0.0.1
+Version: 0.0.1.900
 Authors@R: c(
     person(given = "Roberto",
            family = "Villegas-Diaz",
