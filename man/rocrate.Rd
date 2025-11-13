@@ -48,7 +48,7 @@ RO-Crate object, list with an additional class, \code{rocrate}.
 \description{
 Create a new RO-Crate object. This object includes basic skeleton for the
 RO-Crate metadata descriptor (\code{ro-crate-metadata.json}) file, as described
-in the official documentation: https://w3id.org/ro/crate/1.2 >
+in the official documentation: https://w3id.org/ro/crate/1.2/ >
 \href{https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity.html}{Root Data Entity}.
 }
 \examples{

@@ -37,13 +37,14 @@ is_rocrate <- function(rocrate) {
     sapply(`[[`, "@id") |>
     unlist()
 
-  # extract @graph elements' @type
-  graph_types <- ro_crate_graph |>
-    sapply(`[[`, "@type") |>
-    unlist()
+  # validate @graph entities
+  valid_entities <- seq_along(ro_crate_graph) |>
+    sapply(function(i) {
+      .validate_entity.list(ro_crate_graph[[i]], ent_name = graph_ids[i])
+    })
 
-  # check lengths of @ids and @types, must be the same
-  valid_length_graph <- length(graph_ids) == length(graph_types)
+  # check lengths of @ids and number of entities, must be the same
+  valid_length_graph <- length(graph_ids) == sum(valid_entities == TRUE)
 
   # has an RO-Crate Metadata descriptor entity
   has_rocrate_meta <- "ro-crate-metadata.json" %in% graph_ids
@@ -76,4 +77,3 @@ is_rocrate <- function(rocrate) {
   # return (invisibly) the input RO-Crate
   return(invisible(rocrate))
 }
-

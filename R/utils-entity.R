@@ -47,6 +47,24 @@
   # return(idx)
 }
 
+#' Find `@type` index in RO-Crate
+#'
+#' Find `@type` index in RO-Crate. Useful to retrieve entities with a particular 
+#' type in the RO-Crate.
+#'
+#' @inheritParams add_entity_value
+#'
+#' @returns Boolean vector with index for entity(ies) with `@type`.
+#' @keywords internal
+.find_type_index <- function(rocrate, type) {
+  # check the `rocrate` object
+  is_rocrate(rocrate)
+  
+  # find the index in `@graph` with the matching {type} (at least one entry)
+  getElement(rocrate, "@graph") |>
+    sapply(\(x) type %in% getElement(x, "@type"))
+}
+
 #' Validate entity
 #'
 #' @inheritParams entity
@@ -60,6 +78,7 @@
   UseMethod(".validate_entity", x)
 }
 
+#' @method validate_entity character
 #' @keywords internal
 .validate_entity.character <- function(x, ..., ent_name = NULL, required = "type") {
   has_elements <- sapply(required, \(x) !is.null(getElement(list(...), x)))
@@ -67,6 +86,13 @@
     .validate_entity_overview(required, ent_name)
 }
 
+#' @method validate_entity entity
+#' @keywords internal
+.validate_entity.entity <- function(x, ..., ent_name = NULL, required = c("@id", "@type")) {
+  NextMethod()
+}
+
+#' @method validate_entity list
 #' @keywords internal
 .validate_entity.list <- function(x, ..., ent_name = NULL, required = c("@id", "@type")) {
   has_elements <- required %in% names(x)
@@ -74,6 +100,7 @@
     .validate_entity_overview(required, ent_name)
 }
 
+#' @method validate_entity numeric
 #' @keywords internal
 .validate_entity.numeric <- function(x, ..., ent_name = NULL, required = "type") {
   has_elements <- sapply(required, \(x) !is.null(getElement(list(...), x)))
@@ -95,7 +122,9 @@
   msg <- ""
   if (!is.null(ent_name))
     msg <- paste0("===== Checking: ", ent_name, " =====\n")
-  msg <- paste0(msg, "Missing: \n", paste0("- ", required[!has_elements], collapse = "\n"))
-  stop(msg)
+  msg <- paste0(msg, "Missing: \n", 
+                paste0(" - ", required[!has_elements], collapse = "\n"))
+  warning(msg, call. = FALSE)
+  return(FALSE)
 }
 

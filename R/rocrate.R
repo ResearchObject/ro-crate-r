@@ -2,7 +2,7 @@
 #'
 #' Create a new RO-Crate object. This object includes basic skeleton for the
 #' RO-Crate metadata descriptor (`ro-crate-metadata.json`) file, as described
-#' in the official documentation: https://w3id.org/ro/crate/1.2 >
+#' in the official documentation: https://w3id.org/ro/crate/1.2/ >
 #' [Root Data Entity](https://www.researchobject.org/ro-crate/specification/1.2/root-data-entity.html).
 #'
 #' @param ... Optional entities to include in the RO-Crate (e.g., author).
@@ -41,15 +41,15 @@ rocrate <- function(...,
   new_ro_crate <- list(
     `@context` = context,
     `@graph` = list(
-      list(
-        `@id` = "ro-crate-metadata.json",
-        `@type` = "CreativeWork",
+      rocrateR::entity(
+        x = "ro-crate-metadata.json",
+        type = "CreativeWork",
         about = list(`@id` = "./"),
         conformsTo = list(`@id` = conformsTo)
       ),
-      list(
-        `@id` = "./",
-        `@type` = "Dataset",
+      rocrateR::entity(
+        x = "./",
+        type = "Dataset",
         name = name,
         description = description,
         datePublished = as.character(datePublished),
@@ -111,7 +111,7 @@ rocrate_5s <- function(...,
   v5scrate_id <- paste0("https://w3id.org/5s-crate/", v5scrate)
   prof_5scrate <- list(
     `@id` = v5scrate_id,
-    `@type` = "Profile",
+    `@type` = c("CreativeWork", "Profile"),
     name = "Five Safes RO-Crate profile"
   )
 

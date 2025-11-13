@@ -13,6 +13,10 @@ read_rocrate <- function(path, simplifyVector = FALSE, ...) {
   rocrate <- jsonlite::read_json(path, simplifyVector = simplifyVector, ...)
   # assigns it the 'rocrate' class
   class(rocrate) <- c("rocrate", class(rocrate))
+  # assign the entity class to each element in the `@graph`
+  for (i in seq_along(rocrate$`@graph`)) {
+    class(rocrate$`@graph`[[i]]) <- c("entity", class(rocrate$`@graph`[[i]]))
+  }
   # checks the object has the basic structure of an RO-Crate
   is_rocrate(rocrate)
   # returns the new object as an RO-crate
