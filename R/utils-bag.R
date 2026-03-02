@@ -259,22 +259,61 @@ is_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
   idx <- c(dir.exists(path), file.exists(path))
   if (all(!idx)) {
     stop("The given `path` is invalid!", call. = FALSE)
-  } else if (idx[1]) {
-    # path is a valid directory
-    # no extra steps required
-  } else if (idx[2]) {
-    # path is a valid file
+  }
+
+  # if `path` is a zip file. extract using `unbag_rocrate()`
+  if (file.exists(path) && !dir.exists(path)) {
     # create temporary directory
     tmp_dir <- file.path(tempdir(), digest::digest(Sys.time()))
-    on.exit(unlink(tmp_dir, recursive = TRUE, force = TRUE))
+    on.exit(unlink(tmp_dir, recursive = TRUE, force = TRUE), add = TRUE)
 
     # extract contents of the RO-Crate bag inside temporary directory AND
     # update path, so it points to the contents of the RO-Crate bag
     path <- unbag_rocrate(path, output = tmp_dir, quiet = TRUE)
+  } else {
+    path <- normalizePath(path)
   }
+
+  bag_root <- .find_bagit_root(path)
+
+  if (is.null(bag_root)) {
+    stop("No valid BagIt root found.", call. = FALSE)
+  }
+
   # call the .validate_rocrate_bag function
-  ro_crate <- .validate_rocrate_bag(path, algo = algo)
+  ro_crate <- .validate_rocrate_bag(
+    bag_root,
+    algo = algo,
+    bagit_version = bagit_version
+  )
   return(invisible(ro_crate))
+}
+
+#' Find BagIt root for an RO-Crate
+#'
+#' @param path String with path to RO-Crate bag.
+#'
+#' @returns String with path to RO-Crate bag root (if any).
+#' @keywords internal
+.find_bagit_root <- function(path) {
+  path <- normalizePath(path, mustWork = TRUE)
+
+  # candidate directories: root + all subdirectories
+  candidate_dirs <- c(
+    path,
+    list.dirs(path, recursive = TRUE, full.names = TRUE)
+  )
+
+  for (dir in candidate_dirs) {
+    if (
+      file.exists(file.path(dir, "bagit.txt")) &&
+        dir.exists(file.path(dir, "data"))
+    ) {
+      return(dir)
+    }
+  }
+
+  return(NULL)
 }
 
 #' Verify if a given path points to a valid RO-Crate bag
@@ -308,7 +347,6 @@ is_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
   # check for valid BagIt declaration
   valid_bagit_declaration <- .validate_bagit_declaration(
     path,
-    algo,
     bagit_version
   )
 
@@ -377,23 +415,37 @@ is_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
 #' @rdname bagit_declaration
 .validate_bagit_declaration <- function(
   path,
-  algo = "sha512",
   bagit_version = "1.0"
 ) {
   # load the BagIt declaration file
-  bagit_declaration_txt <- readLines(file.path(path, "bagit.txt"))
-  # expect lines
-  expected_bagit_declaration <- c(
-    paste0("BagIt-version: ", bagit_version),
-    "Tag-File-Character-Encoding: UTF-8"
-  )
-  valid_bagit_declaration_validity <-
-    expected_bagit_declaration %in% bagit_declaration_txt
+  bagit_declaration_txt <- readLines(file.path(path, "bagit.txt"), warn = FALSE)
+
+  # normalise contents (trim + case-insensitive)
+  bagit_declaration_txt_norm <- trimws(tolower(bagit_declaration_txt))
+
+  has_version <- any(grepl(
+    paste0("^bagit-version:\\s*", bagit_version, ".*"),
+    bagit_declaration_txt_norm
+  ))
+  has_encoding <- any(grepl(
+    "^tag-file-character-encoding:\\s*utf-8$",
+    bagit_declaration_txt_norm
+  ))
+
+  errors <- character(0)
+  if (!has_version) {
+    errors <- c(errors, paste0("BagIt-Version: ", bagit_version))
+  }
+
+  if (!has_encoding) {
+    errors <- c(errors, "Tag-File-Character-Encoding: UTF-8")
+  }
+
   # return list with status: TRUE = all lines found, FALSE = missing line AND
   # errors: vector of the missing lines (if any)
   list(
-    status = all(valid_bagit_declaration_validity),
-    errors = expected_bagit_declaration[!valid_bagit_declaration_validity]
+    status = length(errors) == 0,
+    errors = errors
   )
 }
 
@@ -484,41 +536,8 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
   # extract contents (only valid files) inside the `output` path
   zip::unzip(path, files = valid_files, exdir = output)
 
-  # determine candidate bag root(s)
-  ## look for directories containing `bagit.txt`, instead of assuming structure
-  extracted_paths <- unique(
-    vapply(
-      strsplit(valid_files, "/"),
-      FUN = `[`,
-      FUN.VALUE = character(1),
-      1
-    )
-  )
-
-  # remove empty, hidden and macOS directories
-  extracted_paths <- extracted_paths[
-    !grepl("^(__MACOSX$|\\.$|^$|^\\.)", extracted_paths)
-  ]
-
-  # possible root directories (including flat zips)
-  candidate_roots <- c(
-    file.path(output, extracted_paths),
-    output
-  )
-  candidate_roots <- unique(normalizePath(candidate_roots, mustWork = FALSE))
-
   # find the actual BagIt root
-  bag_root <- NULL
-
-  for (root in candidate_roots) {
-    bagit_file <- file.path(root, "bagit.txt")
-    data_dir <- file.path(root, "data")
-
-    if (file.exists(bagit_file) && dir.exists(data_dir)) {
-      bag_root <- root
-      break
-    }
-  }
+  bag_root <- .find_bagit_root(output)
 
   # final validation
   if (is.null(bag_root)) {
