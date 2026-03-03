@@ -526,6 +526,12 @@ load_rocrate_bag <- function(
     }
   }
 
+  # BagIt payload oxum (optional)
+  oxum <- .validate_bagit_payload_oxum(path)
+  if (!oxum$status) {
+    errors <- c(errors, oxum$errors)
+  }
+
   # aggregate errors (if any)
   if (length(errors) > 0) {
     stop(
@@ -637,6 +643,66 @@ load_rocrate_bag <- function(
   list(
     status = all(bagit_manifest_txt_validity),
     errors = bagit_manifest_txt[!bagit_manifest_txt_validity, "filename"]
+  )
+}
+
+#' Validate BagIt Payload Oxum
+#'
+#' @inheritParams is_rocrate_bag
+#'
+#' @returns A list with `status` and `errors` identified.
+#' @keywords internal
+#' @rdname bagit_payload_oxum
+.validate_bagit_payload_oxum <- function(path) {
+  bag_info <- file.path(path, "bag-info.txt")
+
+  if (!file.exists(bag_info)) {
+    return(list(status = TRUE)) # optional field
+  }
+
+  lines <- readLines(bag_info, warn = FALSE)
+
+  oxum_line <- grep("^Payload-Oxum:", lines, value = TRUE)
+
+  if (length(oxum_line) == 0) {
+    return(list(status = TRUE))
+  }
+
+  oxum_value <- sub("^Payload-Oxum:\\s*", "", oxum_line)
+  parts <- strsplit(oxum_value, "\\.")[[1]]
+
+  if (length(parts) != 2) {
+    return(list(
+      status = FALSE,
+      errors = "Malformed Payload-Oxum value."
+    ))
+  }
+
+  expected_bytes <- as.numeric(parts[1])
+  expected_files <- as.numeric(parts[2])
+
+  payload_files <- list.files(
+    file.path(path, "data"),
+    recursive = TRUE,
+    full.names = TRUE
+  )
+
+  actual_files <- length(payload_files)
+  actual_bytes <- sum(file.info(payload_files)$size)
+
+  errors <- character()
+
+  if (!identical(actual_files, expected_files)) {
+    errors <- c(errors, "Payload-Oxum file count mismatch.")
+  }
+
+  if (!identical(actual_bytes, expected_bytes)) {
+    errors <- c(errors, "Payload-Oxum byte size mismatch.")
+  }
+
+  list(
+    status = length(errors) == 0,
+    errors = errors
   )
 }
 
