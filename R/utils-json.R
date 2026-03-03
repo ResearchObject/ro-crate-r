@@ -66,3 +66,13 @@ write_rocrate <- function(x, path, ...) {
   )
   return(TRUE)
 }
+
+#' Validate JSON-LD compliance of an RO-Crate
+#'
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
+#'
+#' @returns Boolean value with compliance
+#' @keywords internal
+.validate_jsonld_compliance <- function(rocrate) {
+  # future JSON-LD checks
+}
