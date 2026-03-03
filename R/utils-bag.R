@@ -254,28 +254,38 @@ bagit_tagmanifest <- function(path, files, algo = "sha512") {
 #' @family bag_rocrate
 is_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
   # initialise object that will be returned
-  ro_crate <- NULL
+  bag_root <- ro_crate <- NULL
 
   # check if given path is a directory or a file
-  idx <- c(dir.exists(path), file.exists(path))
-  if (all(!idx)) {
-    stop("The given `path` is invalid!", call. = FALSE)
+  if (missing(path) || !file.exists(path)) {
+    warning("The given `path` is invalid!", call. = FALSE)
+    return(FALSE)
   }
 
   # if `path` is a zip file. extract using `unbag_rocrate()`
-  if (file.exists(path) && !dir.exists(path)) {
+  if (
+    file.info(path)$isdir == FALSE &&
+      grepl("\\.zip$", path, ignore.case = TRUE)
+  ) {
     # create temporary directory
     tmp_dir <- file.path(tempdir(), digest::digest(Sys.time()))
+    dir.create(tmp_dir, recursive = TRUE)
     on.exit(unlink(tmp_dir, recursive = TRUE, force = TRUE), add = TRUE)
 
     # extract contents of the RO-Crate bag inside temporary directory AND
     # update path, so it points to the contents of the RO-Crate bag
-    path <- unbag_rocrate(path, output = tmp_dir, quiet = TRUE)
+    bag_root <- tryCatch(
+      unbag_rocrate(path, output = tmp_dir, quiet = TRUE),
+      error = function(e) NULL
+    )
+    if (is.null(bag_root)) {
+      return(FALSE)
+    }
+  } else if (dir.exists(path)) {
+    bag_root <- .find_bagit_root(path)
   } else {
-    path <- normalizePath(path)
+    return(FALSE)
   }
-
-  bag_root <- .find_bagit_root(path)
 
   if (is.null(bag_root)) {
     warning("No valid BagIt root found.", call. = FALSE)
@@ -283,13 +293,19 @@ is_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
   }
 
   # call the .validate_rocrate_bag function
-  ro_crate <- .validate_rocrate_bag(
-    bag_root,
-    algo = algo,
-    bagit_version = bagit_version
+  valid <- tryCatch(
+    {
+      .validate_rocrate_bag(
+        path = bag_root,
+        algo = algo,
+        bagit_version = bagit_version
+      )
+      TRUE
+    },
+    error = function(e) FALSE
   )
 
-  return(TRUE)
+  return(valid)
 }
 
 #' Find BagIt root for an RO-Crate
