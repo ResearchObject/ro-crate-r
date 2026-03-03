@@ -24,11 +24,19 @@ bag_rocrate <- function(x, ...) {
 #' @param force_bag Boolean flag to indicate whether the force the creation of
 #'     a 'bag' even if not all the files were successfully bagged
 #'     (default: `FALSE` ~ check if all the files were copied successfully).
+#' @param extra_bag_info Vector of strings to include in the `bag-info.txt`
+#'     file (e.g., `Contact-Email: first.last@rocrate.org`).
 #'
 #' @returns String with full path to the final RO-Crate bag.
 #'
 #' @export
-bag_rocrate.character <- function(x, ..., output = x, force_bag = FALSE) {
+bag_rocrate.character <- function(
+  x,
+  ...,
+  output = x,
+  force_bag = FALSE,
+  extra_bag_info = NULL
+) {
   # check a valid path was given
   if (!dir.exists(x)) {
     stop(
@@ -96,6 +104,9 @@ bag_rocrate.character <- function(x, ..., output = x, force_bag = FALSE) {
   # create bag manifest and stored one level above `tmp_dir`
   bagit_manifest(tmp_dir, rocrate_files)
 
+  # create bag info
+  bagit_info(tmp_dir, rocrate_files)
+
   # create BagIt tagmanifest
   bagit_tagmanifest(
     dirname(tmp_dir),
@@ -146,7 +157,8 @@ bag_rocrate.rocrate <- function(
   path,
   output = path,
   overwrite = FALSE,
-  force_bag = FALSE
+  force_bag = FALSE,
+  extra_bag_info = NULL
 ) {
   # check the `x` object
   is_rocrate(x)
@@ -179,7 +191,12 @@ bag_rocrate.rocrate <- function(
   write_rocrate(x, file.path(path, "ro-crate-metadata.json"))
 
   # call the bag method for the given `path`
-  bag_rocrate(path, output = output, force_bag = force_bag)
+  bag_rocrate(
+    path,
+    output = output,
+    force_bag = force_bag,
+    extra_bag_info = extra_bag_info
+  )
 }
 
 #' Generate BagIt declaration
@@ -206,6 +223,23 @@ bagit_fetch <- function(path, rocrate = NULL) {
   # Also: https://www.rfc-editor.org/rfc/rfc8493.html#section-2.2.3
 }
 
+#' @importFrom utils packageVersion
+#' @keywords internal
+bagit_info <- function(path, files, extra_bag_info = NULL) {
+  bagit_info_lines <- c(
+    sprintf(
+      "Bag-Software-Agent: rocrateR::bag_rocrate() v%s <%s>",
+      packageVersion("rocrateR"),
+      "https://doi.org/10.32614/CRAN.package.rocrateR"
+    ),
+    sprintf("Bagging-Date: %s", Sys.Date()),
+    bagit_payload_oxum(path, files),
+    extra_bag_info
+  )
+
+  writeLines(bagit_info_lines, con = file.path(dirname(path), "bag-info.txt"))
+}
+
 #' @keywords internal
 bagit_manifest <- function(path, files, algo = "sha512") {
   manifest_lines <- sapply(files, function(f) {
@@ -222,6 +256,18 @@ bagit_manifest <- function(path, files, algo = "sha512") {
 }
 
 #' @keywords internal
+bagit_payload_oxum <- function(path, files) {
+  # compute components for the Payload-Oxum:
+  num_files <- length(files)
+  num_bytes <- sum(file.info(file.path(path, files))$size)
+
+  # create new line for Payload-Oxum
+  payload_oxum <- sprintf("Payload-Oxum: %s.%s", num_bytes, num_files)
+
+  return(invisible(payload_oxum))
+}
+
+#' @keywords internal
 bagit_tagmanifest <- function(path, files, algo = "sha512") {
   tagmanifest_lines <- sapply(files, function(f) {
     # generate checksum
@@ -234,35 +280,6 @@ bagit_tagmanifest <- function(path, files, algo = "sha512") {
     con = file.path(path, paste0("tagmanifest-", algo, ".txt"))
   )
   return(invisible(tagmanifest_lines))
-}
-
-#' @keywords internal
-bagit_payload_oxum <- function(path, files) {
-  bag_info <- file.path(path, "bag-info.txt")
-
-  lines <- NULL
-  # check if bag_info exists, if so, then load it
-  if (file.exists(bag_info)) {
-    lines <- readLines(bag_info, warn = FALSE)
-    oxum_line <- grep("^Payload-Oxum:", lines, value = TRUE)
-  }
-
-  # if the `bag-info.txt` already has a Payload-Oxum line, return `NULL`
-  if (length(oxum_line) == 1) {
-    return(NULL)
-  }
-
-  # compute components for the Payload-Oxum:
-  num_files <- length(files)
-  num_bytes <- sum(file.info(files)$size)
-
-  # create new line for Payload-Oxum
-  payload_oxum <- sprintf("Payload-Oxum: %s.%s", num_bytes, num_files)
-
-  # write output
-  writeLines(c(lines, payload_oxum), con = bag_info)
-
-  return(invisible(payload_oxum))
 }
 
 #' Check if path points to a valid RO-Crate bag
@@ -721,7 +738,7 @@ load_rocrate_bag <- function(
 
   errors <- character()
 
-  if (!identical(actual_files, expected_files)) {
+  if (as.integer(actual_files) != as.integer(expected_files)) {
     errors <- c(errors, "Payload-Oxum file count mismatch.")
   }
 
