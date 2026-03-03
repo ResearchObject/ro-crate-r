@@ -398,83 +398,108 @@ load_rocrate_bag <- function(
   algo = "sha512",
   bagit_version = "1.0"
 ) {
-  # list files inside the given path / top level only
-  rocrate_bag_files <- list.files(path, recursive = FALSE)
+  # check if the given path exists
+  if (!dir.exists(path)) {
+    stop("The given `path` is not a valid directory!", call. = FALSE)
+  }
 
   # check that at least the following files & directory are in the given path
-  expected_contents <- c("bagit.txt", "data", paste0("manifest-", algo, ".txt"))
-  idx <- expected_contents %in% rocrate_bag_files
-  if (!all(idx)) {
+  required_top_level <- c(
+    "bagit.txt",
+    "data",
+    paste0("manifest-", algo, ".txt")
+  )
+
+  # list files inside the given path / top level only
+  top_level_contents <- list.files(path, recursive = FALSE)
+
+  missing_top <- setdiff(required_top_level, top_level_contents)
+
+  errors <- character()
+
+  if (length(missing_top) > 0) {
+    errors <- c(
+      errors,
+      paste0(
+        "Missing required top-level entries:\n",
+        paste0("  - ", missing_top, collapse = "\n")
+      )
+    )
+  }
+
+  # ensure `data/` is a directory
+  data_dir <- file.path(path, "data")
+  if (file.exists(data_dir) && !dir.exists(data_dir)) {
+    errors <- c(errors, "`data` exists but is not a directory.")
+  }
+
+  # ensure RO-Crate metadata exists
+  metadata_file <- file.path(data_dir, "ro-crate-metadata.json")
+  if (!file.exists(metadata_file)) {
+    errors <- c(
+      errors,
+      "Missing required RO-Crate descriptor: data/ro-crate-metadata.json"
+    )
+  }
+
+  # BagIt declaration validation
+  bagit_decl <- .validate_bagit_declaration(path, bagit_version)
+  if (!bagit_decl$status) {
+    errors <- c(
+      errors,
+      paste0(
+        "BagIt declaration (bagit.txt) invalid:\n",
+        paste0("  - ", bagit_decl$errors, collapse = "\n")
+      )
+    )
+  }
+
+  # BagIt manifest validation
+  bagit_manifest <- .validate_bagit_manifest(path, algo)
+  if (!bagit_manifest$status) {
+    errors <- c(
+      errors,
+      paste0(
+        "BagIt manifest contains invalid file(s):\n",
+        paste0("  - ", bagit_manifest$errors, collapse = "\n")
+      )
+    )
+  }
+
+  # BagIT tagmanifest validation (optional)
+  tagmanifest_file <- file.path(path, paste0("tagmanifest-", algo, ".txt"))
+
+  if (file.exists(tagmanifest_file)) {
+    bagit_tagmanifest <-
+      .validate_bagit_manifest(
+        path,
+        algo,
+        manifest_suffix = "tagmanifest"
+      )
+
+    if (!bagit_tagmanifest$status) {
+      errors <- c(
+        errors,
+        paste0(
+          "BagIt tagmanifest contains invalid file(s):\n",
+          paste0("  - ", bagit_tagmanifest$errors, collapse = "\n")
+        )
+      )
+    }
+  }
+
+  # aggregate errors (if any)
+  if (length(errors) > 0) {
     stop(
-      "The given `path` is missing the following:\n",
-      paste0("  - ", expected_contents[!idx], "\n"),
+      paste(
+        "Invalid RO-Crate bag! The following issues were found:\n",
+        paste(errors, collapse = "\n\n")
+      ),
       call. = FALSE
     )
   }
 
-  # list files inside the given path / all levels
-  rocrate_bag_files <- list.files(path, recursive = TRUE)
-
-  # check for valid BagIt declaration
-  valid_bagit_declaration <- .validate_bagit_declaration(
-    path,
-    bagit_version
-  )
-
-  # check integrity of manifest file
-  valid_bagit_manifest <- .validate_bagit_manifest(path, algo)
-
-  # check integrity of tagmanifest file (if found)
-  if (file.exists(file.path(path, paste0("tagmanifest-", algo, ".txt")))) {
-    valid_bagit_tagmanifest <-
-      .validate_bagit_manifest(path, algo, manifest_suffix = "tagmanifest")
-  } else {
-    valid_bagit_tagmanifest <- list(status = TRUE)
-  }
-
-  # validation overview
-  idx <- c(
-    valid_bagit_declaration$status,
-    valid_bagit_manifest$status,
-    valid_bagit_tagmanifest$status
-  )
-
-  if (any(!idx)) {
-    error_message <- "Invalid RO-Crate bag! The following issues were found:\n"
-    # BagIt declaration (required)
-    if (!idx[1]) {
-      error_message <- paste0(
-        error_message,
-        "\n BagIt declaration (bagit.txt) missing the following:\n",
-        paste0("  - ", valid_bagit_declaration$errors, collapse = "\n")
-      )
-    }
-    # BagIt manifest (required)
-    if (!idx[2]) {
-      error_message <- paste0(
-        error_message,
-        "\n BagIt manifest contains invalid file(s):\n",
-        paste0("  - ", valid_bagit_manifest$errors, collapse = "\n")
-      )
-    }
-    # BagIt tagmanifest (optional)
-    if (!idx[3]) {
-      error_message <- paste0(
-        error_message,
-        "\n BagIt tagmanifest contains invalid file(s):\n",
-        paste0("  - ", valid_bagit_tagmanifest$errors, collapse = "\n")
-      )
-    }
-    # print error message and stop execution
-    stop(error_message, call. = FALSE)
-  }
-
-  # if no errors where found, load the and return the RO-Crate in the bag
-  rocrate_contents <- file.path(path, "data/ro-crate-metadata.json") |>
-    rocrateR::read_rocrate()
-
-  message("Valid RO-Crate found!")
-  return(rocrate_contents)
+  invisible(TRUE)
 }
 
 #' Validate BagIt declaration
