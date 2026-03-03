@@ -1,6 +1,7 @@
 #' Check if object is an RO-Crate
 #'
 #' @param rocrate RO-Crate object, see [rocrateR::rocrate].
+#' @param strict Boolean to indicate if JSON-LD compliance should be checked.
 #'
 #' @returns Returns invisibly the input RO-Crate object.
 #' @export
@@ -11,67 +12,77 @@
 #' # check if the new crate is valid
 #' basic_crate |>
 #'   rocrateR::is_rocrate()
-is_rocrate <- function(rocrate) {
-  # has the 'rocrate' class
-  has_rocrate_class <- "rocrate" %in% class(rocrate)
+is_rocrate <- function(rocrate, strict = FALSE) {
+  # local bindings
+  errors <- character()
 
-  # extract main value for @context
-  ro_crate_context <- getElement(rocrate, "@context")
+  # check `rocrate` class
+  if (!inherits(rocrate, "rocrate")) {
+    errors <- c(errors, "Missing 'rocrate' class.")
+  }
 
-  # check if @context is missing
-  missing_context <- is.null(ro_crate_context)
+  # check `@context`
+  context <- rocrate[["@context"]]
 
-  # has a valid @context
-  has_valid_context <- ro_crate_context |>
-    sapply(.is_valid_url, suffix = "/context") |>
-    any() # at least one entry of the RO-Crate context must be a valid URL
+  if (is.null(context)) {
+    errors <- c(errors, "Missing '@context'.")
+  } else {
+    valid_context <- any(
+      vapply(context, .is_valid_url, logical(1), suffix = "/context")
+    )
+    if (!valid_context) {
+      errors <- c(
+        errors,
+        paste0("Invalid '@context': ", paste(context, collapse = "; "))
+      )
+    }
+  }
 
-  # extract @graph
-  ro_crate_graph <- getElement(rocrate, "@graph")
+  # check `@graph`
+  graph <- rocrate[["@graph"]]
 
-  # check if @graph is missing
-  missing_graph <- is.null(ro_crate_graph)
+  if (is.null(graph)) {
+    errors <- c(errors, "Missing '@graph'.")
+  } else {
+    ids <- vapply(graph, function(x) x$`@id`, character(1))
 
-  # extract @graph elements' @id
-  graph_ids <- ro_crate_graph |>
-    sapply(`[[`, "@id") |>
-    unlist()
+    # Validate entities
+    entity_valid <- vapply(
+      seq_along(graph),
+      function(i) {
+        .validate_entity.list(graph[[i]], ent_name = ids[i])
+      },
+      logical(1)
+    )
 
-  # validate @graph entities
-  valid_entities <- seq_along(ro_crate_graph) |>
-    sapply(function(i) {
-      .validate_entity.list(ro_crate_graph[[i]], ent_name = graph_ids[i])
-    })
+    if (!all(entity_valid)) {
+      errors <- c(errors, "Invalid entity structure detected in '@graph'.")
+    }
 
-  # check lengths of @ids and number of entities, must be the same
-  valid_length_graph <- length(graph_ids) == sum(valid_entities == TRUE)
+    if (!"./" %in% ids) {
+      errors <- c(errors, "Missing root entity ('./').")
+    }
 
-  # has an RO-Crate Metadata descriptor entity
-  has_rocrate_meta <- "ro-crate-metadata.json" %in% graph_ids
+    if (!"ro-crate-metadata.json" %in% ids) {
+      errors <- c(
+        errors,
+        "Missing metadata descriptor entity ('ro-crate-metadata.json')."
+      )
+    }
+  }
 
-  # has a root entity
-  has_root <- "./" %in% graph_ids
+  if (length(errors) > 0) {
+    stop(
+      paste(
+        "Invalid RO-Crate object:\n",
+        paste0("  - ", errors, collapse = "\n")
+      ),
+      call. = FALSE
+    )
+  }
 
-  msg <- ""
-  if (!has_rocrate_class)
-    msg <- "    - Missing 'rocrate' class.\n"
-  if (missing_context)
-    msg <- paste0(msg, "    - Missing @context.\n")
-  if (!missing_context && !has_valid_context)
-    msg <- paste0(msg, "    - Invalid value for @context: ", paste0(ro_crate_context, collapse = "; "), ".\n")
-  if (missing_graph)
-    msg <- paste0(msg, "    - Missing @graph.\n")
-  if (!missing_graph && !valid_length_graph)
-    msg <- paste0(msg, "    - The entities in @graph are NOT valid (e.g., missing @id and/or @type).\n")
-  if (!missing_graph && !has_rocrate_meta)
-    msg <- paste0(msg, "    - Missing the entity for the RO-Crate Metadata descriptor, ",
-                  "@id = 'ro-crate-metadata.json'.\n")
-  if (!missing_graph && !has_root)
-    msg <- paste0(msg, "    - Missing the root entity, @id = './'.\n")
-  if (nchar(msg) > 0) {
-    stop("Invalid RO-Crate object! Try running `rocrateR::rocrate()`, first.\n",
-         "  Identified issue(s):\n",
-         msg)
+  if (strict) {
+    .validate_jsonld_compliance(rocrate)
   }
 
   # return (invisibly) the input RO-Crate
