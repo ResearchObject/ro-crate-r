@@ -247,7 +247,8 @@ bagit_tagmanifest <- function(path, files, algo = "sha512") {
 #'     RO-Crate bag (default: `"1.0"`).
 #'     See \doi{10.17487/RFC8493} for more details.
 #'
-#' @returns Returns invisibly the RO-Crate pointed by `path`.
+#' @returns Returns a boolean flag to indicate if the given RO-Crate bag is
+#' valid.
 #' @export
 #'
 #' @family bag_rocrate
@@ -277,7 +278,8 @@ is_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
   bag_root <- .find_bagit_root(path)
 
   if (is.null(bag_root)) {
-    stop("No valid BagIt root found.", call. = FALSE)
+    warning("No valid BagIt root found.", call. = FALSE)
+    return(FALSE)
   }
 
   # call the .validate_rocrate_bag function
@@ -286,7 +288,8 @@ is_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
     algo = algo,
     bagit_version = bagit_version
   )
-  return(invisible(ro_crate))
+
+  return(TRUE)
 }
 
 #' Find BagIt root for an RO-Crate
@@ -492,7 +495,7 @@ is_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
 #'
 #' @export
 #'
-#' @returns String with path to root of the RO-Crate, invisibly.
+#' @returns String with path to root of the RO-Crate.
 #'
 #' @family bag_rocrate
 unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
@@ -562,5 +565,5 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
   }
 
   # path to root of the RO-Crate bag
-  return(invisible(bag_root))
+  return(bag_root)
 }
