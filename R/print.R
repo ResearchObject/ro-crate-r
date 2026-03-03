@@ -24,7 +24,7 @@ print.rocrate <- function(x, ...) {
   rocrate_txt <- readLines(tmp_file)
   # display formatted RO-Crate
   rocrate_txt |>
-    paste0(collapse = "\n")|>
+    paste0(collapse = "\n") |>
     message()
   # return (invisibly) the input object
   invisible(x)
@@ -46,12 +46,40 @@ print.rocrate <- function(x, ...) {
 print.entity <- function(x, ...) {
   # check the `x` object
   .validate_entity(x)
-  
+
   # display formatted RO-Crate entity
-  message("RO-Crate entity:",
-          "\n @id = '", getElement(x, "@id"), "'",
-          "\n @type = '", getElement(x, "@type"), "'"
-          )
+  message(
+    "RO-Crate entity:",
+    "\n @id = '",
+    getElement(x, "@id"),
+    "'",
+    "\n @type = '",
+    getElement(x, "@type"),
+    "'"
+  )
   # return (invisibly) the input object
+  invisible(x)
+}
+
+#' @export
+print.rocrate_validation <- function(x, ...) {
+  cat("<rocrate_validation>\n")
+
+  if (x$valid) {
+    cat("\U2714 Valid RO-Crate\n")
+  } else {
+    cat("\U2716 Invalid RO-Crate\n")
+  }
+
+  if (length(x$errors)) {
+    cat("\nErrors:\n")
+    cat(paste0(" - ", x$errors, collapse = "\n"), "\n")
+  }
+
+  if (length(x$warnings)) {
+    cat("\nWarnings:\n")
+    cat(paste0(" - ", x$warnings, collapse = "\n"), "\n")
+  }
+
   invisible(x)
 }
