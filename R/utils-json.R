@@ -39,8 +39,30 @@ write_rocrate <- function(x, path, ...) {
   is_rocrate(x)
 
   # store RO-Crate in JSON format
-  jsonlite::write_json(x = x, path = path, pretty = TRUE, auto_unbox = TRUE, ...)
+  jsonlite::write_json(
+    x = x,
+    path = path,
+    pretty = TRUE,
+    auto_unbox = TRUE,
+    ...
+  )
 
   # return (invisibly) the input object
   invisible(x)
+}
+
+#' Validate JSON syntax for RO-Crate metadata file
+#'
+#' @param metadata_path String with path to RO-Crate metadata file.
+#'
+#' @returns Boolean indicating if `metadata_path` is valid.
+#' @keywords internal
+.validate_json_syntax <- function(metadata_path) {
+  tryCatch(
+    jsonlite::fromJSON(metadata_path),
+    error = function(e) {
+      stop("Invalid JSON syntax in ro-crate-metadata.json", call. = FALSE)
+    }
+  )
+  return(TRUE)
 }
