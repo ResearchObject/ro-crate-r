@@ -482,11 +482,6 @@ load_rocrate_bag <- function(
   algo,
   bagit_version = "1.0"
 ) {
-  # check if the given path exists
-  if (!dir.exists(path)) {
-    stop("The given `path` is not a valid directory!", call. = FALSE)
-  }
-
   # check that at least the following files & directory are in the given path
   required_top_level <- c(
     "bagit.txt",
