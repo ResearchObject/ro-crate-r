@@ -8,9 +8,17 @@
 \usage{
 bag_rocrate(x, ...)
 
-\method{bag_rocrate}{character}(x, ..., output = x, force_bag = FALSE)
+\method{bag_rocrate}{character}(x, ..., output = x, force_bag = FALSE, extra_bag_info = NULL)
 
-\method{bag_rocrate}{rocrate}(x, ..., path, output = path, overwrite = FALSE, force_bag = FALSE)
+\method{bag_rocrate}{rocrate}(
+  x,
+  ...,
+  path,
+  output = path,
+  overwrite = FALSE,
+  force_bag = FALSE,
+  extra_bag_info = NULL
+)
 }
 \arguments{
 \item{x}{A string to a path containing at the very minimum an RO-Crate
@@ -25,6 +33,9 @@ object with the \link[rocrateR]{rocrate} class.}
 \item{force_bag}{Boolean flag to indicate whether the force the creation of
 a 'bag' even if not all the files were successfully bagged
 (default: \code{FALSE} ~ check if all the files were copied successfully).}
+
+\item{extra_bag_info}{Vector of strings to include in the \code{bag-info.txt}
+file (e.g., \code{Contact-Email: first.last@rocrate.org}).}
 
 \item{path}{String with path to the root of the RO-Crate.}
 

@@ -10,15 +10,12 @@ https://www.rfc-editor.org/rfc/rfc8493.html#section-2.2.2
 \usage{
 bagit_declaration(path, version = "1.0")
 
-.validate_bagit_declaration(path, algo = "sha512", bagit_version = "1.0")
+.validate_bagit_declaration(path, bagit_version = "1.0")
 }
 \arguments{
 \item{path}{String with path where the BagIt declaration will be stored.}
 
 \item{version}{String with BagIt version (default: \code{"1.0"})/}
-
-\item{algo}{String with algorithm used to generate the RO-Crate bag
-(default: \code{"sha512"}). See \link[digest]{digest} for more details.}
 
 \item{bagit_version}{String with version of BagIt used to generate the
 RO-Crate bag (default: \code{"1.0"}).

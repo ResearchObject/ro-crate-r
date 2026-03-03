@@ -16,7 +16,7 @@ unbag_rocrate(path, output = dirname(path), quiet = FALSE)
 (default: \code{FALSE} - display messages).}
 }
 \value{
-String with path to root of the RO-Crate, invisibly.
+String with path to root of the RO-Crate.
 }
 \description{
 'Unbag' (extract) RO-Crate packed with BagIt

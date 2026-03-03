@@ -4,13 +4,15 @@
 \alias{is_rocrate}
 \title{Check if object is an RO-Crate}
 \usage{
-is_rocrate(rocrate)
+is_rocrate(rocrate, strict = FALSE)
 }
 \arguments{
 \item{rocrate}{RO-Crate object, see \link{rocrate}.}
+
+\item{strict}{Boolean to indicate if JSON-LD compliance should be checked.}
 }
 \value{
-Returns invisibly the input RO-Crate object.
+Boolean flag with RO-Crate validity.
 }
 \description{
 Check if object is an RO-Crate

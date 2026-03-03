@@ -4,7 +4,7 @@
 \alias{is_rocrate_bag}
 \title{Check if path points to a valid RO-Crate bag}
 \usage{
-is_rocrate_bag(path, algo = "sha512", bagit_version = "1.0")
+is_rocrate_bag(path, algo = NULL, bagit_version = "1.0")
 }
 \arguments{
 \item{path}{String with full path to a compressed file contain an RO-Crate
@@ -12,14 +12,17 @@ bag, see \link[rocrateR]{bag_rocrate} for details. Alternatively, a path
 to a directory containing an RO-Crate bag.}
 
 \item{algo}{String with algorithm used to generate the RO-Crate bag
-(default: \code{"sha512"}). See \link[digest]{digest} for more details.}
+(default: \code{NULL}, which auto detects the algorithm from the
+\verb{manifest-<algo>.txt} file, inside the bag). See \link[digest]{digest}
+for more details on valid algorithms.}
 
 \item{bagit_version}{String with version of BagIt used to generate the
 RO-Crate bag (default: \code{"1.0"}).
 See \doi{10.17487/RFC8493} for more details.}
 }
 \value{
-Returns invisibly the RO-Crate pointed by \code{path}.
+Returns a boolean flag to indicate if the given RO-Crate bag is
+valid.
 }
 \description{
 Check if path points to a valid RO-Crate bag
