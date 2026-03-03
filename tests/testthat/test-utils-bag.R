@@ -116,13 +116,13 @@ test_that("is_rocrate_bag works", {
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 
   # missing path
-  expect_error(rocrateR::is_rocrate_bag())
+  expect_warning(rocrateR::is_rocrate_bag())
 
   # invalid path
-  expect_error(rocrateR::is_rocrate_bag("/invalid/path"))
+  expect_warning(rocrateR::is_rocrate_bag("/invalid/path"))
 
   # path to empty directory
-  expect_error(rocrateR::is_rocrate_bag(tmp_dir))
+  expect_warning(rocrateR::is_rocrate_bag(tmp_dir))
 
   # write RO-Crate to temporary file
   tmp_file <- file.path(tmp_dir, "ro-crate-metadata.json")
@@ -152,12 +152,9 @@ test_that("is_rocrate_bag works", {
   expect_true(file.exists(rocrate_bag_filename))
 
   # check that the created object is a valid RO-Crate bag
-  expect_message(
-    basic_crate_from_bag <- rocrateR::is_rocrate_bag(rocrate_bag_filename)
+  expect_true(
+    rocrateR::is_rocrate_bag(rocrate_bag_filename)
   )
-
-  # compare object read from the bag and original RO-Crate
-  expect_equal(basic_crate_from_bag, basic_crate)
 
   # extract RO-Crate bag
   expect_message(
@@ -173,8 +170,8 @@ test_that("is_rocrate_bag works", {
     rocrate_bag_contents,
     "tagmanifest-sha512.txt"
   )))
-  expect_message(
-    basic_crate_from_bag <- rocrateR::is_rocrate_bag(rocrate_bag_contents)
+  expect_true(
+    rocrateR::is_rocrate_bag(rocrate_bag_contents)
   )
 
   # create invalid bag for testing purposes
@@ -208,7 +205,63 @@ test_that("is_rocrate_bag works", {
     file.path(tmp_dir, "INVALID/tagmanifest-sha512.txt")
   )
   # check invalid RO-Crate bag
-  expect_error(rocrateR::is_rocrate_bag(file.path(tmp_dir, "INVALID")))
+  expect_false(rocrateR::is_rocrate_bag(file.path(tmp_dir, "INVALID")))
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
+})
+
+test_that("load_rocrate_bag works", {
+  # create basic RO-Crate
+  basic_crate <- rocrateR::rocrate()
+
+  # create temporary directory
+  tmp_dir <- file.path(
+    tempdir(),
+    paste0("rocrate-tests-", digest::digest(Sys.time()))
+  )
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  # missing path
+  expect_error(rocrateR::load_rocrate_bag())
+
+  # invalid path
+  expect_error(rocrateR::load_rocrate_bag("/invalid/path"))
+
+  # path to empty directory
+  expect_error(rocrateR::load_rocrate_bag(tmp_dir))
+
+  # write RO-Crate to temporary file
+  tmp_file <- file.path(tmp_dir, "ro-crate-metadata.json")
+
+  # check that the temporary file doesn't exist
+  expect_false(file.exists(tmp_file))
+
+  # write to temporary file
+  basic_crate |>
+    rocrateR::write_rocrate(path = tmp_file)
+
+  # check that the temporary file exists
+  expect_true(file.exists(tmp_file))
+
+  # try to bag RO-Crate overwriting previous one
+  expect_message(
+    expect_warning(
+      rocrate_bag_filename <- basic_crate |>
+        rocrateR::bag_rocrate(path = tmp_dir, overwrite = TRUE)
+    )
+  )
+
+  # check that the RO-Crate bag exists
+  expect_true(file.exists(rocrate_bag_filename))
+
+  # extract RO-Crate bag
+  rocrate_bag_contents <- rocrateR::load_rocrate_bag(rocrate_bag_filename)
+  # compare contents extracted from the bag and the original R object
+  expect_equal(rocrate_bag_contents, basic_crate)
 
   # delete temporary directory
   unlink(tmp_dir, recursive = TRUE, force = TRUE)
