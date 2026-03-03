@@ -236,6 +236,35 @@ bagit_tagmanifest <- function(path, files, algo = "sha512") {
   return(invisible(tagmanifest_lines))
 }
 
+#' @keywords internal
+bagit_payload_oxum <- function(path, files) {
+  bag_info <- file.path(path, "bag-info.txt")
+
+  lines <- NULL
+  # check if bag_info exists, if so, then load it
+  if (file.exists(bag_info)) {
+    lines <- readLines(bag_info, warn = FALSE)
+    oxum_line <- grep("^Payload-Oxum:", lines, value = TRUE)
+  }
+
+  # if the `bag-info.txt` already has a Payload-Oxum line, return `NULL`
+  if (length(oxum_line) == 1) {
+    return(NULL)
+  }
+
+  # compute components for the Payload-Oxum:
+  num_files <- length(files)
+  num_bytes <- sum(file.info(files)$size)
+
+  # create new line for Payload-Oxum
+  payload_oxum <- sprintf("Payload-Oxum: %s.%s", num_bytes, num_files)
+
+  # write output
+  writeLines(c(lines, payload_oxum), con = bag_info)
+
+  return(invisible(payload_oxum))
+}
+
 #' Check if path points to a valid RO-Crate bag
 #'
 #' @param path String with full path to a compressed file contain an RO-Crate
