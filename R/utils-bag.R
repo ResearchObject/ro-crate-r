@@ -308,6 +308,58 @@ is_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
   return(valid)
 }
 
+#' Load a validated RO-Crate BagIt archive
+#'
+#' @param path Path to a directory or .zip file
+#' @param algo Checksum algorithm (default: sha512)
+#' @param bagit_version Required BagIt version (default: 1.0)
+#'
+#' @return An object with the \link[rocrateR]{rocrate} class.
+#' @export
+load_rocrate_bag <- function(
+  path,
+  algo = "sha512",
+  bagit_version = "1.0"
+) {
+  if (!file.exists(path)) {
+    stop("The given path does not exist!", call. = FALSE)
+  }
+
+  # extract if zip
+  if (
+    !file.info(path)$isdir &&
+      grepl("\\.zip$", path, ignore.case = TRUE)
+  ) {
+    # create temporary directory
+    tmp_dir <- file.path(tempdir(), digest::digest(Sys.time()))
+    dir.create(tmp_dir, TRUE)
+    on.exit(unlink(tmp_dir, recursive = TRUE, force = TRUE), add = TRUE)
+
+    # extract contents of the RO-Crate bag inside temporary directory AND
+    # update path, so it points to the contents of the RO-Crate bag
+    bag_root <- tryCatch(
+      unbag_rocrate(path, output = tmp_dir, quiet = TRUE),
+      error = function(e) NULL
+    )
+  } else {
+    bag_root <- path
+  }
+
+  # strict validation (throws if invalid)
+  .validate_rocrate_bag(
+    path = bag_root,
+    algo = algo,
+    bagit_version = bagit_version
+  )
+
+  # load RO-Crate
+  rocrate_path <- file.path(bag_root, "data", "ro-crate-metadata.json")
+
+  rocrate_obj <- rocrateR::read_rocrate(rocrate_path)
+
+  return(rocrate_obj)
+}
+
 #' Find BagIt root for an RO-Crate
 #'
 #' @param path String with path to RO-Crate bag.
