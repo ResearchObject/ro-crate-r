@@ -361,6 +361,9 @@ load_rocrate_bag <- function(
 
   rocrate_obj <- rocrateR::read_rocrate(rocrate_path)
 
+  # semantic validation
+  is_rocrate(rocrate_obj)
+
   return(rocrate_obj)
 }
 
@@ -501,7 +504,7 @@ load_rocrate_bag <- function(
     )
   }
 
-  # BagIT tagmanifest validation (optional)
+  # BagIt tagmanifest validation (optional)
   tagmanifest_file <- file.path(path, paste0("tagmanifest-", algo, ".txt"))
 
   if (file.exists(tagmanifest_file)) {
@@ -533,6 +536,9 @@ load_rocrate_bag <- function(
       call. = FALSE
     )
   }
+
+  # JSON syntax validation
+  .validate_json_syntax(metadata_file)
 
   invisible(TRUE)
 }
