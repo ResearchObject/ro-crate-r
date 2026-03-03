@@ -3,7 +3,7 @@
 #' @param rocrate RO-Crate object, see [rocrateR::rocrate].
 #' @param strict Boolean to indicate if JSON-LD compliance should be checked.
 #'
-#' @returns Returns invisibly the input RO-Crate object.
+#' @returns Boolean flag with RO-Crate validity.
 #' @export
 #'
 #' @examples
@@ -16,77 +16,21 @@ is_rocrate <- function(rocrate, strict = FALSE) {
   # local bindings
   errors <- character()
 
-  # check `rocrate` class
-  if (!inherits(rocrate, "rocrate")) {
-    errors <- c(errors, "Missing 'rocrate' class.")
+  errors <- c(errors, .validate_structure(rocrate))
+  errors <- c(errors, .validate_semantics(rocrate))
+
+  if (strict) {
+    errors <- c(errors, .validate_rocrate_profile(rocrate))
   }
 
-  # check `@context`
-  context <- rocrate[["@context"]]
-
-  if (is.null(context)) {
-    errors <- c(errors, "Missing '@context'.")
-  } else {
-    valid_context <- any(
-      vapply(context, .is_valid_url, logical(1), suffix = "/context")
-    )
-    if (!valid_context) {
-      errors <- c(
-        errors,
-        paste0("Invalid '@context': ", paste(context, collapse = "; "))
-      )
-    }
-  }
-
-  # check `@graph`
-  graph <- rocrate[["@graph"]]
-
-  if (is.null(graph)) {
-    errors <- c(errors, "Missing '@graph'.")
-  } else {
-    ids <- vapply(graph, function(x) x$`@id`, character(1))
-
-    # Validate entities
-    entity_valid <- vapply(
-      seq_along(graph),
-      function(i) {
-        .validate_entity.list(graph[[i]], ent_name = ids[i])
-      },
-      logical(1)
-    )
-
-    if (!all(entity_valid)) {
-      errors <- c(errors, "Invalid entity structure detected in '@graph'.")
-    }
-
-    if (!"./" %in% ids) {
-      errors <- c(errors, "Missing root entity ('./').")
-    }
-
-    if (!"ro-crate-metadata.json" %in% ids) {
-      errors <- c(
-        errors,
-        "Missing metadata descriptor entity ('ro-crate-metadata.json')."
-      )
-    }
-  }
-
-  if (length(errors) > 0) {
+  if (length(errors)) {
     stop(
-      paste(
-        "Invalid RO-Crate object:\n",
-        paste0("  - ", errors, collapse = "\n")
-      ),
+      paste("Invalid RO-Crate:\n", paste(" - ", errors, collapse = "\n")),
       call. = FALSE
     )
   }
 
-  if (strict) {
-    .validate_jsonld_compliance(rocrate)
-  }
-
-  # return (invisibly) the input RO-Crate
-  return(invisible(rocrate))
+  return(TRUE)
 }
 
 #' Load an RO-Crate from various input types
@@ -192,4 +136,140 @@ load_rocrate.character <- function(
     "Could not determine how to load RO-Crate from provided input.",
     call. = FALSE
   )
+}
+
+#' Validate an RO-Crate
+#'
+#' Performs structural, semantic and profile validation.
+#'
+#' @param x A path (character) or an existing \link[rocrateR]{rocrate} object.
+#' @param mode Either `"stop"` or `"report"`.
+#' @param strict Logical. Enable profile validation.
+#'
+#' @return A `rocrate_validation` object (in report mode).
+#' @export
+validate_rocrate <- function(
+  x,
+  mode = c("stop", "report"),
+  strict = FALSE
+) {
+  # local binding
+  errors <- character()
+
+  # validation reporting mode
+  mode <- match.arg(mode)
+
+  rocrate <- load_rocrate(x, strict = strict)
+
+  # structure validation
+  errors <- c(errors, .validate_structure(rocrate))
+  # semantic validation
+  errors <- c(errors, .validate_semantics(rocrate))
+
+  # profile validation
+  if (strict) {
+    errors <- c(errors, .validate_rocrate_profile(rocrate))
+  }
+
+  result <- new_rocrate_validation(errors = errors)
+
+  if (mode == "stop" && !result$valid) {
+    stop(paste(result$errors, collapse = "\n"), call. = FALSE)
+  }
+
+  result
+}
+
+#' Validate minimal RO-Crate structure
+#'
+#' Ensures required top-level fields are present.
+#'
+#' @param rocrate A parsed RO-Crate object.
+#'
+#' @return Character vector of errors.
+#' @keywords internal
+.validate_structure <- function(rocrate) {
+  errors <- character()
+
+  if (!inherits(rocrate, "rocrate")) {
+    errors <- c(errors, "Object is not of class 'rocrate'.")
+  }
+
+  if (is.null(rocrate$`@context`)) {
+    errors <- c(errors, "Missing '@context'.")
+  }
+
+  if (is.null(rocrate$`@graph`)) {
+    errors <- c(errors, "Missing '@graph'.")
+  }
+
+  errors
+}
+
+#' Validate RO-Crate semantic structure
+#'
+#' Performs semantic checks on the `@graph`.
+#'
+#' @param rocrate A parsed RO-Crate object.
+#'
+#' @return Character vector of errors.
+#' @keywords internal
+.validate_semantics <- function(rocrate) {
+  errors <- character()
+
+  graph <- rocrate$`@graph`
+
+  if (!is.list(graph)) {
+    return(c(errors, "'@graph' must be a list."))
+  }
+
+  ids <- vapply(graph, function(x) x$`@id`, character(1), USE.NAMES = FALSE)
+
+  # check root dataset exists
+  if (!"./" %in% ids) {
+    errors <- c(errors, "Missing root Dataset with '@id' = './'.")
+  }
+
+  # check duplicated IDs
+  if (any(duplicated(ids))) {
+    errors <- c(errors, "Duplicate '@id' values detected in '@graph'.")
+  }
+
+  # check there's an RO-Crate Metadata descriptor entity
+  if (!"ro-crate-metadata.json" %in% ids) {
+    errors <- c(
+      errors,
+      paste0(
+        "Missing the entity for the RO-Crate Metadata descriptor, ",
+        "@id = 'ro-crate-metadata.json'.\n"
+      )
+    )
+  }
+
+  errors
+}
+
+#' Validate RO-Crate profile
+#'
+#' Performs profile-specific validation if `conformsTo` is declared.
+#'
+#' @param rocrate A parsed RO-Crate object.
+#'
+#' @return Character vector of errors.
+#' @keywords internal
+.validate_rocrate_profile <- function(rocrate) {
+  errors <- character()
+
+  graph <- rocrate$`@graph`
+  ids <- vapply(graph, function(x) x$`@id`, character(1))
+
+  root <- graph[[which(ids == "./")]]
+
+  if (is.null(root$conformsTo)) {
+    return(errors)
+  }
+
+  # Placeholder for future profile-specific logic
+
+  errors
 }
