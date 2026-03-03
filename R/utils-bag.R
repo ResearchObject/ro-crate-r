@@ -594,17 +594,38 @@ load_rocrate_bag <- function(
   algo,
   manifest_suffix = "manifest"
 ) {
+  manifest_filename <- file.path(
+    path,
+    paste0(manifest_suffix, "-", algo, ".txt")
+  )
+  # check if the manifest file is missing
+  if (!file.exists(manifest_filename)) {
+    return(list(
+      status = FALSE,
+      errors = paste0("Missing ", basename(manifest_filename))
+    ))
+  }
+
   # load the manifest file
-  manifest_filename <- paste0(manifest_suffix, "-", algo, ".txt")
-  bagit_manifest_txt <- file.path(path, manifest_filename) |>
+  bagit_manifest_txt <- manifest_filename |>
     utils::read.table(header = FALSE, col.names = c("checksum", "filename"))
+
+  # check if the manifest file is empty
+  if (nrow(bagit_manifest_txt) == 0) {
+    return(list(
+      status = FALSE,
+      errors = "Manifest file is empty."
+    ))
+  }
+
   # check all the files in the manifest file
   bagit_manifest_txt_validity <- seq_len(nrow(bagit_manifest_txt)) |>
     sapply(function(i) {
       est_checksum <- file.path(path, bagit_manifest_txt[i, "filename"]) |>
         digest::digest(algo = algo, file = TRUE)
-      est_checksum == bagit_manifest_txt[i, "checksum"]
+      tolower(est_checksum) == tolower(bagit_manifest_txt[i, "checksum"])
     })
+
   # return list with status: TRUE = all valid, FALSE = invalid file found AND
   # errors: vector of invalid files (if any)
   list(
