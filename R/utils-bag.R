@@ -242,7 +242,9 @@ bagit_tagmanifest <- function(path, files, algo = "sha512") {
 #'     bag, see \link[rocrateR]{bag_rocrate} for details. Alternatively, a path
 #'     to a directory containing an RO-Crate bag.
 #' @param algo String with algorithm used to generate the RO-Crate bag
-#'     (default: `"sha512"`). See \link[digest]{digest} for more details.
+#'     (default: `NULL`, which auto detects the algorithm from the
+#'     `manifest-<algo>.txt` file, inside the bag). See \link[digest]{digest}
+#'     for more details on valid algorithms.
 #' @param bagit_version String with version of BagIt used to generate the
 #'     RO-Crate bag (default: `"1.0"`).
 #'     See \doi{10.17487/RFC8493} for more details.
@@ -252,7 +254,11 @@ bagit_tagmanifest <- function(path, files, algo = "sha512") {
 #' @export
 #'
 #' @family bag_rocrate
-is_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
+is_rocrate_bag <- function(
+  path,
+  algo = NULL,
+  bagit_version = "1.0"
+) {
   # initialise object that will be returned
   bag_root <- ro_crate <- NULL
 
@@ -297,7 +303,7 @@ is_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
     {
       .validate_rocrate_bag(
         path = bag_root,
-        algo = algo,
+        algo = ifelse(is.null(algo), .detect_manifest_algo(bag_root), algo),
         bagit_version = bagit_version
       )
       TRUE
@@ -310,15 +316,13 @@ is_rocrate_bag <- function(path, algo = "sha512", bagit_version = "1.0") {
 
 #' Load a validated RO-Crate BagIt archive
 #'
-#' @param path Path to a directory or .zip file
-#' @param algo Checksum algorithm (default: sha512)
-#' @param bagit_version Required BagIt version (default: 1.0)
+#' @inheritParams is_rocrate_bag
 #'
 #' @return An object with the \link[rocrateR]{rocrate} class.
 #' @export
 load_rocrate_bag <- function(
   path,
-  algo = "sha512",
+  algo = NULL,
   bagit_version = "1.0"
 ) {
   if (!file.exists(path)) {
@@ -348,7 +352,7 @@ load_rocrate_bag <- function(
   # strict validation (throws if invalid)
   .validate_rocrate_bag(
     path = bag_root,
-    algo = algo,
+    algo = ifelse(is.null(algo), .detect_manifest_algo(bag_root), algo),
     bagit_version = bagit_version
   )
 
@@ -358,6 +362,37 @@ load_rocrate_bag <- function(
   rocrate_obj <- rocrateR::read_rocrate(rocrate_path)
 
   return(rocrate_obj)
+}
+
+#' Detect BagIt archive's manifest algorith
+#'
+#' @param path Path to BagIt archive directory.
+#'
+#' @returns String with the algorithm.
+#' @keywords internal
+.detect_manifest_algo <- function(path) {
+  manifest_files <- list.files(
+    path,
+    pattern = "^manifest-.*\\.txt$",
+    full.names = FALSE
+  )
+
+  if (length(manifest_files) == 0) {
+    stop("No manifest-<algo>.txt file found in bag root.", call. = FALSE)
+  }
+
+  if (length(manifest_files) > 1) {
+    stop(
+      "Multiple manifest files detected:\n",
+      paste0("  - ", manifest_files, collapse = "\n"),
+      "\nCannot determine checksum algorithm automatically.",
+      call. = FALSE
+    )
+  }
+
+  algo <- sub("^manifest-(.*)\\.txt$", "\\1", manifest_files)
+
+  return(algo)
 }
 
 #' Find BagIt root for an RO-Crate
@@ -395,7 +430,7 @@ load_rocrate_bag <- function(
 #' @keywords internal
 .validate_rocrate_bag <- function(
   path,
-  algo = "sha512",
+  algo,
   bagit_version = "1.0"
 ) {
   # check if the given path exists
@@ -556,7 +591,7 @@ load_rocrate_bag <- function(
 #' @rdname bagit_manifest
 .validate_bagit_manifest <- function(
   path,
-  algo = "sha512",
+  algo,
   manifest_suffix = "manifest"
 ) {
   # load the manifest file
