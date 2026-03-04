@@ -243,7 +243,7 @@ bagit_info <- function(path, files, extra_bag_info = NULL) {
   bagit_info_lines <- c(
     sprintf(
       "Bag-Software-Agent: rocrateR::bag_rocrate() v%s <%s>",
-      packageVersion("rocrateR"),
+      utils::packageVersion("rocrateR"),
       "https://doi.org/10.32614/CRAN.package.rocrateR"
     ),
     sprintf("Bagging-Date: %s", Sys.Date()),
