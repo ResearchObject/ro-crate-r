@@ -46,7 +46,7 @@ basic_crate_person <- basic_crate |>
   rocrateR::add_entity_value(id = "./", key = "author", value = list(`@id` = person_rvd$`@id`)) |>
   rocrateR::add_entity(organisation_uol) |>
   rocrateR::get_entity(person_rvd)
-  
+
 basic_crate_person[[1]]$name == person_rvd$name
 basic_crate_person[[1]]$`@id` == person_rvd$`@id`
 }

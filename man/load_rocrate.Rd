@@ -8,16 +8,14 @@
 \usage{
 load_rocrate(x, ...)
 
-\method{load_rocrate}{rocrate}(x, ..., strict = FALSE, verbose = FALSE)
+\method{load_rocrate}{rocrate}(x, ..., verbose = FALSE)
 
-\method{load_rocrate}{character}(x, ..., bagit_version = "1.0", strict = FALSE, verbose = FALSE)
+\method{load_rocrate}{character}(x, ..., bagit_version = "1.0", verbose = FALSE)
 }
 \arguments{
 \item{x}{A path (character) or an existing \link[rocrateR]{rocrate} object.}
 
 \item{...}{Reserved for future extensions.}
-
-\item{strict}{Logical. If TRUE, perform strict profile validation.}
 
 \item{verbose}{Logical. If TRUE, emit diagnostic messages.}
 
@@ -26,7 +24,7 @@ RO-Crate bag (default: \code{"1.0"}).
 See \doi{10.17487/RFC8493} for more details.}
 }
 \value{
-A validated \code{rocrate} object.
+An \code{rocrate} object.
 }
 \description{
 High-level loader that can read:
@@ -36,4 +34,29 @@ High-level loader that can read:
 \item A BagIt-wrapped RO-Crate directory
 \item A zipped BagIt RO-Crate archive
 }
+}
+\examples{
+# -------- SETUP --------
+basic_crate <- rocrateR::rocrate()
+# temp file
+tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
+dir.create(tmp_dir)
+
+# -------- INPUT: RO-Crate --------
+rocrateR::load_rocrate(basic_crate, verbose = TRUE)
+
+# -------- INPUT: Path --------
+# save RO-Crate
+rocrateR::write_rocrate(basic_crate, path = tmp)
+
+# load RO-Crate
+## with file name
+rocrateR::load_rocrate(tmp, verbose = TRUE)
+
+## with directory
+rocrateR::load_rocrate(tmp_dir, verbose = TRUE)
+
+# delete temp directory
+unlink(tmp_dir, recursive = TRUE)
 }

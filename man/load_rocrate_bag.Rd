@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-bag.R
 \name{load_rocrate_bag}
 \alias{load_rocrate_bag}
-\title{Load a validated RO-Crate BagIt archive}
+\title{Load an RO-Crate BagIt archive}
 \usage{
 load_rocrate_bag(path, algo = NULL, bagit_version = "1.0")
 }
@@ -24,5 +24,33 @@ See \doi{10.17487/RFC8493} for more details.}
 An object with the \link[rocrateR]{rocrate} class.
 }
 \description{
-Load a validated RO-Crate BagIt archive
+Load an RO-Crate BagIt archive
 }
+\examples{
+# -------- SETUP --------
+basic_crate <- rocrateR::rocrate()
+# temp file
+tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
+dir.create(tmp_dir)
+
+# bag RO-Crate
+path_to_roc_bag <- rocrateR::bag_rocrate(basic_crate, path = tmp_dir)
+
+# -------- INPUT: RO-Crate BagIt archive --------
+rocrateR::load_rocrate_bag(path_to_roc_bag)
+
+# -------- INPUT: Path --------
+rocrateR::unbag_rocrate(path_to_roc_bag) |>
+  rocrateR::load_rocrate_bag()
+
+# delete temp directory
+unlink(tmp_dir, recursive = TRUE)
+}
+\seealso{
+Other RO-Crate BagIt archive functions: 
+\code{\link{bag_rocrate}()},
+\code{\link{is_rocrate_bag}()},
+\code{\link{unbag_rocrate}()}
+}
+\concept{RO-Crate BagIt archive functions}

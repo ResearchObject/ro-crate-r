@@ -50,9 +50,27 @@ Bag the contents of an RO-Crate using the BagIt file packaging format v1.0.
 For more details see the definition:
 \doi{10.17487/RFC8493}
 }
+\examples{
+# -------- SETUP --------
+basic_crate <- rocrateR::rocrate()
+# temp file
+tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
+dir.create(tmp_dir)
+
+# -------- INPUT: RO-Crate --------
+rocrateR::bag_rocrate(basic_crate, path = tmp_dir)
+
+# -------- INPUT: Path --------
+rocrateR::bag_rocrate(tmp_dir, output = tmp_dir)
+
+# delete temp directory
+unlink(tmp_dir, recursive = TRUE)
+}
 \seealso{
-Other bag_rocrate: 
+Other RO-Crate BagIt archive functions: 
 \code{\link{is_rocrate_bag}()},
+\code{\link{load_rocrate_bag}()},
 \code{\link{unbag_rocrate}()}
 }
-\concept{bag_rocrate}
+\concept{RO-Crate BagIt archive functions}

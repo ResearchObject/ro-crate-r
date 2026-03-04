@@ -27,9 +27,31 @@ valid.
 \description{
 Check if path points to a valid RO-Crate bag
 }
+\examples{
+# -------- SETUP --------
+basic_crate <- rocrateR::rocrate()
+# temp file
+tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
+dir.create(tmp_dir)
+
+# bag RO-Crate
+path_to_roc_bag <- rocrateR::bag_rocrate(basic_crate, path = tmp_dir)
+
+# -------- INPUT: RO-Crate BagIt archive --------
+rocrateR::is_rocrate_bag(path_to_roc_bag)
+
+# -------- INPUT: Path --------
+rocrateR::unbag_rocrate(path_to_roc_bag) |>
+  rocrateR::is_rocrate_bag()
+
+# delete temp directory
+unlink(tmp_dir, recursive = TRUE)
+}
 \seealso{
-Other bag_rocrate: 
+Other RO-Crate BagIt archive functions: 
 \code{\link{bag_rocrate}()},
+\code{\link{load_rocrate_bag}()},
 \code{\link{unbag_rocrate}()}
 }
-\concept{bag_rocrate}
+\concept{RO-Crate BagIt archive functions}

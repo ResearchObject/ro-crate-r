@@ -19,3 +19,31 @@ A \code{rocrate_validation} object (in report mode).
 \description{
 Performs structural, semantic and profile validation.
 }
+\examples{
+# -------- SETUP --------
+basic_crate <- rocrateR::rocrate()
+# temp file
+tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
+dir.create(tmp_dir)
+
+# -------- INPUT: RO-Crate --------
+rocrateR::validate_rocrate(basic_crate)
+
+# -------- INPUT: Path --------
+# save RO-Crate
+rocrateR::write_rocrate(basic_crate, path = tmp)
+
+## with file name
+rocrateR::validate_rocrate(tmp)
+
+## with directory
+rocrateR::validate_rocrate(tmp_dir)
+
+# -------- INPUT: Invalid RO-Crate --------
+structure(list(), class = "rocrate") |>
+  rocrateR::validate_rocrate(mode = "report")
+
+# delete temp directory
+unlink(tmp_dir, recursive = TRUE)
+}
