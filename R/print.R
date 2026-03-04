@@ -14,16 +14,8 @@
 print.rocrate <- function(x, ...) {
   # check the `x` object
   is_rocrate(x)
-  # save the input into intermediate JSON file
-  tmp_file <- tempfile(fileext = ".json")
-  # delete temporary file
-  on.exit(unlink(tmp_file, recursive = TRUE, force = TRUE))
-  # store RO-Crate in JSON format
-  jsonlite::write_json(x, path = tmp_file, pretty = TRUE, auto_unbox = TRUE)
-  # load formatted RO-Crate as text
-  rocrate_txt <- readLines(tmp_file)
-  # display formatted RO-Crate
-  rocrate_txt |>
+  # reformat the input to JSON style
+  jsonlite::toJSON(x, pretty = TRUE, auto_unbox = TRUE) |>
     paste0(collapse = "\n") |>
     message()
   # return (invisibly) the input object
