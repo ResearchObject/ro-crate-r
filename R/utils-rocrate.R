@@ -1,7 +1,10 @@
 #' Check if object is an RO-Crate
 #'
 #' @param rocrate RO-Crate object, see [rocrateR::rocrate].
-#' @param strict Boolean to indicate if JSON-LD compliance should be checked.
+#' @param strict Boolean to indicate if stricter checks should be done (e.g.,
+#'     check profile specification).
+#' @param error Boolean to indicate if the function should throw an error, if
+#'     any errors are found (default: `TRUE`).
 #'
 #' @returns Boolean flag with RO-Crate validity.
 #' @export
@@ -12,15 +15,19 @@
 #' # check if the new crate is valid
 #' basic_crate |>
 #'   rocrateR::is_rocrate()
-is_rocrate <- function(rocrate, strict = FALSE) {
+is_rocrate <- function(rocrate, strict = FALSE, error = TRUE) {
   # call internal helper to identify errors
   errors <- .validate_rocrate(rocrate, strict = strict)
 
   if (length(errors)) {
-    stop(
-      paste("Invalid RO-Crate:\n", paste(" - ", errors, collapse = "\n")),
-      call. = FALSE
-    )
+    if (error) {
+      stop(
+        paste("Invalid RO-Crate:\n", paste(" - ", errors, collapse = "\n")),
+        call. = FALSE
+      )
+    } else {
+      return(FALSE)
+    }
   }
 
   return(TRUE)
