@@ -44,16 +44,21 @@ add_entity <- function(rocrate, entity, overwrite = FALSE) {
 
   if (sum(idx) > 0) {
     if (!overwrite) {
-      stop("The entity, `@id = '", getElement(entity, "@id"),
-           "'`, is part of the RO-Crate, `rocrate`. \n",
-           "Try a different `@id` or set `overwrite = TRUE`.")
+      stop(
+        "The entity, `@id = '",
+        getElement(entity, "@id"),
+        "'`, is part of the RO-Crate, `rocrate`. \n",
+        "Try a different `@id` or set `overwrite = TRUE`."
+      )
     }
-    warning("Overwritting the entity with @id = '",
-            getElement(entity, "@id"), "'")
+    warning(
+      "Overwritting the entity with @id = '",
+      getElement(entity, "@id"),
+      "'"
+    )
 
     rocrate$`@graph`[idx][[1]] <- entity
-  }
-  else {
+  } else {
     rocrate$`@graph` <- c(rocrate$`@graph`, list(entity))
   }
 
@@ -102,9 +107,11 @@ add_entity_value <- function(rocrate, id, key, value, overwrite = TRUE) {
 
   # find the index in `@graph` with the matching {id}
   idx <- rocrate$`@graph` |>
-    sapply(\(x) getElement(x, "@id") == id && (overwrite || is.null(getElement(x, key))))
+    sapply(\(x) {
+      getElement(x, "@id") == id && (overwrite || is.null(getElement(x, key)))
+    })
   # verify that only one index was found for the matching {id}
-  if(sum(idx) != 1) {
+  if (sum(idx) != 1) {
     stop("Please, ensure the given {id} is unique and part of the RO-Crate.")
   }
   # set the new {value} for {key} associated to {id}
@@ -113,7 +120,7 @@ add_entity_value <- function(rocrate, id, key, value, overwrite = TRUE) {
 }
 
 #' Wrapper for \link[rocrateR]{add_entity}
-#' 
+#'
 #' Wrapper for \link[rocrateR]{add_entity}, can be use to add multiple entities.
 #'
 #' @inheritParams add_entity
@@ -128,10 +135,11 @@ add_entities <- function(rocrate, entity, overwrite = FALSE, quiet = FALSE) {
     if (!quiet) {
       # extract entity @id, if missing, then use index, `i`
       ent_id <- getElement(entity[[i]], "@id")
-      ent_id <- ifelse(is.null(ent_id), 
-                       paste0("with index=", i), 
-                       paste0("with @id='", ent_id, "'")
-                       )
+      ent_id <- ifelse(
+        is.null(ent_id),
+        paste0("with index=", i),
+        paste0("with @id='", ent_id, "'")
+      )
       message("Adding entity ", ent_id, "...\n")
     }
     # call the add_entity function
@@ -194,7 +202,7 @@ entity.default <- function(x, ...) {
 #' Get entity(ies)
 #'
 #' @inheritParams is_rocrate
-#' @param id String with the ID of the RO-Crate entity within `@graph` 
+#' @param id String with the ID of the RO-Crate entity within `@graph`
 #'     (optional if `type` is provided). Alternatively, an entity object / list
 #'     with `@id` and `@type`.
 #' @param type String with the type of the RO-Crate entity(ies) within `@graph`
@@ -202,7 +210,7 @@ entity.default <- function(x, ...) {
 #'
 #' @returns List with found entity object(s), if any, `NULL` otherwise.
 #' @export
-#' 
+#'
 #' @examples
 #' basic_crate <- rocrateR::rocrate()
 #'
@@ -227,65 +235,87 @@ entity.default <- function(x, ...) {
 #'   rocrateR::add_entity_value(id = "./", key = "author", value = list(`@id` = person_rvd$`@id`)) |>
 #'   rocrateR::add_entity(organisation_uol) |>
 #'   rocrateR::get_entity(person_rvd)
-#'   
+#'
 #' basic_crate_person[[1]]$name == person_rvd$name
 #' basic_crate_person[[1]]$`@id` == person_rvd$`@id`
 get_entity <- function(rocrate, id = NULL, type = NULL) {
   # check the `rocrate` object
   is_rocrate(rocrate)
-  
+
   # if `id` is given as an entity object / list, extract @id and @type
   if (is.list(id)) {
     type <- getElement(id, "@type")
     id <- getElement(id, "@id")
   }
-  
+
   # check that either `id` or `type` were provided
   if (all(is.null(id), is.null(type))) {
-    stop("You must provide a value for either `id` or `type`!",
-         call. = FALSE)
+    stop("You must provide a value for either `id` or `type`!", call. = FALSE)
   }
-  
+
   # initialise local variables
   idx_by_id <- idx_by_type <- NULL
-  
-  # if `id` was provided, then find elements with that @id
-  if (!is.null(id)) {
-    idx_by_id <- .find_id_index(rocrate, id)
-  }
-  # if `type` was provided, then find elements with that @type
-  if (!is.null(type)) {
-    idx_by_type <- .find_type_index(rocrate, type)
-  }
-  
-  # combine (if both id and type were provided) the indices
-  idx <- NULL
+
+  # length validation / recycling rules
   if (!is.null(id) && !is.null(type)) {
-    idx <- idx_by_id & idx_by_type
+    len_id <- length(id)
+    len_type <- length(type)
+
+    if (len_id > 1 && len_type > 1 && len_id != len_type) {
+      stop(
+        "`id` and `type` must have equal length, ",
+        "or one of them must be length 1.",
+        call. = FALSE
+      )
+    }
+
+    # recycle shorter
+    if (len_id == 1 && len_type > 1) {
+      id <- rep(id, len_type)
+    } else if (len_type == 1 && len_id > 1) {
+      type <- rep(type, len_id)
+    }
+  }
+
+  results <- list()
+
+  if (!is.null(id) && !is.null(type)) {
+    # case 1: both id and type
+    for (i in seq_along(id)) {
+      idx_id <- .find_id_index(rocrate, id[i])
+      idx_type <- .find_type_index(rocrate, type[i])
+      idx <- idx_id & idx_type
+
+      if (any(idx)) {
+        results <- c(
+          results,
+          rocrate$`@graph`[idx]
+        )
+      }
+    }
   } else if (!is.null(id)) {
-    idx <- idx_by_id
-  } else if (!is.null(type)) {
-    idx <- idx_by_type
-  }
-  if (sum(idx) > 0) { # at least one entity was found
-    matching_entities <- rocrate$`@graph`[idx] |>
-      lapply(function(x) {
-        class(x) <- unique(c("entity", class(x)))
-        return(x)
-      })
-    return(matching_entities)
+    # case 2: only id (possibly vector)
+    idx <- .find_id_index(rocrate, id)
+    if (any(idx)) {
+      results <- rocrate$`@graph`[idx]
+    }
   } else {
-    msg <- "No entities were found with "
-    msg_id <- paste0("@id = '", id, "'")
-    msg_type <- paste0("@type = '", type, "'")
-    warning(msg,
-            ifelse(is.null(id), "", msg_id),
-            ifelse(!is.null(id) && !is.null(type), " and ", ""),
-            ifelse(is.null(type), "", msg_type),
-            "!",
-            call. = FALSE)
+    # case 3: only type (possibly vector)
+    idx <- .find_type_index(rocrate, type)
+    if (any(idx)) {
+      results <- rocrate$`@graph`[idx]
+    }
   }
-  
+
+  if (length(results) > 0) {
+    results <- lapply(results, function(x) {
+      class(x) <- unique(c("entity", class(x)))
+      x
+    })
+    return(results)
+  }
+
+  warning("No matching entities were found!", call. = FALSE)
   # return NULL invisibly, if no entities were found
   return(invisible(NULL))
 }
@@ -337,8 +367,7 @@ remove_entity <- function(rocrate, entity) {
   idx <- .find_id_index(rocrate, entity_id)
 
   if (sum(idx) > 0) {
-    message("Removing the entity with @id = '",
-            entity_id, "'.")
+    message("Removing the entity with @id = '", entity_id, "'.")
     rocrate$`@graph`[idx] <- NULL
   } else {
     warning("No entity found with @id = '", entity_id, "'.")
@@ -348,8 +377,8 @@ remove_entity <- function(rocrate, entity) {
 }
 
 #' Wrapper for \link[rocrateR]{remove_entity}
-#' 
-#' Wrapper for \link[rocrateR]{remove_entity}, can be use to remove multiple 
+#'
+#' Wrapper for \link[rocrateR]{remove_entity}, can be use to remove multiple
 #' entities.
 #'
 #' @inheritParams remove_entity
