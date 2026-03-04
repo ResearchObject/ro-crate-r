@@ -35,12 +35,9 @@
 #' @returns Boolean vector with index for entity with `@id`.
 #' @keywords internal
 .find_id_index <- function(rocrate, id) {
-  # check the `rocrate` object
-  is_rocrate(rocrate)
-
   # find the index in `@graph` with the matching {id}
-  getElement(rocrate, "@graph") |>
-    vapply(\(x) any(getElement(x, "@id") %in% id), logical(1))
+  ids <- vapply(rocrate$`@graph`, `[[`, character(1), "@id")
+  ids %in% id
 }
 
 #' Find `@type` index in RO-Crate
@@ -53,12 +50,9 @@
 #' @returns Boolean vector with index for entity(ies) with `@type`.
 #' @keywords internal
 .find_type_index <- function(rocrate, type) {
-  # check the `rocrate` object
-  is_rocrate(rocrate)
-
   # find the index in `@graph` with the matching {type} (at least one entry)
-  getElement(rocrate, "@graph") |>
-    vapply(\(x) any(getElement(x, "@type") %in% type), logical(1))
+  types <- vapply(rocrate$`@graph`, `[[`, character(1), "@type")
+  types %in% type
 }
 
 #' Validate entity
@@ -150,6 +144,6 @@
     "Missing: \n",
     paste0(" - ", required[!has_elements], collapse = "\n")
   )
-  warning(msg, call. = FALSE)
+  stop(msg, call. = FALSE)
   return(FALSE)
 }

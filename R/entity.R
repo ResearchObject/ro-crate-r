@@ -48,13 +48,15 @@ add_entity <- function(rocrate, entity, overwrite = FALSE) {
         "The entity, `@id = '",
         getElement(entity, "@id"),
         "'`, is part of the RO-Crate, `rocrate`. \n",
-        "Try a different `@id` or set `overwrite = TRUE`."
+        "Try a different `@id` or set `overwrite = TRUE`.",
+        call. = FALSE
       )
     }
     warning(
       "Overwritting the entity with @id = '",
       getElement(entity, "@id"),
-      "'"
+      "'",
+      call. = FALSE
     )
 
     rocrate$`@graph`[idx][[1]] <- entity
@@ -112,10 +114,14 @@ add_entity_value <- function(rocrate, id, key, value, overwrite = TRUE) {
     })
   # verify that only one index was found for the matching {id}
   if (sum(idx) != 1) {
-    stop("Please, ensure the given {id} is unique and part of the RO-Crate.")
+    stop(
+      "Please, ensure the given {id} is unique and part of the RO-Crate.",
+      call. = FALSE
+    )
   }
   # set the new {value} for {key} associated to {id}
-  rocrate$`@graph`[idx][[1]][key] <- list(value)
+  # rocrate$`@graph`[idx][[1]][key] <- list(value)
+  rocrate$`@graph`[[which(idx)]][[key]] <- value
   return(rocrate)
 }
 
@@ -370,7 +376,7 @@ remove_entity <- function(rocrate, entity) {
     message("Removing the entity with @id = '", entity_id, "'.")
     rocrate$`@graph`[idx] <- NULL
   } else {
-    warning("No entity found with @id = '", entity_id, "'.")
+    warning("No entity found with @id = '", entity_id, "'.", call. = FALSE)
   }
 
   return(rocrate)

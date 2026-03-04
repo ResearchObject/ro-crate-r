@@ -57,7 +57,7 @@ bag_rocrate.character <- function(
   }
 
   # create an RO-Crate ID
-  rocrate_id <- paste0("rocrate-", digest::digest(Sys.time()))
+  rocrate_id <- paste0("rocrate-", digest::digest(runif(1)))
 
   # create temporary directory, including `rocrate_id`
   tmp_dir <- file.path(tempdir(), rocrate_id, "data")
@@ -223,7 +223,6 @@ bagit_fetch <- function(path, rocrate = NULL) {
   # Also: https://www.rfc-editor.org/rfc/rfc8493.html#section-2.2.3
 }
 
-#' @importFrom utils packageVersion
 #' @keywords internal
 bagit_info <- function(path, files, extra_bag_info = NULL) {
   bagit_info_lines <- c(
@@ -320,7 +319,7 @@ is_rocrate_bag <- function(
       grepl("\\.zip$", path, ignore.case = TRUE)
   ) {
     # create temporary directory
-    tmp_dir <- file.path(tempdir(), digest::digest(Sys.time()))
+    tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
     dir.create(tmp_dir, recursive = TRUE)
     on.exit(unlink(tmp_dir, recursive = TRUE, force = TRUE), add = TRUE)
 
@@ -381,7 +380,7 @@ load_rocrate_bag <- function(
       grepl("\\.zip$", path, ignore.case = TRUE)
   ) {
     # create temporary directory
-    tmp_dir <- file.path(tempdir(), digest::digest(Sys.time()))
+    tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
     dir.create(tmp_dir, TRUE)
     on.exit(unlink(tmp_dir, recursive = TRUE, force = TRUE), add = TRUE)
 
