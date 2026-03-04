@@ -360,7 +360,7 @@ is_rocrate_bag <- function(
   return(valid)
 }
 
-#' Load a validated RO-Crate BagIt archive
+#' Load an RO-Crate BagIt archive
 #'
 #' @inheritParams is_rocrate_bag
 #'
@@ -406,9 +406,6 @@ load_rocrate_bag <- function(
   rocrate_path <- file.path(bag_root, "data", "ro-crate-metadata.json")
 
   rocrate_obj <- rocrateR::read_rocrate(rocrate_path)
-
-  # semantic validation
-  is_rocrate(rocrate_obj)
 
   return(rocrate_obj)
 }
