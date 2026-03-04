@@ -36,8 +36,8 @@
 #' @keywords internal
 .find_id_index <- function(rocrate, id) {
   # find the index in `@graph` with the matching {id}
-  ids <- vapply(rocrate$`@graph`, `[[`, character(1), "@id")
-  ids %in% id
+  aux <- vapply(rocrate$`@graph`, \(x) as.character(x[["@id"]]), character(1))
+  aux %in% id
 }
 
 #' Find `@type` index in RO-Crate
@@ -51,8 +51,8 @@
 #' @keywords internal
 .find_type_index <- function(rocrate, type) {
   # find the index in `@graph` with the matching {type} (at least one entry)
-  types <- vapply(rocrate$`@graph`, `[[`, character(1), "@type")
-  types %in% type
+  aux <- vapply(rocrate$`@graph`, \(x) as.character(x[["@type"]]), character(1))
+  aux %in% type
 }
 
 #' Validate entity
