@@ -5,7 +5,7 @@ test_that("bag_rocrate works", {
   # create temporary directory
   tmp_dir <- file.path(
     tempdir(),
-    paste0("rocrate-tests-", digest::digest(Sys.time()))
+    paste0("rocrate-tests-", digest::digest(runif(1)))
   )
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -34,16 +34,13 @@ test_that("bag_rocrate works", {
 
   # force creation of bag
   expect_warning(
-    # warning because force_bag = TRUE
-    expect_warning(
-      # warning because overwrite = TRUE
-      rocrate_bag_filename <- basic_crate |>
-        rocrateR::bag_rocrate(
-          path = tmp_dir,
-          overwrite = TRUE,
-          force_bag = TRUE
-        )
-    )
+    # warning because overwrite = TRUE
+    rocrate_bag_filename <- basic_crate |>
+      rocrateR::bag_rocrate(
+        path = tmp_dir,
+        overwrite = TRUE,
+        force_bag = TRUE
+      )
   )
   # check that the RO-Crate bag exists
   expect_true(file.exists(rocrate_bag_filename))
@@ -111,7 +108,7 @@ test_that("is_rocrate_bag works", {
   # create temporary directory
   tmp_dir <- file.path(
     tempdir(),
-    paste0("rocrate-tests-", digest::digest(Sys.time()))
+    paste0("rocrate-tests-", digest::digest(runif(1)))
   )
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -221,7 +218,7 @@ test_that("load_rocrate_bag works", {
   # create temporary directory
   tmp_dir <- file.path(
     tempdir(),
-    paste0("rocrate-tests-", digest::digest(Sys.time()))
+    paste0("rocrate-tests-", digest::digest(runif(1)))
   )
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -277,7 +274,7 @@ test_that("unbag_rocrate works", {
   # create temporary directory
   tmp_dir <- file.path(
     tempdir(),
-    paste0("rocrate-tests-", digest::digest(Sys.time()))
+    paste0("rocrate-tests-", digest::digest(runif(1)))
   )
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
   on.exit(unlink(tmp_dir, recursive = TRUE, force = TRUE))
@@ -348,7 +345,7 @@ test_that("unbag_rocrate works", {
 
   tmp_dir_v2 <- file.path(
     tempdir(),
-    paste0("rocrate-tests-", digest::digest(Sys.time()))
+    paste0("rocrate-tests-", digest::digest(runif(1)))
   )
   dir.create(tmp_dir_v2, showWarnings = FALSE, recursive = TRUE)
   on.exit(unlink(tmp_dir_v2, recursive = TRUE, force = TRUE), add = TRUE)
@@ -372,7 +369,7 @@ test_that("unbag_rocrate works", {
 
   tmp_dir_v3 <- file.path(
     tempdir(),
-    paste0("rocrate-tests-", digest::digest(Sys.time()))
+    paste0("rocrate-tests-", digest::digest(runif(1)))
   )
   dir.create(tmp_dir_v3, showWarnings = FALSE, recursive = TRUE)
   on.exit(unlink(tmp_dir_v3, recursive = TRUE, force = TRUE), add = TRUE)

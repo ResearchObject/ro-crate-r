@@ -9,5 +9,5 @@ test_that(".validate_entity works", {
 
   # create RO-Crate with entity missing @type
   incomplete_entity <- list(`@id` = 123456)
-  expect_warning(rocrateR::rocrate(incomplete_entity))
+  expect_error(rocrateR::rocrate(incomplete_entity))
 })

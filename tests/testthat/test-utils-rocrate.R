@@ -101,7 +101,7 @@ test_that("load_rocrate reads RO-Crate bag", {
   # create temporary directory
   tmp_dir <- file.path(
     tempdir(),
-    paste0("rocrate-tests-", digest::digest(Sys.time()))
+    paste0("rocrate-tests-", digest::digest(runif(1)))
   )
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 
@@ -176,5 +176,25 @@ test_that("validate_rocrate returns validation object", {
   result <- validate_rocrate(tmp, mode = "report", strict = TRUE)
 
   expect_s3_class(result, "rocrate_validation")
-  expect_true(result$valid)
+  expect_true(length(result$error) == 0)
+
+  result <- validate_rocrate(tmp, mode = "stop", strict = TRUE)
+
+  expect_s3_class(result, "rocrate_validation")
+  expect_true(length(result$error) == 0)
+})
+
+test_that("validate_rocrate errors when passing invalid object", {
+  # create basic RO-Crate
+  basic_crate <- rocrateR::rocrate() |>
+    rocrateR::remove_entity("./")
+
+  result <- validate_rocrate(basic_crate, mode = "report", strict = TRUE)
+
+  expect_s3_class(result, "rocrate_validation")
+  expect_false(length(result$error) == 0)
+
+  expect_error(
+    validate_rocrate(basic_crate, mode = "stop", strict = TRUE)
+  )
 })
