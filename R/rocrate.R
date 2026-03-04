@@ -31,13 +31,15 @@
 #'
 #' @examples
 #' rocrateR::rocrate()
-rocrate <- function(...,
-                    context = "https://w3id.org/ro/crate/1.2/context",
-                    conformsTo = gsub("\\/context$", "\\1", context),
-                    datePublished = Sys.Date(),
-                    description = "",
-                    license = "http://spdx.org/licenses/CC-BY-4.0",
-                    name = "") {
+rocrate <- function(
+  ...,
+  context = "https://w3id.org/ro/crate/1.2/context",
+  conformsTo = gsub("\\/context$", "\\1", context),
+  datePublished = Sys.Date(),
+  description = "",
+  license = "http://spdx.org/licenses/CC-BY-4.0",
+  name = ""
+) {
   new_ro_crate <- list(
     `@context` = context,
     `@graph` = list(
@@ -72,11 +74,15 @@ rocrate <- function(...,
     sapply(\(i) do.call(.validate_entity, lapply(extra_entities_tbl, `[[`, i)))
 
   # combine the base crate with any extra entities
-  if (length(idx) > 0)
-    new_ro_crate$`@graph` <- c(new_ro_crate$`@graph`, unname(extra_entities[idx]))
+  if (length(idx) > 0) {
+    new_ro_crate$`@graph` <- c(
+      new_ro_crate$`@graph`,
+      unname(extra_entities[idx])
+    )
+  }
 
   # set class for the new object
-  class(new_ro_crate) <- c("rocrate", class(new_ro_crate))
+  new_ro_crate <- structure(new_ro_crate, class = c("rocrate", "list"))
 
   return(new_ro_crate)
 }
@@ -99,14 +105,16 @@ rocrate <- function(...,
 #'
 #' @examples
 #' rocrateR::rocrate_5s()
-rocrate_5s <- function(...,
-                       context = "https://w3id.org/ro/crate/1.2/context",
-                       conformsTo = gsub("\\/context$", "\\1", context),
-                       datePublished = Sys.Date(),
-                       description = "",
-                       license = "http://spdx.org/licenses/CC-BY-4.0",
-                       name = "",
-                       v5scrate = 0.4) {
+rocrate_5s <- function(
+  ...,
+  context = "https://w3id.org/ro/crate/1.2/context",
+  conformsTo = gsub("\\/context$", "\\1", context),
+  datePublished = Sys.Date(),
+  description = "",
+  license = "http://spdx.org/licenses/CC-BY-4.0",
+  name = "",
+  v5scrate = 0.4
+) {
   # create entity for the 5 safes profile
   v5scrate_id <- paste0("https://w3id.org/5s-crate/", v5scrate)
   prof_5scrate <- list(
@@ -116,13 +124,15 @@ rocrate_5s <- function(...,
   )
 
   # create basic RO-Crate
-  new_ro_crate <- rocrate(...,
-                          context = context,
-                          conformsTo = conformsTo,
-                          datePublished = datePublished,
-                          description = description,
-                          license = license,
-                          name = name)
+  new_ro_crate <- rocrate(
+    ...,
+    context = context,
+    conformsTo = conformsTo,
+    datePublished = datePublished,
+    description = description,
+    license = license,
+    name = name
+  )
 
   # edit the new RO-Crate
   new_ro_crate <- new_ro_crate |>
