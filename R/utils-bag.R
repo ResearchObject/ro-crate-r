@@ -80,7 +80,7 @@ bag_rocrate.character <- function(
     })
 
   # check that all the files were copied, unless force_bag = TRUE
-  if (!all(rocrate_files_status) || force_bag) {
+  if (!all(rocrate_files_status)) {
     if (!force_bag) {
       stop(
         "It was not possible to bag all your files!\nMissing file(s):\n",
@@ -769,7 +769,7 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
   }
 
   # check if the `output` directory exists, if not, then it creates it
-  if (dir.exists(output)) {
+  if (!dir.exists(output)) {
     dir.create(output, showWarnings = FALSE, recursive = TRUE)
   }
 
