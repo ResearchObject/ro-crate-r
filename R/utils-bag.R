@@ -13,7 +13,7 @@
 #'
 #' @export
 #'
-#' @family rocrate_bagit
+#' @family RO-Crate BagIt archive functions
 #' @examples
 #' # -------- SETUP --------
 #' basic_crate <- rocrateR::rocrate()
@@ -313,7 +313,7 @@ bagit_tagmanifest <- function(path, files, algo = "sha512") {
 #' valid.
 #' @export
 #'
-#' @family rocrate_bagit
+#' @family RO-Crate BagIt archive functions
 #'
 #' @examples
 #' # -------- SETUP --------
@@ -402,7 +402,7 @@ is_rocrate_bag <- function(
 #' @return An object with the \link[rocrateR]{rocrate} class.
 #' @export
 #'
-#' @family rocrate_bagit
+#' @family RO-Crate BagIt archive functions
 #'
 #' @examples
 #' # -------- SETUP --------
@@ -716,7 +716,12 @@ load_rocrate_bag <- function(
 
   # load the manifest file
   bagit_manifest_txt <- manifest_filename |>
-    utils::read.table(header = FALSE, col.names = c("checksum", "filename"))
+    utils::read.delim(
+      header = FALSE,
+      sep = " ",
+      col.names = c("checksum", "filename"),
+      stringsAsFactors = FALSE
+    )
 
   # check if the manifest file is empty
   if (nrow(bagit_manifest_txt) == 0) {
@@ -814,7 +819,7 @@ load_rocrate_bag <- function(
 #'
 #' @returns String with path to root of the RO-Crate.
 #'
-#' @family rocrate_bagit
+#' @family RO-Crate BagIt archive functions
 #'
 #' @examples
 #' # -------- SETUP --------
