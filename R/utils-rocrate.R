@@ -13,15 +13,8 @@
 #' basic_crate |>
 #'   rocrateR::is_rocrate()
 is_rocrate <- function(rocrate, strict = FALSE) {
-  # local bindings
-  errors <- character()
-
-  errors <- c(errors, .validate_structure(rocrate))
-  errors <- c(errors, .validate_semantics(rocrate))
-
-  if (strict) {
-    errors <- c(errors, .validate_rocrate_profile(rocrate))
-  }
+  # call internal helper to identify errors
+  errors <- .validate_rocrate(rocrate, strict = strict)
 
   if (length(errors)) {
     stop(
@@ -45,11 +38,10 @@ is_rocrate <- function(rocrate, strict = FALSE) {
 #' @param bagit_version String with version of BagIt used to generate the
 #'     RO-Crate bag (default: `"1.0"`).
 #'     See \doi{10.17487/RFC8493} for more details.
-#' @param strict Logical. If TRUE, perform strict profile validation.
 #' @param verbose Logical. If TRUE, emit diagnostic messages.
 #' @param ... Reserved for future extensions.
 #'
-#' @return A validated `rocrate` object.
+#' @return A `rocrate` object.
 #' @export
 load_rocrate <- function(x, ...) {
   UseMethod("load_rocrate")
@@ -57,12 +49,10 @@ load_rocrate <- function(x, ...) {
 
 #' @rdname load_rocrate
 #' @export
-load_rocrate.rocrate <- function(x, ..., strict = FALSE, verbose = FALSE) {
+load_rocrate.rocrate <- function(x, ..., verbose = FALSE) {
   if (verbose) {
     message("Input is already a rocrate object.")
   }
-
-  is_rocrate(x, strict = strict)
 
   return(x)
 }
@@ -73,7 +63,6 @@ load_rocrate.character <- function(
   x,
   ...,
   bagit_version = "1.0",
-  strict = FALSE,
   verbose = FALSE
 ) {
   if (!file.exists(x)) {
@@ -91,7 +80,6 @@ load_rocrate.character <- function(
     }
 
     rocrate <- read_rocrate(x)
-    is_rocrate(rocrate, strict = strict)
 
     return(rocrate)
   }
@@ -126,8 +114,6 @@ load_rocrate.character <- function(
 
       rocrate <- read_rocrate(metadata_path)
 
-      is_rocrate(rocrate, strict = strict)
-
       return(rocrate)
     }
   }
@@ -153,27 +139,19 @@ validate_rocrate <- function(
   mode = c("stop", "report"),
   strict = FALSE
 ) {
-  # local binding
-  errors <- character()
-
   # validation reporting mode
   mode <- match.arg(mode)
 
+  # load the RO-Crate
   rocrate <- load_rocrate(x, strict = strict)
 
-  # structure validation
-  errors <- c(errors, .validate_structure(rocrate))
-  # semantic validation
-  errors <- c(errors, .validate_semantics(rocrate))
+  # validate the RO-Crate
+  errors <- .validate_rocrate(rocrate, strict = strict)
 
-  # profile validation
-  if (strict) {
-    errors <- c(errors, .validate_rocrate_profile(rocrate))
-  }
-
+  # create validation report
   result <- new_rocrate_validation(errors = errors)
 
-  if (mode == "stop" && !result$valid) {
+  if (mode == "stop" && length(result$error) != 0) {
     stop(paste(result$errors, collapse = "\n"), call. = FALSE)
   }
 
@@ -249,6 +227,25 @@ validate_rocrate <- function(
   errors
 }
 
+#' Validate RO-Crate and return list of errors identied
+#'
+#' @inheritParams is_rocrate
+#'
+#' @returns Vector of strings with errors identified
+#' @keywords internal
+.validate_rocrate <- function(rocrate, strict = FALSE) {
+  errors <- character()
+
+  errors <- c(errors, .validate_structure(rocrate))
+  errors <- c(errors, .validate_semantics(rocrate))
+
+  if (strict) {
+    errors <- c(errors, .validate_rocrate_profile(rocrate))
+  }
+
+  errors
+}
+
 #' Validate RO-Crate profile
 #'
 #' Performs profile-specific validation if `conformsTo` is declared.
@@ -263,7 +260,15 @@ validate_rocrate <- function(
   graph <- rocrate$`@graph`
   ids <- vapply(graph, function(x) x$`@id`, character(1))
 
-  root <- graph[[which(ids == "./")]]
+  # get root index
+  root_idx <- which(ids == "./")
+
+  # check if root (./) entity is missing
+  if (length(root_idx) == 0) {
+    return(errors)
+  }
+
+  root <- graph[[root_idx]]
 
   if (is.null(root$conformsTo)) {
     return(errors)
