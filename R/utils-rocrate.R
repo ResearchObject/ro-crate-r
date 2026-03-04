@@ -143,7 +143,7 @@ validate_rocrate <- function(
   mode <- match.arg(mode)
 
   # load the RO-Crate
-  rocrate <- load_rocrate(x, strict = strict)
+  rocrate <- load_rocrate(x)
 
   # validate the RO-Crate
   errors <- .validate_rocrate(rocrate, strict = strict)
@@ -151,12 +151,43 @@ validate_rocrate <- function(
   # create validation report
   result <- new_rocrate_validation(errors = errors)
 
-  if (mode == "stop" && length(result$error) != 0) {
+  if (mode == "stop" && length(result$errors) != 0) {
     stop(paste(result$errors, collapse = "\n"), call. = FALSE)
   }
 
   result
 }
+
+#' Get root entity for RO-Crate
+#'
+#' @inheritParams is_rocrate
+#'
+#' @returns Root entity for `rocrate`.
+#' @keywords internal
+.get_root_entity <- function(rocrate) {
+  graph <- rocrate$`@graph`
+  ids <- vapply(graph, function(x) x$`@id`, character(1))
+
+  root_idx <- which(ids == "./")
+
+  if (length(root_idx) == 0) {
+    return(NULL)
+  }
+
+  graph[[root_idx]]
+}
+
+#' Get entity IDs for RO-Crate
+#'
+#' @inheritParams is_rocrate
+#'
+#' @returns Vector entity IDs for `rocrate`.
+#' @keywords internal
+.get_entity_ids <- function(rocrate) {
+  graph <- rocrate$`@graph`
+  vapply(graph, function(x) x$`@id`, character(1))
+}
+
 
 #' Validate minimal RO-Crate structure
 #'
@@ -255,26 +286,39 @@ validate_rocrate <- function(
 #' @return Character vector of errors.
 #' @keywords internal
 .validate_rocrate_profile <- function(rocrate) {
+  # local binding
   errors <- character()
 
-  graph <- rocrate$`@graph`
-  ids <- vapply(graph, function(x) x$`@id`, character(1))
+  root <- .get_root_entity(rocrate)
 
-  # get root index
-  root_idx <- which(ids == "./")
-
-  # check if root (./) entity is missing
-  if (length(root_idx) == 0) {
+  if (is.null(root)) {
     return(errors)
   }
 
-  root <- graph[[root_idx]]
+  conforms_to <- root$conformsTo
 
-  if (is.null(root$conformsTo)) {
+  if (is.null(conforms_to)) {
     return(errors)
   }
 
-  # Placeholder for future profile-specific logic
+  # Normalise to character vector of URLs
+  profile_urls <- unlist(lapply(conforms_to, function(x) {
+    if (is.list(x)) x$`@id` else x
+  }))
+
+  for (url in profile_urls) {
+    profile <- .rocrate_profiles[[url]]
+
+    # Skip unknown profiles silently
+    if (is.null(profile)) {
+      next
+    }
+
+    errors <- c(
+      errors,
+      .validate_against_profile(rocrate, profile)
+    )
+  }
 
   errors
 }
