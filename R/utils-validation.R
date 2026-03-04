@@ -17,8 +17,7 @@ new_rocrate_validation <- function(
     list(
       errors = errors,
       warnings = warnings,
-      info = info,
-      valid = length(errors) == 0
+      info = info
     ),
     class = "rocrate_validation"
   )
