@@ -9,10 +9,27 @@
 #'     object with the \link[rocrateR]{rocrate} class.
 #' @param ... Additional parameters, see below.
 #'
+#' @returns String with full path to the final RO-Crate bag.
+#'
 #' @export
 #'
-#' @family bag_rocrate
-# @examples
+#' @family rocrate_bagit
+#' @examples
+#' # -------- SETUP --------
+#' basic_crate <- rocrateR::rocrate()
+#' # temp file
+#' tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+#' tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
+#' dir.create(tmp_dir)
+#'
+#' # -------- INPUT: RO-Crate --------
+#' rocrateR::bag_rocrate(basic_crate, path = tmp_dir)
+#'
+#' # -------- INPUT: Path --------
+#' rocrateR::bag_rocrate(tmp_dir, output = tmp_dir)
+#'
+#' # delete temp directory
+#' unlink(tmp_dir, recursive = TRUE)
 bag_rocrate <- function(x, ...) {
   UseMethod("bag_rocrate", x)
 }
@@ -26,8 +43,6 @@ bag_rocrate <- function(x, ...) {
 #'     (default: `FALSE` ~ check if all the files were copied successfully).
 #' @param extra_bag_info Vector of strings to include in the `bag-info.txt`
 #'     file (e.g., `Contact-Email: first.last@rocrate.org`).
-#'
-#' @returns String with full path to the final RO-Crate bag.
 #'
 #' @export
 bag_rocrate.character <- function(
@@ -298,7 +313,28 @@ bagit_tagmanifest <- function(path, files, algo = "sha512") {
 #' valid.
 #' @export
 #'
-#' @family bag_rocrate
+#' @family rocrate_bagit
+#'
+#' @examples
+#' # -------- SETUP --------
+#' basic_crate <- rocrateR::rocrate()
+#' # temp file
+#' tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+#' tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
+#' dir.create(tmp_dir)
+#'
+#' # bag RO-Crate
+#' path_to_roc_bag <- rocrateR::bag_rocrate(basic_crate, path = tmp_dir)
+#'
+#' # -------- INPUT: RO-Crate BagIt archive --------
+#' rocrateR::is_rocrate_bag(path_to_roc_bag)
+#'
+#' # -------- INPUT: Path --------
+#' rocrateR::unbag_rocrate(path_to_roc_bag) |>
+#'   rocrateR::is_rocrate_bag()
+#'
+#' # delete temp directory
+#' unlink(tmp_dir, recursive = TRUE)
 is_rocrate_bag <- function(
   path,
   algo = NULL,
@@ -365,6 +401,29 @@ is_rocrate_bag <- function(
 #'
 #' @return An object with the \link[rocrateR]{rocrate} class.
 #' @export
+#'
+#' @family rocrate_bagit
+#'
+#' @examples
+#' # -------- SETUP --------
+#' basic_crate <- rocrateR::rocrate()
+#' # temp file
+#' tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+#' tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
+#' dir.create(tmp_dir)
+#'
+#' # bag RO-Crate
+#' path_to_roc_bag <- rocrateR::bag_rocrate(basic_crate, path = tmp_dir)
+#'
+#' # -------- INPUT: RO-Crate BagIt archive --------
+#' rocrateR::load_rocrate_bag(path_to_roc_bag)
+#'
+#' # -------- INPUT: Path --------
+#' rocrateR::unbag_rocrate(path_to_roc_bag) |>
+#'   rocrateR::load_rocrate_bag()
+#'
+#' # delete temp directory
+#' unlink(tmp_dir, recursive = TRUE)
 load_rocrate_bag <- function(
   path,
   algo = NULL,
@@ -755,7 +814,24 @@ load_rocrate_bag <- function(
 #'
 #' @returns String with path to root of the RO-Crate.
 #'
-#' @family bag_rocrate
+#' @family rocrate_bagit
+#'
+#' @examples
+#' # -------- SETUP --------
+#' basic_crate <- rocrateR::rocrate()
+#' # temp file
+#' tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+#' tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
+#' dir.create(tmp_dir)
+#'
+#' # bag RO-Crate
+#' path_to_roc_bag <- rocrateR::bag_rocrate(basic_crate, path = tmp_dir)
+#'
+#' # -------- INPUT: Path --------
+#' rocrateR::unbag_rocrate(path_to_roc_bag)
+#'
+#' # delete temp directory
+#' unlink(tmp_dir, recursive = TRUE)
 unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
   # check a valid path was given
   if (!file.exists(path)) {
