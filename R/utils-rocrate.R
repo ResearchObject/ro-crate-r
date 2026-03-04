@@ -226,7 +226,7 @@ validate_rocrate <- function(
 #' @keywords internal
 .get_root_entity <- function(rocrate) {
   graph <- rocrate$`@graph`
-  ids <- vapply(graph, function(x) x$`@id`, character(1))
+  ids <- .get_entity_ids(rocrate)
 
   root_idx <- which(ids == "./")
 
@@ -245,7 +245,7 @@ validate_rocrate <- function(
 #' @keywords internal
 .get_entity_ids <- function(rocrate) {
   graph <- rocrate$`@graph`
-  vapply(graph, function(x) x$`@id`, character(1))
+  vapply(graph, function(x) as.character(x$`@id`), character(1))
 }
 
 
@@ -292,7 +292,7 @@ validate_rocrate <- function(
     return(c(errors, "'@graph' must be a list."))
   }
 
-  ids <- vapply(graph, function(x) x$`@id`, character(1), USE.NAMES = FALSE)
+  ids <- .get_entity_ids(rocrate)
 
   # check root dataset exists
   if (!"./" %in% ids) {
