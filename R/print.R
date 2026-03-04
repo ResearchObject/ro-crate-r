@@ -65,7 +65,12 @@ print.entity <- function(x, ...) {
 print.rocrate_validation <- function(x, ...) {
   cat("<rocrate_validation>\n")
 
-  if (x$valid) {
+  is_valid <- function(x) {
+    inherits(x, "rocrate_validation") &&
+      length(x$errors) == 0
+  }
+
+  if (is_valid(x)) {
     cat("\U2714 Valid RO-Crate\n")
   } else {
     cat("\U2716 Invalid RO-Crate\n")
