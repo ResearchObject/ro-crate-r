@@ -9,13 +9,16 @@
 #' @keywords internal
 .capture_extra_entities <- function(...) {
   extra_entities_lst <- list(...)
-  if (length(extra_entities_lst) == 0)
+  if (length(extra_entities_lst) == 0) {
     return(extra_entities_lst)
+  }
   # extra_entities_names <- names(extra_entities_lst)
   # # extract names for extra entities with missing names
   # idx <- is.null(extra_entities_names)
-  new_names <- extra_entities_lst |>#[idx] |>
-    sapply(\(x) paste0(tolower(getElement(x, "@type")), "_" , getElement(x, "@id")))
+  new_names <- extra_entities_lst |> #[idx] |>
+    sapply(\(x) {
+      paste0(tolower(getElement(x, "@type")), "_", getElement(x, "@id"))
+    })
   # assign new names
   # names(extra_entities_lst)[idx] <- new_names
   names(extra_entities_lst) <- new_names
@@ -37,19 +40,12 @@
 
   # find the index in `@graph` with the matching {id}
   getElement(rocrate, "@graph") |>
-    sapply(\(x) getElement(x, "@id") == id)
-  # idx <- rocrate$`@graph` |>
-  #   sapply(\(x) x$`@id` == id)
-  # # verify that only one index was found for the matching {id}
-  # if(sum(idx) != 1) {
-  #   stop("Please, ensure the given {id} is unique and part of the RO-Crate.")
-  # }
-  # return(idx)
+    vapply(\(x) any(getElement(x, "@id") %in% id), logical(1))
 }
 
 #' Find `@type` index in RO-Crate
 #'
-#' Find `@type` index in RO-Crate. Useful to retrieve entities with a particular 
+#' Find `@type` index in RO-Crate. Useful to retrieve entities with a particular
 #' type in the RO-Crate.
 #'
 #' @inheritParams add_entity_value
@@ -59,10 +55,10 @@
 .find_type_index <- function(rocrate, type) {
   # check the `rocrate` object
   is_rocrate(rocrate)
-  
+
   # find the index in `@graph` with the matching {type} (at least one entry)
   getElement(rocrate, "@graph") |>
-    sapply(\(x) type %in% getElement(x, "@type"))
+    vapply(\(x) any(getElement(x, "@type") %in% type), logical(1))
 }
 
 #' Validate entity
@@ -74,13 +70,23 @@
 #'
 #' @returns Boolean value to indicate if the given entity is valid.
 #' @keywords internal
-.validate_entity <- function(x, ..., ent_name = NULL, required = c("@id", "@type")) {
+.validate_entity <- function(
+  x,
+  ...,
+  ent_name = NULL,
+  required = c("@id", "@type")
+) {
   UseMethod(".validate_entity", x)
 }
 
 #' @method validate_entity character
 #' @keywords internal
-.validate_entity.character <- function(x, ..., ent_name = NULL, required = "type") {
+.validate_entity.character <- function(
+  x,
+  ...,
+  ent_name = NULL,
+  required = "type"
+) {
   has_elements <- sapply(required, \(x) !is.null(getElement(list(...), x)))
   has_elements |>
     .validate_entity_overview(required, ent_name)
@@ -88,13 +94,23 @@
 
 #' @method validate_entity entity
 #' @keywords internal
-.validate_entity.entity <- function(x, ..., ent_name = NULL, required = c("@id", "@type")) {
+.validate_entity.entity <- function(
+  x,
+  ...,
+  ent_name = NULL,
+  required = c("@id", "@type")
+) {
   NextMethod()
 }
 
 #' @method validate_entity list
 #' @keywords internal
-.validate_entity.list <- function(x, ..., ent_name = NULL, required = c("@id", "@type")) {
+.validate_entity.list <- function(
+  x,
+  ...,
+  ent_name = NULL,
+  required = c("@id", "@type")
+) {
   has_elements <- required %in% names(x)
   has_elements |>
     .validate_entity_overview(required, ent_name)
@@ -102,7 +118,12 @@
 
 #' @method validate_entity numeric
 #' @keywords internal
-.validate_entity.numeric <- function(x, ..., ent_name = NULL, required = "type") {
+.validate_entity.numeric <- function(
+  x,
+  ...,
+  ent_name = NULL,
+  required = "type"
+) {
   has_elements <- sapply(required, \(x) !is.null(getElement(list(...), x)))
   has_elements |>
     .validate_entity_overview(required, ent_name)
@@ -115,16 +136,20 @@
 #' @returns Boolean flag with result of entity validation
 #' @keywords internal
 .validate_entity_overview <- function(has_elements, required, ent_name = NULL) {
-  if (all(has_elements))
+  if (all(has_elements)) {
     return(TRUE)
+  }
 
   # In case there are missing elements from those `required`
   msg <- ""
-  if (!is.null(ent_name))
+  if (!is.null(ent_name)) {
     msg <- paste0("===== Checking: ", ent_name, " =====\n")
-  msg <- paste0(msg, "Missing: \n", 
-                paste0(" - ", required[!has_elements], collapse = "\n"))
+  }
+  msg <- paste0(
+    msg,
+    "Missing: \n",
+    paste0(" - ", required[!has_elements], collapse = "\n")
+  )
   warning(msg, call. = FALSE)
   return(FALSE)
 }
-
