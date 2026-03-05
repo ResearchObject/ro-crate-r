@@ -20,6 +20,8 @@
 #'     file (e.g., `Contact-Email: first.last@rocrate.org`).
 #' @param write_content Logical. If TRUE, write `content` fields of
 #'   `File` entities to disk before bagging.
+#' @param create_dir Boolean flag to indicate if the `path` should be created,
+#'    if it doesn't exist.
 #'
 #' @returns String with full path to the final RO-Crate bag.
 #'
@@ -172,18 +174,23 @@ bag_rocrate.rocrate <- function(
   overwrite = FALSE,
   force_bag = FALSE,
   extra_bag_info = NULL,
-  write_content = TRUE
+  write_content = TRUE,
+  create_dir = TRUE
 ) {
   # check the `x` object
   is_rocrate(x)
   # check a valid path was given
   if (!dir.exists(path)) {
-    stop(
-      "The given `path` does not exist!\nCreate with:\n\t`mkdir ",
-      path,
-      "`",
-      call. = FALSE
-    )
+    if (create_dir) {
+      dir.create(path, showWarnings = FALSE, recursive = TRUE)
+    } else {
+      stop(
+        "The given `path` does not exist!\nCreate with:\n\t`mkdir ",
+        path,
+        "`",
+        call. = FALSE
+      )
+    }
   }
   # check if the given path contains an RO-Crate metadata descriptor file
   if (file.exists(file.path(path, "ro-crate-metadata.json"))) {
