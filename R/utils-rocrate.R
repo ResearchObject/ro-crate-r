@@ -150,7 +150,7 @@ add_notebook <- function(rocrate, file_id, name = NULL, content = NULL) {
   encoding <- switch(
     tolower(ext),
     "ipynb" = "application/x-ipynb+json",
-    "Rmd" = "text/markdown",
+    "rmd" = "text/markdown",
     "qmd" = "text/markdown",
     "md" = "text/markdown",
     "text/plain"
@@ -177,7 +177,7 @@ add_notebook <- function(rocrate, file_id, name = NULL, content = NULL) {
 #'
 #' @export
 add_project <- function(rocrate, name, description = NULL) {
-  id <- paste0("#project-", tolower(name))
+  id <- paste0("#project-", gsub(" ", "_", tolower(name)))
 
   # create project entity
   proj <- rocrateR::entity(
@@ -191,6 +191,32 @@ add_project <- function(rocrate, name, description = NULL) {
     rocrateR::add_entity(proj)
 }
 
+#' Add README file to an RO-Crate
+#'
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
+#' @param text Character vector with README content.
+#' @param filename README filename.
+#'
+#' @return Updated rocrate object.
+#' @export
+add_readme <- function(
+  rocrate,
+  text,
+  filename = "README.md"
+) {
+  # create README entity
+  ent <- rocrateR::entity(
+    filename,
+    type = "File",
+    name = filename,
+    encodingFormat = "text/markdown",
+    content = list(text)
+  )
+
+  rocrate |>
+    rocrateR::add_entity(ent)
+}
+
 #' Add software application entity
 #'
 #' @param rocrate RO-Crate object, see [rocrateR::rocrate].
@@ -199,7 +225,7 @@ add_project <- function(rocrate, name, description = NULL) {
 #'
 #' @export
 add_software <- function(rocrate, name, version = NULL) {
-  id <- paste0("#software-", tolower(name))
+  id <- paste0("#software-", gsub(" ", "_", tolower(name)))
 
   # create SoftwareApplication entity
   sw <- rocrateR::entity(
@@ -278,6 +304,49 @@ add_workflow <- function(
     rocrateR::add_entity(file_entity) |>
     rocrateR::add_entity(language_entity) |>
     rocrateR::add_entity(workflow_entity)
+}
+
+#' Automatically create an RO-Crate from a project directory
+#'
+#' @param path String with project directory.
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
+#'
+#' @export
+crate_project <- function(path, rocrate = rocrateR::rocrate()) {
+  files <- list.files(path, recursive = TRUE)
+
+  # loop through the files in `path`, create and add entities for each
+  for (f in files) {
+    ext <- tolower(tools::file_ext(f))
+
+    if (ext %in% c("csv")) {
+      rocrate <- rocrate |>
+        rocrateR::add_dataset(
+          data = utils::read.csv(file.path(path, f)),
+          file_id = f
+        )
+    } else if (ext %in% c("r")) {
+      rocrate <- rocrate |>
+        rocrateR::add_workflow(
+          file_id = f
+        )
+    } else if (ext %in% c("rmd", "qmd", "ipynb")) {
+      rocrate <- rocrate |>
+        rocrateR::add_notebook(
+          file_id = f
+        )
+    } else {
+      rocrate <- rocrate |>
+        rocrateR::add_entity(
+          rocrateR::entity(
+            f,
+            type = "File"
+          )
+        )
+    }
+  }
+
+  rocrate
 }
 
 #' Extract `File` entities content to files
