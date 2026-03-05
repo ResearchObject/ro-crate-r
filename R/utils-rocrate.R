@@ -1,3 +1,65 @@
+#' Add a dataset to an RO-Crate
+#'
+#' This helper converts an R object (typically a `data.frame`) into a
+#' dataset inside the RO-Crate. The object is stored in the `content`
+#' field and written to disk when calling `extract_content()` or
+#' `bag_rocrate(write_content = TRUE)`.
+#'
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
+#' @param data R object to store (typically a `data.frame`).
+#' @param file_id Filename for the dataset file.
+#' @param name Dataset name.
+#' @param description Optional dataset description.
+#' @param encodingFormat MIME type (default `"text/csv"`).
+#'
+#' @returns Updated `rocrate` object.
+#'
+#' @export
+add_dataset <- function(
+  rocrate,
+  data,
+  file_id,
+  name = NULL,
+  description = NULL,
+  encodingFormat = "text/csv"
+) {
+  if (missing(file_id)) {
+    stop("file_id must be provided")
+  }
+
+  if (is.null(name)) {
+    name <- file_id
+  }
+
+  # create File entity
+  file_entity <- rocrateR::entity(
+    x = file_id,
+    type = "File",
+    name = file_id,
+    encodingFormat = encodingFormat,
+    content = data
+  )
+
+  # create Dataset entity that contains the file
+  dataset_id <- paste0(
+    "#dataset-",
+    tools::file_path_sans_ext(basename(file_id))
+  )
+
+  dataset_entity <- rocrateR::entity(
+    x = dataset_id,
+    type = "Dataset",
+    name = name,
+    description = description,
+    hasPart = list(list(`@id` = file_id))
+  )
+
+  # add File and Dataset entities to the rocrate
+  rocrate |>
+    rocrateR::add_entity(file_entity) |>
+    rocrateR::add_entity(dataset_entity)
+}
+
 #' Extract `File` entities content to files
 #'
 #' Write the `content` field of `File` entities to disk using their `@id`
@@ -17,10 +79,12 @@ extract_content <- function(rocrate, path, overwrite = FALSE) {
   }
 
   # get 'File' entities with missing `content` (if any)
-  file_ents <- rocrate |>
-    rocrateR::get_entity(type = "File") |>
-    Filter(function(x) !is.null(x$content), x = _)
-
+  ## ignore warnings about not finding `File` entities
+  suppressWarnings({
+    file_ents <- rocrate |>
+      rocrateR::get_entity(type = "File") |>
+      Filter(function(x) !is.null(x$content), x = _)
+  })
   # cycle through each File entity (if any) and attempt writing contents
   for (ent in file_ents) {
     file <- file.path(path, ent$`@id`)
@@ -345,9 +409,12 @@ validate_rocrate <- function(
 #' @keywords internal
 .load_content <- function(rocrate, roc_path, max_file_size = 10 * 1024^2) {
   # get 'File' entities with missing `content` (if any)
-  file_ents <- rocrate |>
-    rocrateR::get_entity(type = "File") |>
-    Filter(function(x) is.null(x$content), x = _)
+  ## ignore warnings about not finding `File` entities
+  suppressWarnings({
+    file_ents <- rocrate |>
+      rocrateR::get_entity(type = "File") |>
+      Filter(function(x) is.null(x$content), x = _)
+  })
   # attempt loading contents, if any entities were found
   for (ent in file_ents) {
     # attach the root of the RO-Crate to the current File entity
