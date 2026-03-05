@@ -60,6 +60,95 @@ add_dataset <- function(
     rocrateR::add_entity(dataset_entity)
 }
 
+#' Add software application entity
+#'
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
+#' @param name Software name
+#' @param version Version string
+#'
+#' @export
+add_software <- function(rocrate, name, version = NULL) {
+  id <- paste0("#software-", tolower(name))
+
+  # create SoftwareApplication entity
+  sw <- rocrateR::entity(
+    x = id,
+    type = "SoftwareApplication",
+    name = name,
+    version = version
+  )
+
+  # add new entity to the RO-Crate
+  rocrate |>
+    rocrateR::add_entity(sw)
+}
+
+#' Add a workflow to an RO-Crate
+#'
+#' Register a workflow script (e.g. R, Python, Nextflow) as a
+#' `ComputationalWorkflow` entity inside the RO-Crate.
+#'
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
+#' @param file_id Filename of the workflow script.
+#' @param name Workflow name.
+#' @param description Optional description.
+#' @param language Programming language (default `"R"`).
+#' @param content Optional script contents.
+#'
+#' @returns Updated `rocrate` object.
+#'
+#' @export
+add_workflow <- function(
+  rocrate,
+  file_id,
+  name = NULL,
+  description = NULL,
+  language = "R",
+  content = NULL
+) {
+  if (missing(file_id)) {
+    stop("file_id must be provided")
+  }
+
+  if (is.null(name)) {
+    name <- file_id
+  }
+
+  # create File entity for the workflow scripts
+  file_entity <- rocrateR::entity(
+    x = file_id,
+    type = "File",
+    name = file_id,
+    encodingFormat = "text/plain",
+    content = content
+  )
+
+  # create ComputerLanguage entity for the workflow scripts language
+  lang_id <- paste0("#lang-", tolower(language))
+  language_entity <- rocrateR::entity(
+    x = lang_id,
+    type = "ComputerLanguage",
+    name = language
+  )
+
+  # create ComputationalWorkflow entity
+  wf_id <- paste0("#workflow-", tools::file_path_sans_ext(basename(file_id)))
+  workflow_entity <- rocrateR::entity(
+    x = wf_id,
+    type = "ComputationalWorkflow",
+    name = name,
+    description = description,
+    programmingLanguage = list(`@id` = lang_id),
+    hasPart = list(list(`@id` = file_id))
+  )
+
+  # add new entities to the RO-Crate
+  rocrate |>
+    rocrateR::add_entity(file_entity) |>
+    rocrateR::add_entity(language_entity) |>
+    rocrateR::add_entity(workflow_entity)
+}
+
 #' Extract `File` entities content to files
 #'
 #' Write the `content` field of `File` entities to disk using their `@id`
