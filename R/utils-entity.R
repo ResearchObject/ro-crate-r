@@ -145,5 +145,4 @@
     paste0(" - ", required[!has_elements], collapse = "\n")
   )
   stop(msg, call. = FALSE)
-  return(FALSE)
 }

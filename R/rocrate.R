@@ -68,10 +68,17 @@ rocrate <- function(
   if (length(extra_entities) > 0) {
     # Validate each extra entity
     idx <- sapply(seq_along(extra_entities), function(i) {
-      .validate_entity(
-        x = extra_entities[[i]],
-        ent_name = names(extra_entities)[i],
-        required = c("@id", "@type")
+      tryCatch(
+        {
+          .validate_entity(
+            x = extra_entities[[i]],
+            ent_name = names(extra_entities)[i],
+            required = c("@id", "@type")
+          )
+        },
+        error = function(e) {
+          return(FALSE)
+        }
       )
     })
 
