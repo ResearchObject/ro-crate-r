@@ -1,3 +1,60 @@
+#' Extract `File` entities content to files
+#'
+#' Write the `content` field of `File` entities to disk using their `@id`
+#' as the filename.
+#'
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
+#' @param path Directory where files will be written. RO-Crate root.
+#' @param overwrite Logical. Overwrite existing files.
+#'
+#' @returns Invisibly returns `path`.
+#'
+#' @export
+extract_content <- function(rocrate, path, overwrite = FALSE) {
+  # check if the path exists
+  if (!dir.exists(path)) {
+    dir.create(path, recursive = TRUE)
+  }
+
+  # get 'File' entities with missing `content` (if any)
+  file_ents <- rocrate |>
+    rocrateR::get_entity(type = "File") |>
+    Filter(function(x) !is.null(x$content), x = _)
+
+  # cycle through each File entity (if any) and attempt writing contents
+  for (ent in file_ents) {
+    file <- file.path(path, ent$`@id`)
+
+    # check if the file exists and the `overwrite` arg
+    if (file.exists(file) && !overwrite) {
+      next
+    }
+
+    content <- ent$content
+    fmt <- ent$encodingFormat
+    fmt <- ifelse(is.null(fmt), "", fmt)
+
+    tryCatch(
+      {
+        switch(
+          fmt,
+          "text/csv" = utils::write.csv(content, file, row.names = FALSE),
+          "application/json" = jsonlite::write_json(
+            content,
+            file,
+            auto_unbox = TRUE,
+            pretty = TRUE
+          ),
+          writeLines(as.character(content), file)
+        )
+      },
+      error = function(e) NULL
+    )
+  }
+
+  invisible(path)
+}
+
 #' Check if object is an RO-Crate
 #'
 #' @param rocrate RO-Crate object, see [rocrateR::rocrate].
@@ -42,11 +99,15 @@ is_rocrate <- function(rocrate, strict = FALSE, error = TRUE) {
 #' - A zipped BagIt RO-Crate archive
 #'
 #' @param x A path (character) or an existing \link[rocrateR]{rocrate} object.
+#' @param ... Reserved for future extensions.
+#' @param verbose Logical. If `TRUE`, emit diagnostic messages.
 #' @param bagit_version String with version of BagIt used to generate the
 #'     RO-Crate bag (default: `"1.0"`).
 #'     See \doi{10.17487/RFC8493} for more details.
-#' @param verbose Logical. If TRUE, emit diagnostic messages.
-#' @param ... Reserved for future extensions.
+#' @param load_content Logical. If `TRUE` , attempt to load external file
+#'     contents into the `content` field for entities of type `File`.
+#' @param max_file_size Maximum file size (bytes) allowed when loading
+#'   content. Default 10MB.
 #'
 #' @return An `rocrate` object.
 #' @export
@@ -94,8 +155,10 @@ load_rocrate.rocrate <- function(x, ..., verbose = FALSE) {
 load_rocrate.character <- function(
   x,
   ...,
+  verbose = FALSE,
   bagit_version = "1.0",
-  verbose = FALSE
+  load_content = FALSE,
+  max_file_size = 10 * 1024^2
 ) {
   if (!file.exists(x)) {
     stop("The provided path does not exist.", call. = FALSE)
@@ -113,6 +176,11 @@ load_rocrate.character <- function(
 
     rocrate <- read_rocrate(x)
 
+    # check if the user request to load content from File entities
+    if (isTRUE(load_content)) {
+      rocrate <- .load_content(rocrate, dirname(x), max_file_size)
+    }
+
     return(rocrate)
   }
 
@@ -122,7 +190,14 @@ load_rocrate.character <- function(
       message("Detected ZIP archive. Extracting...")
     }
 
-    return(load_rocrate_bag(x, bagit_version = bagit_version))
+    rocrate <- load_rocrate_bag(
+      x,
+      bagit_version = bagit_version,
+      load_content = load_content,
+      max_file_size = max_file_size
+    )
+
+    return(rocrate)
   }
 
   # case 3: directory
@@ -133,7 +208,14 @@ load_rocrate.character <- function(
         message("Detected BagIt directory.")
       }
 
-      return(load_rocrate_bag(x, bagit_version = bagit_version))
+      rocrate <- load_rocrate_bag(
+        x,
+        bagit_version = bagit_version,
+        load_content = load_content,
+        max_file_size = max_file_size
+      )
+
+      return(rocrate)
     }
 
     # Plain RO-Crate directory
@@ -145,6 +227,11 @@ load_rocrate.character <- function(
       }
 
       rocrate <- read_rocrate(metadata_path)
+
+      # check if the user request to load content from File entities
+      if (isTRUE(load_content)) {
+        rocrate <- .load_content(rocrate, dirname(metadata_path), max_file_size)
+      }
 
       return(rocrate)
     }
@@ -248,12 +335,69 @@ validate_rocrate <- function(
   vapply(graph, function(x) as.character(x$`@id`), character(1))
 }
 
+#' Load RO-Crate contents for File entities
+#'
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
+#' @param roc_path String with path to the root of the RO-Crate.
+#' @param max_file_size Maximum size of file to be loaded.
+#'
+#' @returns Updated `rocrate` object with contents loaded from external files.
+#' @keywords internal
+.load_content <- function(rocrate, roc_path, max_file_size = 10 * 1024^2) {
+  # get 'File' entities with missing `content` (if any)
+  file_ents <- rocrate |>
+    rocrateR::get_entity(type = "File") |>
+    Filter(function(x) is.null(x$content), x = _)
+  # attempt loading contents, if any entities were found
+  for (ent in file_ents) {
+    # attach the root of the RO-Crate to the current File entity
+    file <- file.path(roc_path, ent$`@id`)
+
+    # check if the file exists
+    if (!file.exists(file)) {
+      next
+    }
+    # check if the file size is greater than `max_file_size`
+    if (file.size(file) > max_file_size) {
+      next
+    }
+
+    content <- tryCatch(
+      {
+        fmt <- ent$encodingFormat
+        fmt <- ifelse(is.null(fmt), "", fmt)
+
+        switch(
+          fmt,
+          "text/csv" = utils::read.csv(file),
+          "application/json" = jsonlite::read_json(file),
+          "text/plain" = readLines(file),
+          readLines(file)
+        )
+      },
+      error = function(e) NULL
+    )
+
+    # update entity within the RO-Crate
+    if (!is.null(content)) {
+      rocrate <- rocrate |>
+        rocrateR::add_entity_value(
+          id = ent$`@id`,
+          key = "content",
+          value = list(content)
+        )
+    }
+  }
+
+  # return updated object
+  return(rocrate)
+}
 
 #' Validate minimal RO-Crate structure
 #'
 #' Ensures required top-level fields are present.
 #'
-#' @param rocrate A parsed RO-Crate object.
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
 #'
 #' @return Character vector of errors.
 #' @keywords internal
@@ -279,7 +423,7 @@ validate_rocrate <- function(
 #'
 #' Performs semantic checks on the `@graph`.
 #'
-#' @param rocrate A parsed RO-Crate object.
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
 #'
 #' @return Character vector of errors.
 #' @keywords internal
@@ -341,7 +485,7 @@ validate_rocrate <- function(
 #'
 #' Performs profile-specific validation if `conformsTo` is declared.
 #'
-#' @param rocrate A parsed RO-Crate object.
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
 #'
 #' @return Character vector of errors.
 #' @keywords internal

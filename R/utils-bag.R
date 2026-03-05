@@ -8,6 +8,18 @@
 #'     metadata descriptor file, `ro-crate-metadata.json`. Alternatively, an
 #'     object with the \link[rocrateR]{rocrate} class.
 #' @param ... Additional parameters, see below.
+#' @param path String with path to the root of the RO-Crate.
+#' @param overwrite Boolean flag to indicate if the RO-Crate metadata descriptor
+#'     file should be overwritten if already inside `path` (default: `FALSE`).
+#' @param output String with path where the RO-Crate bag will be stored
+#'     (default: `x` - same path as the input value).
+#' @param force_bag Boolean flag to indicate whether the force the creation of
+#'     a 'bag' even if not all the files were successfully bagged
+#'     (default: `FALSE` ~ check if all the files were copied successfully).
+#' @param extra_bag_info Vector of strings to include in the `bag-info.txt`
+#'     file (e.g., `Contact-Email: first.last@rocrate.org`).
+#' @param write_content Logical. If TRUE, write `content` fields of
+#'   `File` entities to disk before bagging.
 #'
 #' @returns String with full path to the final RO-Crate bag.
 #'
@@ -35,15 +47,6 @@ bag_rocrate <- function(x, ...) {
 }
 
 #' @rdname bag_rocrate
-#'
-#' @param output String with path where the RO-Crate bag will be stored
-#'     (default: `x` - same path as the input value).
-#' @param force_bag Boolean flag to indicate whether the force the creation of
-#'     a 'bag' even if not all the files were successfully bagged
-#'     (default: `FALSE` ~ check if all the files were copied successfully).
-#' @param extra_bag_info Vector of strings to include in the `bag-info.txt`
-#'     file (e.g., `Contact-Email: first.last@rocrate.org`).
-#'
 #' @export
 bag_rocrate.character <- function(
   x,
@@ -160,11 +163,6 @@ bag_rocrate.character <- function(
 }
 
 #' @rdname bag_rocrate
-#'
-#' @param path String with path to the root of the RO-Crate.
-#' @param overwrite Boolean flag to indicate if the RO-Crate metadata descriptor
-#'     file should be overwritten if already inside `path` (default: `FALSE`).
-#'
 #' @export
 bag_rocrate.rocrate <- function(
   x,
@@ -173,7 +171,8 @@ bag_rocrate.rocrate <- function(
   output = path,
   overwrite = FALSE,
   force_bag = FALSE,
-  extra_bag_info = NULL
+  extra_bag_info = NULL,
+  write_content = TRUE
 ) {
   # check the `x` object
   is_rocrate(x)
@@ -204,6 +203,11 @@ bag_rocrate.rocrate <- function(
   }
   # write the RO-Crate metadata descriptor file
   write_rocrate(x, file.path(path, "ro-crate-metadata.json"))
+
+  # if user set `write_content = TRUE`, then extract contents of File entities
+  if (isTRUE(write_content)) {
+    extract_content(x, path)
+  }
 
   # call the bag method for the given `path`
   bag_rocrate(
@@ -316,6 +320,7 @@ is_rocrate_bag <- function(
 #' Load an RO-Crate BagIt archive
 #'
 #' @inheritParams is_rocrate_bag
+#' @inheritParams load_rocrate
 #'
 #' @return An object with the \link[rocrateR]{rocrate} class.
 #' @export
@@ -345,7 +350,9 @@ is_rocrate_bag <- function(
 load_rocrate_bag <- function(
   path,
   algo = NULL,
-  bagit_version = "1.0"
+  bagit_version = "1.0",
+  load_content = FALSE,
+  max_file_size = 10 * 1024^2
 ) {
   if (!file.exists(path)) {
     stop("The given path does not exist!", call. = FALSE)
@@ -382,6 +389,11 @@ load_rocrate_bag <- function(
   rocrate_path <- file.path(bag_root, "data", "ro-crate-metadata.json")
 
   rocrate_obj <- rocrateR::read_rocrate(rocrate_path)
+
+  # check if the user request to load content from File entities
+  if (isTRUE(load_content)) {
+    rocrate_obj <- .load_content(rocrate_obj, bag_root, max_file_size)
+  }
 
   return(rocrate_obj)
 }
@@ -506,7 +518,7 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 #' Generate BagIt fetch file
 #'
 #' @param path String with path where the BagIt declaration will be stored.
-#' @param rocrate [rocrate()] object.
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
 #'
 #' @keywords internal
 #' @rdname bagit_fetch
