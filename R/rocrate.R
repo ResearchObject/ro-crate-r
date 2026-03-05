@@ -44,13 +44,13 @@ rocrate <- function(
     `@context` = context,
     `@graph` = list(
       rocrateR::entity(
-        x = "ro-crate-metadata.json",
+        "ro-crate-metadata.json",
         type = "CreativeWork",
         about = list(`@id` = "./"),
         conformsTo = list(`@id` = conformsTo)
       ),
       rocrateR::entity(
-        x = "./",
+        "./",
         type = "Dataset",
         name = name,
         description = description,

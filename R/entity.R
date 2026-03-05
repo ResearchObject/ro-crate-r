@@ -14,7 +14,7 @@
 #'
 #' # create entity for an organisation
 #' organisation_uol <- rocrateR::entity(
-#'   x = "https://ror.org/04xs57h96",
+#'   "https://ror.org/04xs57h96",
 #'   type = "Organization",
 #'   name = "University of Liverpool",
 #'   url = "http://www.liv.ac.uk"
@@ -22,7 +22,7 @@
 #'
 #' # create an entity for a person
 #' person_rvd <- rocrateR::entity(
-#'   x = "https://orcid.org/0000-0001-5036-8661",
+#'   "https://orcid.org/0000-0001-5036-8661",
 #'   type = "Person",
 #'   name = "Roberto Villegas-Diaz",
 #'   affiliation = list(`@id` = organisation_uol$`@id`)
@@ -87,7 +87,7 @@ add_entity <- function(rocrate, entity, overwrite = FALSE) {
 #'
 #' # create entity for an organisation
 #' organisation_uol <- rocrateR::entity(
-#'   x = "https://ror.org/04xs57h96",
+#'   "https://ror.org/04xs57h96",
 #'   type = "Organization",
 #'   name = "University of Liverpool",
 #'   url = "http://www.liv.ac.uk"
@@ -95,7 +95,7 @@ add_entity <- function(rocrate, entity, overwrite = FALSE) {
 #'
 #' # create an entity for a person
 #' person_rvd <- rocrateR::entity(
-#'   x = "https://orcid.org/0000-0001-5036-8661",
+#'   "https://orcid.org/0000-0001-5036-8661",
 #'   type = "Person",
 #'   name = "Roberto Villegas-Diaz",
 #'   affiliation = list(`@id` = organisation_uol$`@id`)
@@ -170,7 +170,7 @@ add_entities <- function(rocrate, entity, overwrite = FALSE, quiet = FALSE) {
 #' @examples
 #' # create entity for an organisation
 #' organisation_uol <- rocrateR::entity(
-#'   x = "https://ror.org/04xs57h96",
+#'   "https://ror.org/04xs57h96",
 #'   type = "Organization",
 #'   name = "University of Liverpool",
 #'   url = "http://www.liv.ac.uk"
@@ -178,7 +178,7 @@ add_entities <- function(rocrate, entity, overwrite = FALSE, quiet = FALSE) {
 #'
 #' # create an entity for a person
 #' person_rvd <- rocrateR::entity(
-#'   x = "https://orcid.org/0000-0001-5036-8661",
+#'   "https://orcid.org/0000-0001-5036-8661",
 #'   type = "Person",
 #'   name = "Roberto Villegas-Diaz",
 #'   affiliation = list(`@id` = organisation_uol$`@id`)
@@ -222,7 +222,7 @@ entity.default <- function(x, ...) {
 #'
 #' # create entity for an organisation
 #' organisation_uol <- rocrateR::entity(
-#'   x = "https://ror.org/04xs57h96",
+#'   "https://ror.org/04xs57h96",
 #'   type = "Organization",
 #'   name = "University of Liverpool",
 #'   url = "http://www.liv.ac.uk"
@@ -230,7 +230,7 @@ entity.default <- function(x, ...) {
 #'
 #' # create an entity for a person
 #' person_rvd <- rocrateR::entity(
-#'   x = "https://orcid.org/0000-0001-5036-8661",
+#'   "https://orcid.org/0000-0001-5036-8661",
 #'   type = "Person",
 #'   name = "Roberto Villegas-Diaz",
 #'   affiliation = list(`@id` = organisation_uol$`@id`)
@@ -340,7 +340,7 @@ get_entity <- function(rocrate, id = NULL, type = NULL) {
 #'
 #' # create entity for an organisation
 #' organisation_uol <- rocrateR::entity(
-#'   x = "https://ror.org/04xs57h96",
+#'   "https://ror.org/04xs57h96",
 #'   type = "Organization",
 #'   name = "University of Liverpool",
 #'   url = "http://www.liv.ac.uk"
@@ -348,7 +348,7 @@ get_entity <- function(rocrate, id = NULL, type = NULL) {
 #'
 #' # create an entity for a person
 #' person_rvd <- rocrateR::entity(
-#'   x = "https://orcid.org/0000-0001-5036-8661",
+#'   "https://orcid.org/0000-0001-5036-8661",
 #'   type = "Person",
 #'   name = "Roberto Villegas-Diaz",
 #'   affiliation = list(`@id` = organisation_uol$`@id`)
