@@ -1,3 +1,75 @@
+#' Add an author to an RO-Crate
+#'
+#' This helper creates an author entity and if `affiliation` is provided, then
+#' creates an organisation entity for the user's affiliation.
+#'
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
+#' @param name Author's name.
+#' @param orcid Optional, ORCID identifier, for details see
+#'     \url{https://orcid.org}.
+#' @param affiliation Optional, author's organisation.
+#' @param ror Optional, ROR identifier for the affiliation, for details see
+#'     \url{https://ror.org}.
+#' @param set_author Logical, used to indicate if the current user should be set
+#'     as the author of the RO-Crate.
+#'
+#' @export
+add_author <- function(
+  rocrate,
+  name,
+  orcid = NULL,
+  affiliation = NULL,
+  ror = NULL,
+  set_author = TRUE
+) {
+  # create person entity
+  person_id <- if (!is.null(orcid)) {
+    paste0("https://orcid.org/", orcid)
+  } else {
+    paste0("#", gsub(" ", "_", name))
+  }
+
+  person <- rocrateR::entity(
+    person_id,
+    type = "Person",
+    name = name
+  )
+
+  # check if affiliation was provided
+  if (!is.null(affiliation)) {
+    org_id <- if (!is.null(ror)) {
+      paste0("https://ror.org/", gsub("^https://ror.org/", "", ror))
+    } else {
+      paste0("#org-", gsub(" ", "_", affiliation))
+    }
+
+    org <- rocrateR::entity(
+      org_id,
+      type = "Organization",
+      name = affiliation
+    )
+
+    person$affiliation <- list(`@id` = org_id)
+
+    rocrate <- rocrate |>
+      rocrateR::add_entity(org)
+  }
+
+  rocrate <- rocrate |>
+    rocrateR::add_entity(person)
+
+  if (set_author) {
+    rocrate <- rocrate |>
+      rocrateR::add_entity_value(
+        id = "./",
+        key = "author",
+        value = list(list("@id" = person_id))
+      )
+  }
+
+  return(rocrate)
+}
+
 #' Add a dataset to an RO-Crate
 #'
 #' This helper converts an R object (typically a `data.frame`) into a
@@ -33,7 +105,7 @@ add_dataset <- function(
 
   # create File entity
   file_entity <- rocrateR::entity(
-    x = file_id,
+    file_id,
     type = "File",
     name = file_id,
     encodingFormat = encodingFormat,
@@ -47,7 +119,7 @@ add_dataset <- function(
   )
 
   dataset_entity <- rocrateR::entity(
-    x = dataset_id,
+    dataset_id,
     type = "Dataset",
     name = name,
     description = description,
@@ -60,11 +132,70 @@ add_dataset <- function(
     rocrateR::add_entity(dataset_entity)
 }
 
+#' Add a notebook to an RO-Crate
+#'
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
+#' @param file_id Optional, notebook's filename.
+#' @param name Optional, notebook's name.
+#' @param content Optional, notebook's content.
+#'
+#' @export
+add_notebook <- function(rocrate, file_id, name = NULL, content = NULL) {
+  if (is.null(name)) {
+    name <- file_id
+  }
+
+  ext <- tools::file_ext(file_id)
+
+  encoding <- switch(
+    tolower(ext),
+    "ipynb" = "application/x-ipynb+json",
+    "Rmd" = "text/markdown",
+    "qmd" = "text/markdown",
+    "md" = "text/markdown",
+    "text/plain"
+  )
+
+  # create notebook entity
+  ent <- rocrateR::entity(
+    file_id,
+    type = "File",
+    name = name,
+    encodingFormat = encoding,
+    content = content
+  )
+
+  rocrate |>
+    rocrateR::add_entity(ent)
+}
+
+#' Add project metadata
+#'
+#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
+#' @param name Project's name.
+#' @param description Optional, project's description.
+#'
+#' @export
+add_project <- function(rocrate, name, description = NULL) {
+  id <- paste0("#project-", tolower(name))
+
+  # create project entity
+  proj <- rocrateR::entity(
+    id,
+    type = "Project",
+    name = name,
+    description = description
+  )
+
+  rocrate |>
+    rocrateR::add_entity(proj)
+}
+
 #' Add software application entity
 #'
 #' @param rocrate RO-Crate object, see [rocrateR::rocrate].
-#' @param name Software name
-#' @param version Version string
+#' @param name Software name.
+#' @param version Version string.
 #'
 #' @export
 add_software <- function(rocrate, name, version = NULL) {
@@ -72,7 +203,7 @@ add_software <- function(rocrate, name, version = NULL) {
 
   # create SoftwareApplication entity
   sw <- rocrateR::entity(
-    x = id,
+    id,
     type = "SoftwareApplication",
     name = name,
     version = version
@@ -116,7 +247,7 @@ add_workflow <- function(
 
   # create File entity for the workflow scripts
   file_entity <- rocrateR::entity(
-    x = file_id,
+    file_id,
     type = "File",
     name = file_id,
     encodingFormat = "text/plain",
@@ -126,7 +257,7 @@ add_workflow <- function(
   # create ComputerLanguage entity for the workflow scripts language
   lang_id <- paste0("#lang-", tolower(language))
   language_entity <- rocrateR::entity(
-    x = lang_id,
+    lang_id,
     type = "ComputerLanguage",
     name = language
   )
@@ -134,7 +265,7 @@ add_workflow <- function(
   # create ComputationalWorkflow entity
   wf_id <- paste0("#workflow-", tools::file_path_sans_ext(basename(file_id)))
   workflow_entity <- rocrateR::entity(
-    x = wf_id,
+    wf_id,
     type = "ComputationalWorkflow",
     name = name,
     description = description,
