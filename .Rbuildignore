@@ -12,3 +12,4 @@
 ^pkgdown$
 ^CRAN-SUBMISSION$
 ^data-raw$
+^build$
