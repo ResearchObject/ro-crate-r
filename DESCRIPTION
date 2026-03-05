@@ -1,5 +1,5 @@
 Package: rocrateR
-Title: RO-Crate R Package Wrapper
+Title: Tools for Creating and Manipulating RO-Crates
 Version: 0.0.2
 Authors@R: c(
     person(given = "Roberto",
@@ -20,8 +20,11 @@ Authors@R: c(
            role = c("aut"),
            comment = c(ORCID = "0009-0003-2419-1964")),
     person("Research Object community", role = c("cph")))
-Description: R package for creating, manipulating and reading RO-Crates. Latest
-    supported version of the specification: <https://w3id.org/ro/crate/1.2/>.
+Description: Tools for creating, manipulating and reading Research Object Crates
+    (RO-Crates), a lightweight approach to packaging research data with
+    structured metadata. Supports generation of crate metadata, entity
+    management, validation utilities and reading existing RO-Crate
+    structures following the specification <https://w3id.org/ro/crate/1.2/>.
 License: MIT + file LICENSE
 Suggests:
     spelling, 
@@ -36,7 +39,6 @@ RoxygenNote: 7.3.3
 Imports: 
     digest,
     jsonlite,
-    tibble,
     zip
 Depends: 
     R (>= 4.1.0)
