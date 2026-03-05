@@ -63,22 +63,25 @@ rocrate <- function(
 
   # capture additional entities
   extra_entities <- .capture_extra_entities(...)
-  extra_entities_tbl <- tibble::tibble(
-    x = extra_entities,
-    ent_name = names(extra_entities),
-    required = list(c("@id", "@type"))
-  )
 
   # validate any additional entities
-  idx <- seq_len(nrow(extra_entities_tbl)) |>
-    sapply(\(i) do.call(.validate_entity, lapply(extra_entities_tbl, `[[`, i)))
+  if (length(extra_entities) > 0) {
+    # Validate each extra entity
+    idx <- sapply(seq_along(extra_entities), function(i) {
+      .validate_entity(
+        x = extra_entities[[i]],
+        ent_name = names(extra_entities)[i],
+        required = c("@id", "@type")
+      )
+    })
 
-  # combine the base crate with any extra entities
-  if (length(idx) > 0) {
-    new_ro_crate$`@graph` <- c(
-      new_ro_crate$`@graph`,
-      unname(extra_entities[idx])
-    )
+    # Add only valid entities
+    if (any(idx)) {
+      new_ro_crate$`@graph` <- c(
+        new_ro_crate$`@graph`,
+        unname(extra_entities[idx])
+      )
+    }
   }
 
   # set class for the new object
