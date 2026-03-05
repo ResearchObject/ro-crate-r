@@ -181,13 +181,22 @@ bag_rocrate.rocrate <- function(
   is_rocrate(x)
   # check a valid path was given
   if (!dir.exists(path)) {
+    stop(
+      "The given `path` does not exist!\nCreate with:\n\t`mkdir ",
+      path,
+      "`",
+      call. = FALSE
+    )
+  }
+  # check that output exists
+  if (!dir.exists(output)) {
     if (create_dir) {
-      dir.create(path, showWarnings = FALSE, recursive = TRUE)
+      dir.create(output, showWarnings = FALSE, recursive = TRUE)
     } else {
       stop(
-        "The given `path` does not exist!\nCreate with:\n\t`mkdir ",
-        path,
-        "`",
+        "The `output` directory does not exist!\nCreate with:\n\t`mkdir ",
+        output,
+        "`\nAlternatively, set `create_dir = TRUE`.",
         call. = FALSE
       )
     }
