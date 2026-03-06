@@ -92,7 +92,9 @@ add_entity <- function(rocrate, entity, overwrite = FALSE, verbose = FALSE) {
 #' @param key String with the `key` of the entity with `id` to be modified.
 #' @param value String with the `value` for `key`.
 #' @param overwrite Boolean flag to indicate if the existing value (if any),
-#'     should be overwritten (default: `TRUE`).
+#'     should be overwritten (default: `FALSE`).
+#' @param verbose Boolean flag to indicate if status messages should be hidden
+#'     (default: `FALSE`).
 #'
 #' @returns RO-Crate object.
 #' @export
@@ -122,25 +124,57 @@ add_entity <- function(rocrate, entity, overwrite = FALSE, verbose = FALSE) {
 #'     key = "author",
 #'     value = list(`@id` = person_rvd$`@id`)
 #'   )
-add_entity_value <- function(rocrate, id, key, value, overwrite = TRUE) {
+add_entity_value <- function(
+  rocrate,
+  id,
+  key,
+  value,
+  overwrite = FALSE,
+  verbose = FALSE
+) {
   # check the `rocrate` object
   is_rocrate(rocrate)
 
   # find the index in `@graph` with the matching {id}
-  idx <- rocrate$`@graph` |>
-    sapply(\(x) {
-      getElement(x, "@id") == id && (overwrite || is.null(getElement(x, key)))
-    })
+  idx <- .find_id_index(rocrate, id)
+
   # verify that only one index was found for the matching {id}
   if (sum(idx) != 1) {
     stop(
-      "Please, ensure the given {id} is unique and part of the RO-Crate.",
+      "Please ensure the given `id` is unique and part of the RO-Crate.",
       call. = FALSE
     )
   }
+
+  entity <- rocrate$`@graph`[[which(idx)]]
+
+  # check if key already exists
+  if (!is.null(entity[[key]]) && !overwrite) {
+    stop(
+      "Entity with `@id = '",
+      id,
+      "'`` already contains key `'",
+      key,
+      "'`.\n",
+      "Use `overwrite = TRUE` to replace the existing value.",
+      call. = FALSE
+    )
+  }
+
+  if (!is.null(entity[[key]]) && overwrite && verbose) {
+    message(
+      "Overwriting key '",
+      key,
+      "' for entity with @id='",
+      id,
+      "'."
+    )
+  }
+
   # set the new {value} for {key} associated to {id}
   # rocrate$`@graph`[idx][[1]][key] <- list(value)
   rocrate$`@graph`[[which(idx)]][[key]] <- value
+
   return(rocrate)
 }
 
