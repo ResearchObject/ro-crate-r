@@ -68,17 +68,10 @@ rocrate <- function(
   if (length(extra_entities) > 0) {
     # Validate each extra entity
     idx <- sapply(seq_along(extra_entities), function(i) {
-      tryCatch(
-        {
-          .validate_entity(
-            x = extra_entities[[i]],
-            ent_name = names(extra_entities)[i],
-            required = c("@id", "@type")
-          )
-        },
-        error = function(e) {
-          return(FALSE)
-        }
+      .validate_entity(
+        x = extra_entities[[i]],
+        ent_name = names(extra_entities)[i],
+        required = c("@id", "@type")
       )
     })
 
@@ -127,9 +120,9 @@ rocrate_5s <- function(
 ) {
   # create entity for the 5 safes profile
   v5scrate_id <- paste0("https://w3id.org/5s-crate/", v5scrate)
-  prof_5scrate <- list(
-    `@id` = v5scrate_id,
-    `@type` = c("CreativeWork", "Profile"),
+  prof_5scrate <- rocrateR::entity(
+    id = v5scrate_id,
+    type = c("CreativeWork", "Profile"),
     name = "Five Safes RO-Crate profile"
   )
 
@@ -147,9 +140,9 @@ rocrate_5s <- function(
   # edit the new RO-Crate
   new_ro_crate <- new_ro_crate |>
     # attach the 5 safes profile entity
-    add_entity(prof_5scrate) |>
+    rocrateR::add_entity(prof_5scrate) |>
     # update the root entity's conformsTo property
-    add_entity_value(
+    rocrateR::add_entity_value(
       id = "./",
       key = "conformsTo",
       value = list(`@id` = paste0("https://w3id.org/5s-crate/", v5scrate))
