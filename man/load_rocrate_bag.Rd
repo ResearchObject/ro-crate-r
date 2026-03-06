@@ -4,7 +4,13 @@
 \alias{load_rocrate_bag}
 \title{Load an RO-Crate BagIt archive}
 \usage{
-load_rocrate_bag(path, algo = NULL, bagit_version = "1.0")
+load_rocrate_bag(
+  path,
+  algo = NULL,
+  bagit_version = "1.0",
+  load_content = FALSE,
+  max_file_size = 10 * 1024^2
+)
 }
 \arguments{
 \item{path}{String with full path to a compressed file contain an RO-Crate
@@ -19,6 +25,12 @@ for more details on valid algorithms.}
 \item{bagit_version}{String with version of BagIt used to generate the
 RO-Crate bag (default: \code{"1.0"}).
 See \doi{10.17487/RFC8493} for more details.}
+
+\item{load_content}{Logical. If \code{TRUE} , attempt to load external file
+contents into the \code{content} field for entities of type \code{File}.}
+
+\item{max_file_size}{Maximum file size (bytes) allowed when loading
+content. Default 10MB.}
 }
 \value{
 An object with the \link[rocrateR]{rocrate} class.
@@ -30,7 +42,7 @@ Load an RO-Crate BagIt archive
 # -------- SETUP --------
 basic_crate <- rocrateR::rocrate()
 # temp file
-tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+tmp_dir <- file.path(tempdir(), digest::digest(basename(tempfile())))
 tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
 dir.create(tmp_dir)
 

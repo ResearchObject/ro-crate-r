@@ -17,7 +17,9 @@ bag_rocrate(x, ...)
   output = path,
   overwrite = FALSE,
   force_bag = FALSE,
-  extra_bag_info = NULL
+  extra_bag_info = NULL,
+  write_content = TRUE,
+  create_dir = TRUE
 )
 }
 \arguments{
@@ -41,6 +43,12 @@ file (e.g., \code{Contact-Email: first.last@rocrate.org}).}
 
 \item{overwrite}{Boolean flag to indicate if the RO-Crate metadata descriptor
 file should be overwritten if already inside \code{path} (default: \code{FALSE}).}
+
+\item{write_content}{Logical. If TRUE, write \code{content} fields of
+\code{File} entities to disk before bagging.}
+
+\item{create_dir}{Boolean flag to indicate if the \code{path} should be created,
+if it doesn't exist.}
 }
 \value{
 String with full path to the final RO-Crate bag.
@@ -54,7 +62,7 @@ For more details see the definition:
 # -------- SETUP --------
 basic_crate <- rocrateR::rocrate()
 # temp file
-tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+tmp_dir <- file.path(tempdir(), digest::digest(basename(tempfile())))
 tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
 dir.create(tmp_dir)
 

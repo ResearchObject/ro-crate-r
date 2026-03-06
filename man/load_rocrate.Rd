@@ -10,18 +10,31 @@ load_rocrate(x, ...)
 
 \method{load_rocrate}{rocrate}(x, ..., verbose = FALSE)
 
-\method{load_rocrate}{character}(x, ..., bagit_version = "1.0", verbose = FALSE)
+\method{load_rocrate}{character}(
+  x,
+  ...,
+  verbose = FALSE,
+  bagit_version = "1.0",
+  load_content = FALSE,
+  max_file_size = 10 * 1024^2
+)
 }
 \arguments{
 \item{x}{A path (character) or an existing \link[rocrateR]{rocrate} object.}
 
 \item{...}{Reserved for future extensions.}
 
-\item{verbose}{Logical. If TRUE, emit diagnostic messages.}
+\item{verbose}{Logical. If \code{TRUE}, emit diagnostic messages.}
 
 \item{bagit_version}{String with version of BagIt used to generate the
 RO-Crate bag (default: \code{"1.0"}).
 See \doi{10.17487/RFC8493} for more details.}
+
+\item{load_content}{Logical. If \code{TRUE} , attempt to load external file
+contents into the \code{content} field for entities of type \code{File}.}
+
+\item{max_file_size}{Maximum file size (bytes) allowed when loading
+content. Default 10MB.}
 }
 \value{
 An \code{rocrate} object.
@@ -39,7 +52,7 @@ High-level loader that can read:
 # -------- SETUP --------
 basic_crate <- rocrateR::rocrate()
 # temp file
-tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+tmp_dir <- file.path(tempdir(), digest::digest(basename(tempfile())))
 tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
 dir.create(tmp_dir)
 

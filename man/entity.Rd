@@ -4,16 +4,15 @@
 \alias{entity}
 \title{Create a data entity}
 \usage{
-entity(x, ...)
+entity(id, type, ...)
 }
 \arguments{
-\item{x}{New entity. If a single value (e.g., \code{character}, \code{numeric}) is
-given, this is assumed to be the entity's \verb{@id}, if a \code{list} is given,
-this is assumed to be a complete entity. Other options are objects of
-type \code{person} and \code{organisation} (equivalently \code{organization}).}
+\item{id}{Scalar value with \verb{@id} for the entity (e.g., \code{character},
+\code{numeric}).}
 
-\item{...}{Optional additional entity values/properties. Used when \code{x} is
-a single value.}
+\item{type}{String with \verb{@type} for the entity (e.g., \code{Dataset}, \code{File}).}
+
+\item{...}{Optional additional entity values/properties.}
 }
 \value{
 List with an entity object.
@@ -24,7 +23,7 @@ Create a data entity
 \examples{
 # create entity for an organisation
 organisation_uol <- rocrateR::entity(
-  x = "https://ror.org/04xs57h96",
+  "https://ror.org/04xs57h96",
   type = "Organization",
   name = "University of Liverpool",
   url = "http://www.liv.ac.uk"
@@ -32,10 +31,9 @@ organisation_uol <- rocrateR::entity(
 
 # create an entity for a person
 person_rvd <- rocrateR::entity(
-  x = "https://orcid.org/0000-0001-5036-8661",
+  "https://orcid.org/0000-0001-5036-8661",
   type = "Person",
   name = "Roberto Villegas-Diaz",
   affiliation = list(`@id` = organisation_uol$`@id`)
 )
-
 }

@@ -25,7 +25,7 @@ String with path to root of the RO-Crate.
 # -------- SETUP --------
 basic_crate <- rocrateR::rocrate()
 # temp file
-tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+tmp_dir <- file.path(tempdir(), digest::digest(basename(tempfile())))
 tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
 dir.create(tmp_dir)
 

@@ -4,11 +4,11 @@
 \name{rocrateR-package}
 \alias{rocrateR}
 \alias{rocrateR-package}
-\title{rocrateR: RO-Crate R Package Wrapper}
+\title{rocrateR: Tools for Creating and Manipulating RO-Crates}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-R package for creating, manipulating and reading RO-Crates. Latest supported version of the specification: \url{https://w3id.org/ro/crate/1.2/}.
+Tools for creating, manipulating and reading Research Object Crates (RO-Crates), a lightweight approach to packaging research data with structured metadata. Supports generation of crate metadata, entity management, validation utilities and reading existing RO-Crate structures following the specification \url{https://w3id.org/ro/crate/1.2/}.
 }
 \seealso{
 Useful links:
