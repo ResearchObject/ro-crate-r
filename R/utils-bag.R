@@ -77,7 +77,7 @@ bag_rocrate.character <- function(
   }
 
   # create an RO-Crate ID
-  rocrate_id <- paste0("rocrate-", digest::digest(runif(1)))
+  rocrate_id <- .create_rocrate_id()
 
   # create temporary directory, including `rocrate_id`
   tmp_dir <- file.path(tempdir(), rocrate_id, "data")
@@ -88,16 +88,19 @@ bag_rocrate.character <- function(
 
   # copy files inside the temporary directory
   rocrate_files_status <- rocrate_files |>
-    sapply(function(f) {
-      # ensure the target sub-directory exists
-      dir.create(
-        dirname(file.path(tmp_dir, f)),
-        showWarnings = FALSE,
-        recursive = TRUE
-      )
-      # create copy of file
-      file.copy(file.path(x, f), file.path(tmp_dir, f), overwrite = TRUE)
-    })
+    vapply(
+      function(f) {
+        # ensure the target sub-directory exists
+        dir.create(
+          dirname(file.path(tmp_dir, f)),
+          showWarnings = FALSE,
+          recursive = TRUE
+        )
+        # create copy of file
+        file.copy(file.path(x, f), file.path(tmp_dir, f), overwrite = TRUE)
+      },
+      logical(1)
+    )
 
   # check that all the files were copied, unless force_bag = TRUE
   if (!all(rocrate_files_status)) {
@@ -125,7 +128,7 @@ bag_rocrate.character <- function(
   .bagit_manifest(tmp_dir, rocrate_files)
 
   # create bag info
-  .bagit_info(tmp_dir, rocrate_files)
+  .bagit_info(tmp_dir, rocrate_files, extra_bag_info)
 
   # create BagIt tagmanifest
   .bagit_tagmanifest(
@@ -134,11 +137,11 @@ bag_rocrate.character <- function(
   )
 
   # create BagIt fetch file
-  .bagit_fetch(tmp_dir)
+  .bagit_fetch(tmp_dir, rocrateR::load_rocrate(x))
 
   # compress bag contents inside original path
   output_bag <- file.path(output, paste0(rocrate_id, ".zip"))
-  ## create version of `output_ba` with absolute/normalised path
+  ## create version of `output_bag` with absolute/normalised path
   output_bag_nor <- file.path(normalizePath(output), paste0(rocrate_id, ".zip"))
   ## list files within the `tmp_dir`
   bag_files <- list.files(
@@ -156,9 +159,6 @@ bag_rocrate.character <- function(
   )
 
   message("RO-Crate successfully 'bagged'!\nFor details, see: ", output_bag)
-
-  # attempt to delete the temporary directory created to bag the RO-Crate
-  unlink(dirname(tmp_dir), recursive = TRUE, force = TRUE)
 
   # return path to RO-Crate bag invisibly
   return(invisible(output_bag))
@@ -217,13 +217,14 @@ bag_rocrate.rocrate <- function(
       )
     }
   }
-  # write the RO-Crate metadata descriptor file
-  write_rocrate(x, file.path(path, "ro-crate-metadata.json"))
 
   # if user set `write_content = TRUE`, then extract contents of File entities
   if (isTRUE(write_content)) {
-    extract_content(x, path)
+    x <- extract_content(x, path)
   }
+
+  # write the RO-Crate metadata descriptor file
+  write_rocrate(x, file.path(path, "ro-crate-metadata.json"))
 
   # call the bag method for the given `path`
   bag_rocrate(
@@ -278,47 +279,24 @@ is_rocrate_bag <- function(
   algo = NULL,
   bagit_version = "1.0"
 ) {
-  # initialise object that will be returned
-  bag_root <- ro_crate <- NULL
-
-  # check if given path is a directory or a file
-  if (missing(path) || !file.exists(path)) {
-    warning("The given `path` is invalid!", call. = FALSE)
-    return(FALSE)
-  }
-
-  # if `path` is a zip file. extract using `unbag_rocrate()`
-  if (
-    file.info(path)$isdir == FALSE &&
-      grepl("\\.zip$", path, ignore.case = TRUE)
-  ) {
-    # create temporary directory
-    tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
-    dir.create(tmp_dir, recursive = TRUE)
-    on.exit(unlink(tmp_dir, recursive = TRUE, force = TRUE), add = TRUE)
-
-    # extract contents of the RO-Crate bag inside temporary directory AND
-    # update path, so it points to the contents of the RO-Crate bag
-    bag_root <- tryCatch(
-      unbag_rocrate(path, output = tmp_dir, quiet = TRUE),
-      error = function(e) NULL
-    )
-    if (is.null(bag_root)) {
-      return(FALSE)
-    }
-  } else if (dir.exists(path)) {
-    bag_root <- .find_bagit_root(path)
-  } else {
-    return(FALSE)
-  }
-
+  # attempt extracting contents if bag is a zip archive
+  aux <- .extract_bag_if_zip(path, "is_rocrate_bag-")
+  bag_root <- aux$path
   if (is.null(bag_root)) {
-    warning("No valid BagIt root found.", call. = FALSE)
+    warning(aux$msg, call. = FALSE)
     return(FALSE)
+  }
+
+  # delete temporary directory after function ends
+  if (!is.null(aux$cleanup)) {
+    on.exit(
+      unlink(aux$cleanup, recursive = TRUE, force = TRUE),
+      add = TRUE
+    )
   }
 
   # call the .validate_rocrate_bag function
-  valid <- tryCatch(
+  tryCatch(
     {
       .validate_rocrate_bag(
         path = bag_root,
@@ -329,8 +307,6 @@ is_rocrate_bag <- function(
     },
     error = function(e) FALSE
   )
-
-  return(valid)
 }
 
 #' Load an RO-Crate BagIt archive
@@ -370,28 +346,20 @@ load_rocrate_bag <- function(
   load_content = FALSE,
   max_file_size = 10 * 1024^2
 ) {
-  if (!file.exists(path)) {
-    stop("The given path does not exist!", call. = FALSE)
+  # attempt extracting contents if bag is a zip archive
+  aux <- .extract_bag_if_zip(path, prefix = "load_rocrate_bag-")
+  bag_root <- aux$path
+
+  if (is.null(bag_root)) {
+    stop(aux$msg, call. = FALSE)
   }
 
-  # extract if zip
-  if (
-    !file.info(path)$isdir &&
-      grepl("\\.zip$", path, ignore.case = TRUE)
-  ) {
-    # create temporary directory
-    tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
-    dir.create(tmp_dir, TRUE)
-    on.exit(unlink(tmp_dir, recursive = TRUE, force = TRUE), add = TRUE)
-
-    # extract contents of the RO-Crate bag inside temporary directory AND
-    # update path, so it points to the contents of the RO-Crate bag
-    bag_root <- tryCatch(
-      unbag_rocrate(path, output = tmp_dir, quiet = TRUE),
-      error = function(e) NULL
+  # delete temporary directory after function ends
+  if (!is.null(aux$cleanup)) {
+    on.exit(
+      unlink(aux$cleanup, recursive = TRUE, force = TRUE),
+      add = TRUE
     )
-  } else {
-    bag_root <- path
   }
 
   # strict validation (throws if invalid)
@@ -408,7 +376,11 @@ load_rocrate_bag <- function(
 
   # check if the user request to load content from File entities
   if (isTRUE(load_content)) {
-    rocrate_obj <- .load_content(rocrate_obj, bag_root, max_file_size)
+    rocrate_obj <- .load_content(
+      rocrate_obj,
+      file.path(bag_root, "data"),
+      max_file_size
+    )
   }
 
   return(rocrate_obj)
@@ -520,6 +492,7 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 #' @param version String with BagIt version (default: `"1.0"`)/
 #'
 #' @keywords internal
+#' @noRd
 #' @rdname bagit_declaration
 #' @source https://www.rfc-editor.org/rfc/rfc8493.html#section-2.2.2
 .bagit_declaration <- function(path, version = "1.0") {
@@ -537,13 +510,59 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 #' @param rocrate RO-Crate object, see [rocrateR::rocrate].
 #'
 #' @keywords internal
+#' @noRd
 #' @rdname bagit_fetch
 .bagit_fetch <- function(path, rocrate = NULL) {
-  # to-do
-  # 1. read rocrate and find any file entities that have an external URL
-  # 2. list results from step 1 in a file called fetch.txt
-  # See: https://www.researchobject.org/ro-crate/specification/1.1/appendix/implementation-notes.html
-  # Also: https://www.rfc-editor.org/rfc/rfc8493.html#section-2.2.3
+  if (is.null(rocrate)) {
+    return(invisible(NULL))
+  }
+
+  # extract graph and File entities
+  graph <- rocrate$`@graph`
+  file_entities <- Filter(
+    function(x) {
+      "@type" %in% names(x) && "File" %in% x[["@type"]]
+    },
+    graph
+  )
+
+  # filter out File entities with @id pointing to URLs
+  remote <- Filter(
+    function(x) {
+      grepl("^https?://", x[["@id"]])
+    },
+    file_entities
+  )
+
+  # if none are found, then terminate the function execution
+  if (length(remote) == 0) {
+    return(invisible(NULL))
+  }
+
+  # if any are found, extract the URL, content size an file @id
+  lines <- vapply(
+    remote,
+    function(x) {
+      url <- x[["@id"]]
+
+      size <- if (!is.null(x$contentSize)) {
+        as.character(x$contentSize)
+      } else {
+        "-"
+      }
+
+      file <- file.path("data", basename(url))
+
+      paste(url, size, file)
+    },
+    character(1)
+  )
+
+  # create fetch.txt
+  writeLines(
+    lines,
+    file.path(dirname(path), "fetch.txt")
+  )
 }
 
 #' Generate BagIt info file
@@ -552,6 +571,7 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 #' @param extra_bag_info Additional lines to include in the `bag-info.txt` file.
 #'
 #' @keywords internal
+#' @noRd
 #' @rdname bagit_info
 .bagit_info <- function(path, files, extra_bag_info = NULL) {
   bagit_info_lines <- c(
@@ -575,6 +595,7 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 #'     (default: 'sha512').
 #'
 #' @keywords internal
+#' @noRd
 #' @rdname bagit_manifest
 .bagit_manifest <- function(path, files, algo = "sha512") {
   manifest_lines <- sapply(files, function(f) {
@@ -597,6 +618,7 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 #' @returns String with BagIt Payload Oxum
 #'
 #' @keywords internal
+#' @noRd
 #' @rdname bagit_payload_oxum
 .bagit_payload_oxum <- function(path, files) {
   # compute components for the Payload-Oxum:
@@ -614,6 +636,7 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 #' @inheritParams .bagit_manifest
 #'
 #' @keywords internal
+#' @noRd
 #' @rdname bagit_tagmanifest
 .bagit_tagmanifest <- function(path, files, algo = "sha512") {
   tagmanifest_lines <- sapply(files, function(f) {
@@ -629,12 +652,28 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
   return(invisible(tagmanifest_lines))
 }
 
+#' Create a unique RO-Crate identifier
+#'
+#' Uses tempfile to generate a unique identifier without altering
+#' the global RNG state.
+#'
+#' @param prefix String with prefix for the RO-Crate ID
+#'
+#' @returns RO-Crate identifier
+#'
+#' @keywords internal
+#' @noRd
+.create_rocrate_id <- function(prefix = "rocrate-") {
+  paste0(prefix, digest::digest(basename(tempfile())))
+}
+
 #' Detect BagIt archive's manifest algorith
 #'
 #' @param path Path to BagIt archive directory.
 #'
 #' @returns String with the algorithm.
 #' @keywords internal
+#' @noRd
 .detect_manifest_algo <- function(path) {
   manifest_files <- list.files(
     path,
@@ -660,12 +699,56 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
   return(algo)
 }
 
+#' Extract BagIt archive
+#'
+#' @inheritParams is_rocrate_bag
+#' @param prefix String with prefix for the RO-Crate ID
+#'
+#' @returns List with input path and temporary path where the contents were
+#'     extracted.
+#' @keywords internal
+#' @noRd
+.extract_bag_if_zip <- function(path, prefix = "rocrate_extract-") {
+  if (!file.exists(path)) {
+    return(list(
+      path = NULL,
+      cleanup = NULL,
+      msg = "The given path does not exist!"
+    ))
+  }
+
+  if (!file.info(path)$isdir && grepl("\\.zip$", path, ignore.case = TRUE)) {
+    roc_id <- .create_rocrate_id(prefix)
+    tmp_dir <- file.path(tempdir(), roc_id)
+    dir.create(tmp_dir, recursive = TRUE)
+
+    bag_root <- tryCatch(
+      unbag_rocrate(path, output = tmp_dir, quiet = TRUE),
+      error = function(e) NULL
+    )
+
+    msg <- NULL
+    if (is.null(bag_root)) {
+      msg <- "Invalid BagIt archive."
+    }
+
+    return(list(path = bag_root, cleanup = tmp_dir, msg = msg))
+  }
+
+  if (dir.exists(path)) {
+    return(list(path = .find_bagit_root(path), cleanup = NULL, msg = NULL))
+  }
+
+  NULL
+}
+
 #' Find BagIt root for an RO-Crate
 #'
 #' @param path String with path to RO-Crate bag.
 #'
 #' @returns String with path to RO-Crate bag root (if any).
 #' @keywords internal
+#' @noRd
 .find_bagit_root <- function(path) {
   path <- normalizePath(path, mustWork = TRUE)
 
@@ -687,12 +770,25 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
   return(NULL)
 }
 
+#' Create new temporary directory
+#'
+#' @param subdirs String with additional subdirectories
+#' @returns Path to temporary directory
+#' @keywords internal
+#' @noRd
+.new_tmp_dir <- function(subdirs = character(1)) {
+  dir <- file.path(tempdir(), subdirs) #digest::digest(runif(1))
+  dir.create(dir, recursive = TRUE)
+  dir
+}
+
 #' Verify if a given path points to a valid RO-Crate bag
 #'
 #' @inheritParams is_rocrate_bag
 #'
 #' @returns Returns invisibly the RO-Crate pointed by `path`.
 #' @keywords internal
+#' @noRd
 .validate_rocrate_bag <- function(
   path,
   algo,
@@ -812,6 +908,7 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 #'
 #' @returns A list with `status` and `errors` identified.
 #' @keywords internal
+#' @noRd
 #' @rdname bagit_declaration
 .validate_bagit_declaration <- function(
   path,
@@ -857,6 +954,7 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 #'
 #' @returns A list with `status` and `errors` identified.
 #' @keywords internal
+#' @noRd
 #' @rdname bagit_manifest
 .validate_bagit_manifest <- function(
   path,
@@ -914,6 +1012,7 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 #'
 #' @returns A list with `status` and `errors` identified.
 #' @keywords internal
+#' @noRd
 #' @rdname bagit_payload_oxum
 .validate_bagit_payload_oxum <- function(path) {
   bag_info <- file.path(path, "bag-info.txt")
