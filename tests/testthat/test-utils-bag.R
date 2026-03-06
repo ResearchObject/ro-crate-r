@@ -3,10 +3,7 @@ test_that("bag_rocrate works", {
   basic_crate <- rocrateR::rocrate()
 
   # create temporary directory
-  tmp_dir <- file.path(
-    tempdir(),
-    paste0("rocrate-tests-", digest::digest(runif(1)))
-  )
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 
   # missing path
@@ -101,25 +98,61 @@ test_that("bag_rocrate works", {
   expect_false(dir.exists(file.path(dirname(tmp_dir), "VALIDATION")))
 })
 
+test_that("bag_rocrate writes dataset files", {
+  # create temporary directory
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  crate <- rocrateR::rocrate() |>
+    rocrateR::add_dataset(
+      iris,
+      file_id = "iris.csv"
+    )
+
+  roc_bag_path <- rocrateR::bag_rocrate(
+    crate,
+    path = tmp_dir,
+    write_content = TRUE
+  )
+
+  roc_bag_contents_root <- rocrateR::unbag_rocrate(roc_bag_path)
+
+  roc_bag_contents <- list.files(roc_bag_contents_root)
+
+  expect_true("iris.csv" %in% roc_bag_contents)
+  expect_true("bagit.txt" %in% roc_bag_contents)
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
+})
+
 test_that("is_rocrate_bag works", {
   # create basic RO-Crate
   basic_crate <- rocrateR::rocrate()
 
   # create temporary directory
-  tmp_dir <- file.path(
-    tempdir(),
-    paste0("rocrate-tests-", digest::digest(runif(1)))
-  )
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 
   # missing path
-  expect_warning(rocrateR::is_rocrate_bag())
+  expect_error(rocrateR::is_rocrate_bag())
 
   # invalid path
-  expect_warning(rocrateR::is_rocrate_bag("/invalid/path"))
+  expect_warning(
+    expect_false(
+      rocrateR::is_rocrate_bag("/invalid/path")
+    )
+  )
 
   # path to empty directory
-  expect_warning(rocrateR::is_rocrate_bag(tmp_dir))
+  expect_warning(
+    expect_false(
+      rocrateR::is_rocrate_bag(tmp_dir)
+    )
+  )
 
   # write RO-Crate to temporary file
   tmp_file <- file.path(tmp_dir, "ro-crate-metadata.json")
@@ -213,13 +246,28 @@ test_that("is_rocrate_bag works", {
 
 test_that("load_rocrate_bag works", {
   # create basic RO-Crate
-  basic_crate <- rocrateR::rocrate()
+  basic_crate <- rocrateR::rocrate() |>
+    # add JSON file
+    rocrateR::add_entity(
+      rocrateR::entity(
+        id = "my_json.json",
+        type = "File",
+        encodingFormat = "application/json",
+        content = list('[{"rocrateR":"0.0.2"}]')
+      )
+    ) |>
+    # add text file
+    rocrateR::add_entity(
+      rocrateR::entity(
+        id = "text.txt",
+        type = "File",
+        encodingFormat = "text/plain",
+        content = list('rocrateR v0.0.2')
+      )
+    )
 
   # create temporary directory
-  tmp_dir <- file.path(
-    tempdir(),
-    paste0("rocrate-tests-", digest::digest(runif(1)))
-  )
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 
   # missing path
@@ -256,9 +304,27 @@ test_that("load_rocrate_bag works", {
   expect_true(file.exists(rocrate_bag_filename))
 
   # extract RO-Crate bag
-  rocrate_bag_contents <- rocrateR::load_rocrate_bag(rocrate_bag_filename)
+  rocrate_bag_contents <- rocrateR::load_rocrate_bag(
+    rocrate_bag_filename,
+    load_content = TRUE
+  )
+
   # compare contents extracted from the bag and the original R object
   expect_equal(rocrate_bag_contents, basic_crate)
+
+  # extract RO-Crate bag without loading the contents from disk, for File ents.
+  rocrate_bag_contents_wo_contents <- rocrateR::load_rocrate_bag(
+    rocrate_bag_filename,
+    load_content = FALSE
+  )
+
+  my_json_ent <- rocrateR::get_entity(
+    rocrate_bag_contents_wo_contents,
+    id = "my_json.json"
+  )[[1]]
+
+  # assert that `content` is missing for one of the File entities
+  expect_null(getElement(my_json_ent, "content"))
 
   # delete temporary directory
   unlink(tmp_dir, recursive = TRUE, force = TRUE)
@@ -272,10 +338,7 @@ test_that("unbag_rocrate works", {
   basic_crate <- rocrateR::rocrate()
 
   # create temporary directory
-  tmp_dir <- file.path(
-    tempdir(),
-    paste0("rocrate-tests-", digest::digest(runif(1)))
-  )
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
   on.exit(unlink(tmp_dir, recursive = TRUE, force = TRUE))
 
@@ -343,10 +406,7 @@ test_that("unbag_rocrate works", {
   zip::zip(new_roc_zip_file, rocrate_bag_files, mode = "cherry-pick")
   expect_true(file.exists(new_roc_zip_file))
 
-  tmp_dir_v2 <- file.path(
-    tempdir(),
-    paste0("rocrate-tests-", digest::digest(runif(1)))
-  )
+  tmp_dir_v2 <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
   dir.create(tmp_dir_v2, showWarnings = FALSE, recursive = TRUE)
   on.exit(unlink(tmp_dir_v2, recursive = TRUE, force = TRUE), add = TRUE)
 
@@ -367,10 +427,7 @@ test_that("unbag_rocrate works", {
   macos_zip <- file.path(dirname(rocrate_bag_files), "test_macos.zip")
   zip::zip(macos_zip, rocrate_bag_files, mode = "cherry-pick")
 
-  tmp_dir_v3 <- file.path(
-    tempdir(),
-    paste0("rocrate-tests-", digest::digest(runif(1)))
-  )
+  tmp_dir_v3 <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
   dir.create(tmp_dir_v3, showWarnings = FALSE, recursive = TRUE)
   on.exit(unlink(tmp_dir_v3, recursive = TRUE, force = TRUE), add = TRUE)
 
@@ -409,4 +466,189 @@ test_that("unbag_rocrate fails on invalid BagIt structure", {
   expect_error(
     rocrateR::unbag_rocrate(tmp, output = tempdir())
   )
+})
+
+test_that("unbag_rocrate accepts directory input", {
+  crate <- rocrateR::rocrate()
+
+  # create temporary directory
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  suppressWarnings(
+    roc_zip <- rocrateR::bag_rocrate(crate, path = tmp_dir, overwrite = TRUE)
+  )
+  extracted <- rocrateR::unbag_rocrate(roc_zip)
+
+  expect_true(dir.exists(extracted))
+
+  # run again using directory input
+  expect_equal(
+    rocrateR::unbag_rocrate(roc_zip),
+    extracted
+  )
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
+})
+
+test_that("bag_rocrate can force bag when file copy fails", {
+  # create basic RO-Crate
+  crate <- rocrateR::rocrate()
+
+  # create temporary directory
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  f <- file.path(tmp_dir, "test.txt")
+  writeLines("hello", f)
+
+  # make file unreadable to trigger copy failure
+  Sys.chmod(f, mode = "000")
+
+  # force creation of bag
+  expect_error(
+    rocrate_bag_filename <- crate |>
+      rocrateR::bag_rocrate(
+        path = tmp_dir
+      )
+  )
+
+  expect_warning(
+    rocrateR::bag_rocrate(tmp_dir, force_bag = TRUE)
+  )
+
+  Sys.chmod(f, mode = "644")
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
+})
+
+test_that("bag_rocrate creates output directory when create_dir = TRUE", {
+  # create basic RO-Crate
+  crate <- rocrateR::rocrate()
+
+  # create temporary directory
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  out <- file.path(tmp_dir, "output")
+
+  bag_rocrate(
+    crate,
+    path = tmp_dir,
+    output = out,
+    overwrite = TRUE,
+    create_dir = TRUE
+  )
+
+  expect_true(dir.exists(out))
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
+})
+
+test_that("unbag_rocrate fails for empty zip", {
+  tmp <- tempfile(fileext = ".zip")
+
+  zip::zip(tmp, files = character(0))
+
+  expect_error(
+    unbag_rocrate(tmp)
+  )
+})
+
+test_that("unbag_rocrate rejects archives with only hidden files", {
+  # create temporary directory
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  hidden <- file.path(tmp_dir, ".DS_Store")
+  writeLines("junk", hidden)
+
+  zip_path <- tempfile(fileext = ".zip")
+  suppressWarnings(
+    zip::zip(zip_path, files = hidden)
+  )
+  expect_error(unbag_rocrate(zip_path))
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
+})
+
+test_that("bag_rocrate generates fetch.txt for remote files", {
+  crate <- rocrateR::rocrate()
+
+  crate$`@graph` <- append(
+    crate$`@graph`,
+    list(list(
+      "@id" = "https://example.org/file.txt",
+      "@type" = "File"
+    ))
+  )
+
+  # create temporary directory
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  bag <- bag_rocrate(crate, path = tmp_dir)
+
+  extracted <- unbag_rocrate(bag)
+
+  expect_true(
+    file.exists(file.path(extracted, "fetch.txt"))
+  )
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
+})
+
+test_that("detect_manifest_algo errors if manifest missing", {
+  # create temporary directory
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  expect_error(
+    rocrateR:::.detect_manifest_algo(tmp_dir)
+  )
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
+})
+
+test_that("detect_manifest_algo errors with multiple manifests", {
+  # create temporary directory
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  file.create(file.path(tmp_dir, "manifest-sha256.txt"))
+  file.create(file.path(tmp_dir, "manifest-md5.txt"))
+
+  expect_error(
+    rocrateR:::.detect_manifest_algo(tmp_dir)
+  )
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
 })

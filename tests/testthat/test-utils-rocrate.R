@@ -1,3 +1,264 @@
+test_that("add_author adds person", {
+  crate <- rocrateR::rocrate()
+
+  crate <- rocrateR::add_author(
+    crate,
+    name = "Test User",
+    orcid = "0000-0001-5036-8661",
+    affiliation = "Test Org"
+  )
+
+  person <- rocrateR::get_entity(crate, type = "Person")[[1]]
+
+  expect_equal(person$name, "Test User")
+})
+
+test_that("affiliation ROR works", {
+  crate <- rocrateR::rocrate()
+
+  crate <- rocrateR::add_author(
+    crate,
+    name = "Alice Smith",
+    affiliation = "University X",
+    ror = "https://ror.org/03yrm5c26"
+  )
+
+  org <- rocrateR::get_entity(
+    crate,
+    id = "https://ror.org/03yrm5c26"
+  )[[1]]
+
+  expect_equal(org$name, "University X")
+})
+
+
+test_that("add_dataset adds File and Dataset entities", {
+  crate <- rocrateR::rocrate()
+
+  crate <- rocrateR::add_dataset(
+    crate,
+    iris,
+    file_id = "iris.csv",
+    name = "Iris dataset"
+  )
+
+  file_ent <- rocrateR::get_entity(crate, id = "iris.csv")[[1]]
+  dataset_ent <- rocrateR::get_entity(
+    crate,
+    id = "#dataset-iris",
+    type = "Dataset"
+  )[[1]]
+
+  expect_equal(file_ent$encodingFormat, "text/csv")
+  expect_true(!is.null(file_ent$content))
+
+  expect_equal(dataset_ent$name, "Iris dataset")
+
+  # missing file_id
+  expect_error(rocrateR::add_dataset(crate, iris))
+})
+
+test_that("add_notebook works", {
+  crate <- rocrateR::rocrate()
+
+  crate <- rocrateR::add_notebook(
+    crate,
+    "analysis.Rmd"
+  )
+
+  ent <- rocrateR::get_entity(crate, id = "analysis.Rmd")[[1]]
+
+  expect_equal(ent$encodingFormat, "text/markdown")
+})
+
+test_that("add_project works", {
+  crate <- rocrateR::rocrate()
+
+  crate <- rocrateR::add_project(
+    crate,
+    "My cool research"
+  )
+
+  ent <- rocrateR::get_entity(crate, id = "#project-my_cool_research")[[1]]
+
+  expect_equal(ent$name, "My cool research")
+})
+
+test_that("add_notebook works", {
+  crate <- rocrateR::rocrate()
+
+  crate <- rocrateR::add_notebook(
+    crate,
+    "analysis.Rmd"
+  )
+
+  ent <- rocrateR::get_entity(crate, id = "analysis.Rmd")[[1]]
+
+  expect_equal(ent$encodingFormat, "text/markdown")
+})
+
+test_that("add_readme works", {
+  crate <- rocrateR::rocrate() |>
+    rocrateR::add_readme(text = c("# rocrateR"))
+
+  readme_ent <- rocrateR::get_entity(crate, id = "README.md")[[1]]
+
+  expect_equal(readme_ent$name, "README.md")
+  expect_equal(length(readme_ent$content), 1)
+})
+
+test_that("add_software works", {
+  crate <- rocrateR::rocrate() |>
+    rocrateR::add_software("R", version = R.version.string)
+
+  soft_ent <- rocrateR::get_entity(crate, id = "#software-r")[[1]]
+
+  expect_equal(soft_ent$name, "R")
+  expect_equal(soft_ent$version, R.version.string)
+})
+
+test_that("add_workflow adds workflow entities", {
+  crate <- rocrateR::rocrate()
+
+  crate <- rocrateR::add_workflow(
+    crate,
+    "analysis.R",
+    content = c("print('hello')")
+  )
+
+  wf <- rocrateR::get_entity(crate, type = "ComputationalWorkflow")[[1]]
+  file <- rocrateR::get_entity(crate, id = "analysis.R")[[1]]
+
+  expect_equal(wf$hasPart[[1]]$`@id`, "analysis.R")
+  expect_true(!is.null(file$content))
+
+  # missing file_id
+  expect_error(rocrateR::add_workflow(crate))
+})
+
+test_that("workflow records language", {
+  crate <- rocrateR::rocrate() |>
+    rocrateR::add_workflow(
+      "analysis.R",
+      language = "R"
+    )
+
+  lang <- rocrateR::get_entity(crate, type = "ComputerLanguage")[[1]]
+
+  expect_equal(lang$name, "R")
+})
+
+test_that("crate_project scans directory", {
+  # create temporary directory
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  writeLines("print('hello')", file.path(tmp_dir, "script.R"))
+  writeLines("# rocrateR", file.path(tmp_dir, "markdown.Rmd"))
+  writeLines("rocrateR", file.path(tmp_dir, "text.txt"))
+  write.csv(iris, file.path(tmp_dir, "iris.csv"))
+
+  crate <- rocrateR::crate_project(tmp_dir)
+
+  expect_true(!is.null(rocrateR::get_entity(crate, id = "script.R")))
+  expect_true(!is.null(rocrateR::get_entity(crate, id = "iris.csv")))
+  expect_true(!is.null(rocrateR::get_entity(crate, id = "markdown.Rmd")))
+  expect_true(!is.null(rocrateR::get_entity(crate, id = "text.txt")))
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
+})
+
+test_that("dataset links to file via hasPart", {
+  crate <- rocrateR::rocrate() |>
+    rocrateR::add_dataset(
+      iris,
+      file_id = "iris.csv"
+    )
+
+  dataset <- rocrateR::get_entity(
+    crate,
+    id = "#dataset-iris",
+    type = "Dataset"
+  )[[1]]
+
+  expect_equal(dataset$hasPart[[1]]$`@id`, "iris.csv")
+})
+
+test_that("extract_content writes dataset files", {
+  # create temporary directory
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
+  # dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  crate <- rocrateR::rocrate() |>
+    rocrateR::add_dataset(
+      iris,
+      file_id = "iris.csv"
+    ) |>
+    # add JSON file
+    rocrateR::add_entity(
+      rocrateR::entity(
+        id = "my_json.json",
+        type = "File",
+        encodingFormat = "application/json",
+        content = list('[{"rocrateR":"0.0.2"}]')
+      )
+    ) |>
+    # add text file
+    rocrateR::add_entity(
+      rocrateR::entity(
+        id = "text.txt",
+        type = "File",
+        encodingFormat = "text/plain",
+        content = list('rocrateR v0.0.2')
+      )
+    )
+
+  rocrateR::extract_content(crate, tmp_dir)
+
+  expect_true(file.exists(file.path(tmp_dir, "iris.csv")))
+
+  # extract_content fails if missing path
+  expect_error(extract_content(crate))
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
+})
+
+test_that("extract_content respects overwrite flag", {
+  # create temporary directory
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  crate <- rocrateR::rocrate() |>
+    rocrateR::add_dataset(
+      iris,
+      file_id = "iris.csv"
+    )
+
+  rocrateR::extract_content(crate, tmp_dir)
+
+  size1 <- file.info(file.path(tmp_dir, "iris.csv"))$size
+
+  rocrateR::extract_content(crate, tmp_dir, overwrite = FALSE)
+
+  size2 <- file.info(file.path(tmp_dir, "iris.csv"))$size
+
+  expect_equal(size1, size2)
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
+})
+
 test_that("is_rocrate works", {
   # create basic RO-Crate
   basic_crate <- rocrateR::rocrate()
@@ -99,10 +360,7 @@ test_that("load_rocrate reads RO-Crate bag", {
   basic_crate <- rocrateR::rocrate()
 
   # create temporary directory
-  tmp_dir <- file.path(
-    tempdir(),
-    paste0("rocrate-tests-", digest::digest(runif(1)))
-  )
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 
   # write RO-Crate to temporary file
@@ -197,4 +455,64 @@ test_that("validate_rocrate errors when passing invalid object", {
   expect_error(
     validate_rocrate(basic_crate, mode = "stop", strict = TRUE)
   )
+})
+
+test_that("load_content loads CSV into entity content", {
+  # create temporary directory
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  utils::write.csv(iris, file.path(tmp_dir, "iris.csv"), row.names = FALSE)
+
+  crate <- rocrateR::rocrate() |>
+    rocrateR::add_entity(
+      rocrateR::entity(
+        "iris.csv",
+        type = "File",
+        encodingFormat = "text/csv"
+      )
+    )
+
+  crate <- rocrateR:::.load_content(crate, tmp_dir, max_file_size = 10 * 1024^2)
+
+  file_ent <- rocrateR::get_entity(crate, id = "iris.csv")[[1]]
+
+  expect_true(!is.null(file_ent$content))
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
+})
+
+test_that("load_rocrate loads external content", {
+  # create temporary directory
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  utils::write.csv(iris, file.path(tmp_dir, "iris.csv"), row.names = FALSE)
+
+  crate <- rocrateR::rocrate() |>
+    rocrateR::add_entity(
+      rocrateR::entity(
+        "iris.csv",
+        type = "File",
+        encodingFormat = "text/csv"
+      )
+    )
+
+  rocrateR::write_rocrate(crate, file.path(tmp_dir, "ro-crate-metadata.json"))
+
+  crate2 <- rocrateR::load_rocrate(tmp_dir, load_content = TRUE)
+
+  file_ent <- rocrateR::get_entity(crate2, id = "iris.csv")[[1]]
+
+  expect_true(!is.null(file_ent$content))
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
 })

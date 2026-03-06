@@ -3,7 +3,7 @@ basic_crate <- rocrateR::rocrate()
 
 # create entity for an organisation
 organisation_uol <- rocrateR::entity(
-  x = "https://ror.org/04xs57h96",
+  "https://ror.org/04xs57h96",
   type = "Organization",
   name = "University of Liverpool",
   url = "http://www.liv.ac.uk"
@@ -11,7 +11,7 @@ organisation_uol <- rocrateR::entity(
 
 # create an entity for a person
 person_rvd <- rocrateR::entity(
-  x = "https://orcid.org/0000-0001-5036-8661",
+  "https://orcid.org/0000-0001-5036-8661",
   type = "Person",
   name = "Roberto Villegas-Diaz",
   affiliation = list(`@id` = organisation_uol$`@id`)
@@ -30,7 +30,7 @@ test_that("entity works", {
   # valid entity
   expect_equal(
     rocrateR::entity(
-      x = "https://orcid.org/0000-0001-5036-8661",
+      "https://orcid.org/0000-0001-5036-8661",
       type = "Person",
       name = "Roberto Villegas-Diaz",
       affiliation = list(`@id` = organisation_uol$`@id`)
@@ -41,7 +41,7 @@ test_that("entity works", {
   # invalid entity, missing type
   expect_error({
     rocrateR::entity(
-      x = "https://orcid.org/0000-0001-5036-8661",
+      "https://orcid.org/0000-0001-5036-8661",
       name = "Roberto Villegas-Diaz",
       affiliation = list(`@id` = organisation_uol$`@id`)
     )
@@ -57,10 +57,10 @@ test_that("add_entity works", {
   })
 
   # set `overwrite = TRUE`
-  expect_warning({
+  expect_message({
     basic_crate |>
-      rocrateR::add_entity(person_rvd) |>
-      rocrateR::add_entity(person_rvd, overwrite = TRUE)
+      rocrateR::add_entity(person_rvd, verbose = TRUE) |>
+      rocrateR::add_entity(person_rvd, overwrite = TRUE, verbose = TRUE)
   })
 })
 
@@ -86,34 +86,52 @@ test_that("add_entity_value works", {
         value = list(`@id` = person_rvd$`@id`)
       )
   })
+
+  # duplicated entity value
+  expect_error(
+    basic_crate |>
+      rocrateR::add_entity(person_rvd) |>
+      rocrateR::add_entity_value(
+        id = "./",
+        key = "author",
+        value = list(`@id` = person_rvd$`@id`)
+      ) |>
+      rocrateR::add_entity_value(
+        id = "./",
+        key = "author",
+        value = list(`@id` = person_rvd$`@id`)
+      ) |>
+      rocrateR::add_entity(organisation_uol)
+  )
+
+  # duplicated entity value, with overwrite = TRUE
+  expect_message(
+    basic_crate |>
+      rocrateR::add_entity(person_rvd) |>
+      rocrateR::add_entity_value(
+        id = "./",
+        key = "author",
+        value = list(`@id` = person_rvd$`@id`)
+      ) |>
+      rocrateR::add_entity_value(
+        id = "./",
+        key = "author",
+        value = list(`@id` = person_rvd$`@id`),
+        overwrite = TRUE,
+        verbose = TRUE
+      ) |>
+      rocrateR::add_entity(organisation_uol)
+  )
 })
 
-test_that("add_entities works", {
-  # attempt adding same entity without `overwrite = TRUE`
-  expect_error({
-    basic_crate |>
-      rocrateR::add_entity(person_rvd) |>
-      rocrateR::add_entities(list(person_rvd))
-  })
+test_that("add_entities is deprecated", {
+  crate <- rocrate()
+  ent <- entity("a", "File")
 
-  # set `overwrite = TRUE`
-  expect_warning({
-    basic_crate |>
-      rocrateR::add_entity(person_rvd) |>
-      rocrateR::add_entities(list(person_rvd), overwrite = TRUE)
-  })
-
-  # expect message
-  expect_message({
-    basic_crate |>
-      rocrateR::add_entities(list(person_rvd))
-  })
-
-  # supress messages
-  expect_no_message({
-    basic_crate |>
-      rocrateR::add_entities(list(person_rvd), quiet = TRUE)
-  })
+  expect_warning(
+    add_entities(crate, list(ent)),
+    "deprecated"
+  )
 })
 
 test_that("get_entity works", {
@@ -153,7 +171,7 @@ test_that("get_entity works", {
 
   # add multiple entities
   basic_crate_v3 <- basic_crate_v2 |>
-    rocrateR::add_entity(list(`@id` = "1234", `@type` = "Person"))
+    rocrateR::add_entity(rocrateR::entity(id = "1234", type = "Person"))
 
   res_mult_ent <- basic_crate_v3 |>
     rocrateR::get_entity(type = "Person")
@@ -204,26 +222,11 @@ test_that("remove_entity works", {
   })
 })
 
-test_that("remove_entities works", {
-  # attempt adding and removing the same entity using entity object
-  expect_equal(
-    basic_crate |>
-      rocrateR::add_entity(person_rvd) |>
-      rocrateR::remove_entities(list(person_rvd)),
-    basic_crate
-  )
-
-  # attempt adding and removing the same entity using @id
-  expect_equal(
+test_that("remove_entities is deprecated", {
+  expect_warning(
     basic_crate |>
       rocrateR::add_entity(person_rvd) |>
       rocrateR::remove_entities(list("https://orcid.org/0000-0001-5036-8661")),
-    basic_crate
+    "deprecated"
   )
-
-  # attempt removing non-existing entity
-  expect_warning({
-    basic_crate |>
-      rocrateR::remove_entities(list("https://orcid.org/0000-0001-5036-8661"))
-  })
 })

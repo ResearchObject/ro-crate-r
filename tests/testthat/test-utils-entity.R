@@ -2,7 +2,7 @@ test_that(".validate_entity works", {
   # create entity with numeric @id
   expect_no_error({
     rocrateR::entity(
-      x = 123456,
+      id = 123456,
       type = "Dataset"
     )
   })
