@@ -978,11 +978,14 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 
   # load the manifest file
   bagit_manifest_txt <- manifest_filename |>
-    utils::read.delim(
+    utils::read.table(
       header = FALSE,
-      sep = " ",
+      sep = "",
       col.names = c("checksum", "filename"),
-      stringsAsFactors = FALSE
+      colClasses = c("character", "character"),
+      stringsAsFactors = FALSE,
+      quote = "",
+      fill = TRUE
     )
 
   # check if the manifest file is empty
