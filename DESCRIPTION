@@ -39,6 +39,7 @@ RoxygenNote: 7.3.3
 Imports: 
     digest,
     jsonlite,
+    lifecycle,
     zip
 Depends: 
     R (>= 4.1.0)
