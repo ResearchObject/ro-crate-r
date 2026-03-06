@@ -57,6 +57,7 @@ write_rocrate <- function(x, path, ...) {
 #'
 #' @returns Boolean indicating if `metadata_path` is valid.
 #' @keywords internal
+#' @noRd
 .validate_json_syntax <- function(metadata_path) {
   tryCatch(
     jsonlite::fromJSON(metadata_path),
@@ -73,6 +74,7 @@ write_rocrate <- function(x, path, ...) {
 #'
 #' @returns Boolean value with compliance
 #' @keywords internal
+#' @noRd
 .validate_jsonld_compliance <- function(rocrate) {
   # future JSON-LD checks
 }

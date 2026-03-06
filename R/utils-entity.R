@@ -7,6 +7,7 @@
 #'
 #' @returns List with name additional entities.
 #' @keywords internal
+#' @noRd
 .capture_extra_entities <- function(...) {
   extra_entities_lst <- list(...)
   if (length(extra_entities_lst) == 0) {
@@ -34,6 +35,7 @@
 #'
 #' @returns Boolean vector with index for entity with `@id`.
 #' @keywords internal
+#' @noRd
 .find_id_index <- function(rocrate, id) {
   # find the index in `@graph` with the matching {id}
   aux <- vapply(rocrate$`@graph`, \(x) as.character(x[["@id"]]), character(1))
@@ -49,6 +51,7 @@
 #'
 #' @returns Boolean vector with index for entity(ies) with `@type`.
 #' @keywords internal
+#' @noRd
 .find_type_index <- function(rocrate, type) {
   # find the index in `@graph` with the matching {type} (at least one entry)
   aux <- vapply(rocrate$`@graph`, \(x) as.character(x[["@type"]]), character(1))
@@ -64,6 +67,7 @@
 #'
 #' @returns Boolean value to indicate if the given entity is valid.
 #' @keywords internal
+#' @noRd
 .validate_entity <- function(
   x,
   ...,
@@ -73,21 +77,9 @@
   UseMethod(".validate_entity", x)
 }
 
-#' @method validate_entity character
-#' @keywords internal
-.validate_entity.character <- function(
-  x,
-  ...,
-  ent_name = NULL,
-  required = "type"
-) {
-  has_elements <- sapply(required, \(x) !is.null(getElement(list(...), x)))
-  has_elements |>
-    .validate_entity_overview(required, ent_name)
-}
-
 #' @method validate_entity entity
 #' @keywords internal
+#' @noRd
 .validate_entity.entity <- function(
   x,
   ...,
@@ -99,6 +91,7 @@
 
 #' @method validate_entity list
 #' @keywords internal
+#' @noRd
 .validate_entity.list <- function(
   x,
   ...,
@@ -110,25 +103,13 @@
     .validate_entity_overview(required, ent_name)
 }
 
-#' @method validate_entity numeric
-#' @keywords internal
-.validate_entity.numeric <- function(
-  x,
-  ...,
-  ent_name = NULL,
-  required = "type"
-) {
-  has_elements <- sapply(required, \(x) !is.null(getElement(list(...), x)))
-  has_elements |>
-    .validate_entity_overview(required, ent_name)
-}
-
 #' Entity validation overview
 #'
 #' @inheritParams .validate_entity
 #'
 #' @returns Boolean flag with result of entity validation
 #' @keywords internal
+#' @noRd
 .validate_entity_overview <- function(has_elements, required, ent_name = NULL) {
   if (all(has_elements)) {
     return(TRUE)

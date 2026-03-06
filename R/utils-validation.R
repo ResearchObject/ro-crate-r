@@ -8,6 +8,7 @@
 #'
 #' @return A `rocrate_validation` object.
 #' @keywords internal
+#' @noRd
 new_rocrate_validation <- function(
   errors = character(),
   warnings = character(),
@@ -30,6 +31,7 @@ new_rocrate_validation <- function(
 #'
 #' @returns Vector with errors (if any).
 #' @keywords internal
+#' @noRd
 .validate_against_profile <- function(rocrate, profile) {
   errors <- character()
 

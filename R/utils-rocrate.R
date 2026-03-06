@@ -358,7 +358,7 @@ crate_project <- function(path, rocrate = rocrateR::rocrate()) {
 #' @param path Directory where files will be written. RO-Crate root.
 #' @param overwrite Logical. Overwrite existing files.
 #'
-#' @returns Invisibly returns `path`.
+#' @returns Invisibly returns updated `rocrate` without contents.
 #'
 #' @export
 extract_content <- function(rocrate, path, overwrite = FALSE) {
@@ -400,12 +400,18 @@ extract_content <- function(rocrate, path, overwrite = FALSE) {
           ),
           writeLines(as.character(content), file)
         )
+
+        # remove content from RO-Crate entity
+        idx <- .find_id_index(rocrate, basename(file))
+        if (any(idx)) {
+          rocrate$`@graph`[[which(idx)]]$content <- NULL
+        }
       },
       error = function(e) NULL
     )
   }
 
-  invisible(path)
+  invisible(rocrate)
 }
 
 #' Check if object is an RO-Crate
@@ -664,6 +670,7 @@ validate_rocrate <- function(
 #'
 #' @returns Root entity for `rocrate`.
 #' @keywords internal
+#' @noRd
 .get_root_entity <- function(rocrate) {
   graph <- rocrate$`@graph`
   ids <- .get_entity_ids(rocrate)
@@ -683,6 +690,7 @@ validate_rocrate <- function(
 #'
 #' @returns Vector entity IDs for `rocrate`.
 #' @keywords internal
+#' @noRd
 .get_entity_ids <- function(rocrate) {
   graph <- rocrate$`@graph`
   vapply(graph, function(x) as.character(x$`@id`), character(1))
@@ -696,6 +704,7 @@ validate_rocrate <- function(
 #'
 #' @returns Updated `rocrate` object with contents loaded from external files.
 #' @keywords internal
+#' @noRd
 .load_content <- function(rocrate, roc_path, max_file_size = 10 * 1024^2) {
   # get 'File' entities with missing `content` (if any)
   ## ignore warnings about not finding `File` entities
@@ -740,7 +749,7 @@ validate_rocrate <- function(
         rocrateR::add_entity_value(
           id = ent$`@id`,
           key = "content",
-          value = list(content)
+          value = ifelse(is.list(content), content, list(content))
         )
     }
   }
@@ -757,6 +766,7 @@ validate_rocrate <- function(
 #'
 #' @return Character vector of errors.
 #' @keywords internal
+#' @noRd
 .validate_structure <- function(rocrate) {
   errors <- character()
 
@@ -783,6 +793,7 @@ validate_rocrate <- function(
 #'
 #' @return Character vector of errors.
 #' @keywords internal
+#' @noRd
 .validate_semantics <- function(rocrate) {
   errors <- character()
 
@@ -801,7 +812,7 @@ validate_rocrate <- function(
 
   # check duplicated IDs
   if (any(duplicated(ids))) {
-    errors <- c(errors, "Duplicate '@id' values detected in '@graph'.")
+    errors <- c(errors, "Duplicated '@id' values detected in '@graph'.")
   }
 
   # check there's an RO-Crate Metadata descriptor entity
@@ -824,6 +835,7 @@ validate_rocrate <- function(
 #'
 #' @returns Vector of strings with errors identified
 #' @keywords internal
+#' @noRd
 .validate_rocrate <- function(rocrate, strict = FALSE) {
   errors <- character()
 
@@ -845,6 +857,7 @@ validate_rocrate <- function(
 #'
 #' @return Character vector of errors.
 #' @keywords internal
+#' @noRd
 .validate_rocrate_profile <- function(rocrate) {
   # local binding
   errors <- character()
