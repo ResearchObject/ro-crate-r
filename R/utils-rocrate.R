@@ -475,7 +475,7 @@ is_rocrate <- function(rocrate, strict = FALSE, error = TRUE) {
 #' # -------- SETUP --------
 #' basic_crate <- rocrateR::rocrate()
 #' # temp file
-#' tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+#' tmp_dir <- file.path(tempdir(), digest::digest(basename(tempfile())))
 #' tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
 #' dir.create(tmp_dir)
 #'
@@ -617,7 +617,7 @@ load_rocrate.character <- function(
 #' # -------- SETUP --------
 #' basic_crate <- rocrateR::rocrate()
 #' # temp file
-#' tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+#' tmp_dir <- file.path(tempdir(), digest::digest(basename(tempfile())))
 #' tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
 #' dir.create(tmp_dir)
 #'

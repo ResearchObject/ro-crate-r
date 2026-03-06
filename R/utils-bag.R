@@ -32,7 +32,7 @@
 #' # -------- SETUP --------
 #' basic_crate <- rocrateR::rocrate()
 #' # temp file
-#' tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+#' tmp_dir <- file.path(tempdir(), digest::digest(basename(tempfile())))
 #' tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
 #' dir.create(tmp_dir)
 #'
@@ -258,7 +258,7 @@ bag_rocrate.rocrate <- function(
 #' # -------- SETUP --------
 #' basic_crate <- rocrateR::rocrate()
 #' # temp file
-#' tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+#' tmp_dir <- file.path(tempdir(), digest::digest(basename(tempfile())))
 #' tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
 #' dir.create(tmp_dir)
 #'
@@ -323,7 +323,7 @@ is_rocrate_bag <- function(
 #' # -------- SETUP --------
 #' basic_crate <- rocrateR::rocrate()
 #' # temp file
-#' tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+#' tmp_dir <- file.path(tempdir(), digest::digest(basename(tempfile())))
 #' tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
 #' dir.create(tmp_dir)
 #'
@@ -404,7 +404,7 @@ load_rocrate_bag <- function(
 #' # -------- SETUP --------
 #' basic_crate <- rocrateR::rocrate()
 #' # temp file
-#' tmp_dir <- file.path(tempdir(), digest::digest(runif(1)))
+#' tmp_dir <- file.path(tempdir(), digest::digest(basename(tempfile())))
 #' tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
 #' dir.create(tmp_dir)
 #'
@@ -659,7 +659,7 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 #'
 #' @param prefix String with prefix for the RO-Crate ID
 #'
-#' @returns RO-Crate identifier
+#' @returns String RO-Crate identifier
 #'
 #' @keywords internal
 #' @noRd
@@ -709,6 +709,10 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 #' @keywords internal
 #' @noRd
 .extract_bag_if_zip <- function(path, prefix = "rocrate_extract-") {
+  if (dir.exists(path)) {
+    return(list(path = .find_bagit_root(path), cleanup = NULL, msg = NULL))
+  }
+
   if (!file.exists(path)) {
     return(list(
       path = NULL,
@@ -717,6 +721,9 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
     ))
   }
 
+  if (dir.exists(path)) {
+    return(list(path = .find_bagit_root(path), cleanup = NULL, msg = NULL))
+  }
   if (!file.info(path)$isdir && grepl("\\.zip$", path, ignore.case = TRUE)) {
     roc_id <- .create_rocrate_id(prefix)
     tmp_dir <- file.path(tempdir(), roc_id)
@@ -733,10 +740,6 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
     }
 
     return(list(path = bag_root, cleanup = tmp_dir, msg = msg))
-  }
-
-  if (dir.exists(path)) {
-    return(list(path = .find_bagit_root(path), cleanup = NULL, msg = NULL))
   }
 
   NULL
@@ -777,7 +780,7 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 #' @keywords internal
 #' @noRd
 .new_tmp_dir <- function(subdirs = character(1)) {
-  dir <- file.path(tempdir(), subdirs) #digest::digest(runif(1))
+  dir <- file.path(tempdir(), subdirs)
   dir.create(dir, recursive = TRUE)
   dir
 }
