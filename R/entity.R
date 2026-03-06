@@ -405,7 +405,7 @@ remove_entity <- function(rocrate, entity, verbose = FALSE) {
     entity <- vapply(
       entity,
       function(x) {
-        if (is.list(x)) x$`@id` else x
+        if (is.list(x)) as.character(x$`@id`) else as.character(x)
       },
       character(1)
     )
