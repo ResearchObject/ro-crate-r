@@ -506,22 +506,20 @@ test_that("bag_rocrate can force bag when file copy fails", {
   f <- file.path(tmp_dir, "test.txt")
   writeLines("hello", f)
 
-  # make file unreadable to trigger copy failure
-  Sys.chmod(f, mode = "000")
-
-  # force creation of bag
-  expect_error(
-    rocrate_bag_filename <- crate |>
-      rocrateR::bag_rocrate(
-        path = tmp_dir
+  # simulate .copy_file (wrapper for file.copy) failure
+  testthat::with_mocked_bindings(
+    .copy_file = function(...) FALSE,
+    {
+      expect_error(
+        rocrateR::bag_rocrate(crate, path = tmp_dir)
       )
-  )
 
-  expect_warning(
-    rocrateR::bag_rocrate(tmp_dir, force_bag = TRUE)
+      expect_warning(
+        rocrateR::bag_rocrate(tmp_dir, force_bag = TRUE)
+      )
+    },
+    .package = "rocrateR"
   )
-
-  Sys.chmod(f, mode = "644")
 
   # delete temporary directory
   unlink(tmp_dir, recursive = TRUE, force = TRUE)
@@ -572,14 +570,44 @@ test_that("unbag_rocrate rejects archives with only hidden files", {
   tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 
-  hidden <- file.path(tmp_dir, ".DS_Store")
+  hidden <- file.path(tmp_dir, "_hidden1")
   writeLines("junk", hidden)
 
   zip_path <- tempfile(fileext = ".zip")
   suppressWarnings(
-    zip::zip(zip_path, files = hidden)
+    # zip::zip(zip_path, files = hidden)
+    zip::zip(zip_path, files = basename(hidden), root = tmp_dir)
   )
   expect_error(unbag_rocrate(zip_path))
+
+  # delete temporary directory
+  unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+  # check if the temporary directory was successfully deleted
+  expect_false(dir.exists(tmp_dir))
+})
+
+
+test_that("unbag_rocrate rejects archives with only hidden files", {
+  # create temporary directory
+  tmp_dir <- file.path(tempdir(), .create_rocrate_id("rocrate_tests-"))
+  dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+
+  hidden <- file.path(tmp_dir, ".hidden")
+  writeLines("junk", hidden)
+
+  zip_path <- tempfile(fileext = ".zip")
+
+  zip::zip(
+    zipfile = zip_path,
+    files = ".hidden",
+    root = tmp_dir
+  )
+
+  expect_error(
+    rocrateR::unbag_rocrate(zip_path),
+    "No valid files"
+  )
 
   # delete temporary directory
   unlink(tmp_dir, recursive = TRUE, force = TRUE)

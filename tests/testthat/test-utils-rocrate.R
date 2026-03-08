@@ -447,13 +447,21 @@ test_that("validate_rocrate errors when passing invalid object", {
   basic_crate <- rocrateR::rocrate() |>
     rocrateR::remove_entity("./")
 
-  result <- validate_rocrate(basic_crate, mode = "report", strict = TRUE)
+  result <- validate_rocrate(
+    basic_crate,
+    mode = "report",
+    strict = TRUE
+  )
 
   expect_s3_class(result, "rocrate_validation")
-  expect_false(length(result$error) == 0)
+  expect_true(length(result$errors) > 0)
 
   expect_error(
-    validate_rocrate(basic_crate, mode = "stop", strict = TRUE)
+    validate_rocrate(
+      basic_crate,
+      mode = "stop",
+      strict = TRUE
+    )
   )
 })
 
