@@ -26,7 +26,7 @@ add_author <- function(
   person_id <- if (!is.null(orcid)) {
     paste0("https://orcid.org/", orcid)
   } else {
-    paste0("#", gsub(" ", "_", name))
+    paste0("#", gsub(" ", "_", tolower(name)))
   }
 
   person <- rocrateR::entity(
@@ -77,9 +77,12 @@ add_author <- function(
 #' field and written to disk when calling `extract_content()` or
 #' `bag_rocrate(write_content = TRUE)`.
 #'
+#' Use this when you want to register a dataset file or directory
+#' as a formal Dataset entity inside the RO-Crate metadata.
+#'
 #' @param rocrate RO-Crate object, see [rocrateR::rocrate].
-#' @param data R object to store (typically a `data.frame`).
 #' @param file_id Filename for the dataset file.
+#' @param data R object to store (typically a `data.frame`).
 #' @param name Dataset name.
 #' @param description Optional dataset description.
 #' @param encodingFormat MIME type (default `"text/csv"`).
@@ -89,8 +92,8 @@ add_author <- function(
 #' @export
 add_dataset <- function(
   rocrate,
-  data,
   file_id,
+  data = NULL,
   name = NULL,
   description = NULL,
   encodingFormat = "text/csv"
@@ -309,10 +312,18 @@ add_workflow <- function(
 #' Automatically create an RO-Crate from a project directory
 #'
 #' @param path String with project directory.
-#' @param rocrate RO-Crate object, see [rocrateR::rocrate].
 #'
 #' @export
-crate_project <- function(path, rocrate = rocrateR::rocrate()) {
+crate_project <- function(path = NULL) {
+  # create basic RO-Crate
+  rocrate <- rocrateR::rocrate()
+
+  # if path is missing, just return a basic RO-Crate
+  if (is.null(path)) {
+    return(rocrate)
+  }
+
+  # list files inside path
   files <- list.files(path, recursive = TRUE)
 
   # loop through the files in `path`, create and add entities for each
@@ -322,8 +333,8 @@ crate_project <- function(path, rocrate = rocrateR::rocrate()) {
     if (ext %in% c("csv")) {
       rocrate <- rocrate |>
         rocrateR::add_dataset(
-          data = utils::read.csv(file.path(path, f)),
-          file_id = f
+          file_id = f,
+          data = utils::read.csv(file.path(path, f))
         )
     } else if (ext %in% c("r")) {
       rocrate <- rocrate |>
