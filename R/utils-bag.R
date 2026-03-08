@@ -97,35 +97,42 @@ bag_rocrate.character <- function(
           recursive = TRUE
         )
         # create copy of file
-        file.copy(file.path(x, f), file.path(tmp_dir, f), overwrite = TRUE)
+        .copy_file(file.path(x, f), file.path(tmp_dir, f), overwrite = TRUE)
       },
       logical(1)
     )
 
   # check that all the files were copied, unless force_bag = TRUE
   if (!all(rocrate_files_status)) {
+    failed <- rocrate_files[!rocrate_files_status]
+    copied <- rocrate_files[rocrate_files_status]
+
     if (!force_bag) {
       stop(
         "It was not possible to bag all your files!\nMissing file(s):\n",
-        paste0(" - ", rocrate_files[!rocrate_files_status], collapse = "\n"),
+        paste0(" - ", failed, collapse = "\n"),
         "\n\nTo ignore this check, set `force_bag = TRUE`.",
         call. = FALSE
       )
-    } else {
-      warning(
-        "Forcing the creation of the RO-Crate bag! ",
-        "Note that this will ignore checking if all files were copied",
-        "into the RO-Crate bag",
-        call. = FALSE
-      )
     }
+    warning(
+      "Forcing the creation of the RO-Crate bag! ",
+      "Note that this will ignore checking if all files were copied",
+      "into the RO-Crate bag",
+      call. = FALSE
+    )
+
+    # update list of files that will be included in the RO-Crate bag
+    rocrate_files <- copied
   }
 
   # create bag declaration
   .bagit_declaration(tmp_dir)
 
   # create bag manifest and stored one level above `tmp_dir`
-  .bagit_manifest(tmp_dir, rocrate_files)
+  if (length(rocrate_files) > 0) {
+    .bagit_manifest(tmp_dir, rocrate_files)
+  }
 
   # create bag info
   .bagit_info(tmp_dir, rocrate_files, extra_bag_info)
