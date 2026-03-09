@@ -224,6 +224,9 @@ add_entities <- function(rocrate, entity, overwrite = FALSE, verbose = FALSE) {
 entity <- function(id, type, ...) {
   args <- list(...)
 
+  # drop NULL entries
+  args <- args[!vapply(args, is.null, logical(1))]
+
   # create entity and attach additional args
   new_entity <- c(list(`@id` = id, `@type` = type), args)
 
