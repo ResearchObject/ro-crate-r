@@ -356,7 +356,17 @@ get_entity <- function(rocrate, id = NULL, type = NULL) {
     return(results)
   }
 
-  warning("No matching entities were found!", call. = FALSE)
+  msg <- "No matching entities were found with "
+  msg_id <- paste0("@id = '", id, "'")
+  msg_type <- paste0("@type = '", type, "'")
+  warning(
+    msg,
+    ifelse(is.null(id), "", msg_id),
+    ifelse(!is.null(id) && !is.null(type), " and ", ""),
+    ifelse(is.null(type), "", msg_type),
+    "!",
+    call. = FALSE
+  )
   # return NULL invisibly, if no entities were found
   return(invisible(NULL))
 }
