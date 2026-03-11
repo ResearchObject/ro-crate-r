@@ -4,12 +4,10 @@
 \alias{crate_project}
 \title{Automatically create an RO-Crate from a project directory}
 \usage{
-crate_project(path, rocrate = rocrateR::rocrate())
+crate_project(path = NULL)
 }
 \arguments{
 \item{path}{String with project directory.}
-
-\item{rocrate}{RO-Crate object, see \link{rocrate}.}
 }
 \description{
 Automatically create an RO-Crate from a project directory

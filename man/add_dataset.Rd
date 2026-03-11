@@ -6,8 +6,8 @@
 \usage{
 add_dataset(
   rocrate,
-  data,
   file_id,
+  data = NULL,
   name = NULL,
   description = NULL,
   encodingFormat = "text/csv"
@@ -16,9 +16,9 @@ add_dataset(
 \arguments{
 \item{rocrate}{RO-Crate object, see \link{rocrate}.}
 
-\item{data}{R object to store (typically a \code{data.frame}).}
-
 \item{file_id}{Filename for the dataset file.}
+
+\item{data}{R object to store (typically a \code{data.frame}).}
 
 \item{name}{Dataset name.}
 
@@ -34,4 +34,8 @@ This helper converts an R object (typically a \code{data.frame}) into a
 dataset inside the RO-Crate. The object is stored in the \code{content}
 field and written to disk when calling \code{extract_content()} or
 \code{bag_rocrate(write_content = TRUE)}.
+}
+\details{
+Use this when you want to register a dataset file or directory
+as a formal Dataset entity inside the RO-Crate metadata.
 }
