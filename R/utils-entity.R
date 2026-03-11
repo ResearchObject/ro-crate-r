@@ -54,8 +54,8 @@
 #' @noRd
 .find_type_index <- function(rocrate, type) {
   # find the index in `@graph` with the matching {type} (at least one entry)
-  aux <- vapply(rocrate$`@graph`, \(x) as.character(x[["@type"]]), character(1))
-  aux %in% type
+  rocrate$`@graph` |>
+    vapply(\(x) any(x[["@type"]] %in% type), logical(1))
 }
 
 #' Validate entity
@@ -75,6 +75,20 @@
   required = c("@id", "@type")
 ) {
   UseMethod(".validate_entity", x)
+}
+
+#' @method validate_entity character
+#' @keywords internal
+#' @noRd
+.validate_entity.character <- function(
+  x,
+  ...,
+  ent_name = NULL,
+  required = "type"
+) {
+  has_elements <- sapply(required, \(x) !is.null(getElement(list(...), x)))
+  has_elements |>
+    .validate_entity_overview(required, ent_name)
 }
 
 #' @method validate_entity entity
