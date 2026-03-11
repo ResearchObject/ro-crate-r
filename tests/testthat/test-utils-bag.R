@@ -105,8 +105,8 @@ test_that("bag_rocrate writes dataset files", {
 
   crate <- rocrateR::rocrate() |>
     rocrateR::add_dataset(
-      iris,
-      file_id = "iris.csv"
+      file_id = "iris.csv",
+      data = iris
     )
 
   roc_bag_path <- rocrateR::bag_rocrate(

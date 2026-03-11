@@ -37,8 +37,8 @@ test_that("add_dataset adds File and Dataset entities", {
 
   crate <- rocrateR::add_dataset(
     crate,
-    iris,
     file_id = "iris.csv",
+    data = iris,
     name = "Iris dataset"
   )
 
@@ -55,7 +55,7 @@ test_that("add_dataset adds File and Dataset entities", {
   expect_equal(dataset_ent$name, "Iris dataset")
 
   # missing file_id
-  expect_error(rocrateR::add_dataset(crate, iris))
+  expect_error(rocrateR::add_dataset(crate))
 })
 
 test_that("add_notebook works", {
@@ -175,8 +175,8 @@ test_that("crate_project scans directory", {
 test_that("dataset links to file via hasPart", {
   crate <- rocrateR::rocrate() |>
     rocrateR::add_dataset(
-      iris,
-      file_id = "iris.csv"
+      file_id = "iris.csv",
+      data = iris
     )
 
   dataset <- rocrateR::get_entity(
@@ -195,8 +195,8 @@ test_that("extract_content writes dataset files", {
 
   crate <- rocrateR::rocrate() |>
     rocrateR::add_dataset(
-      iris,
-      file_id = "iris.csv"
+      file_id = "iris.csv",
+      data = iris
     ) |>
     # add JSON file
     rocrateR::add_entity(
@@ -238,8 +238,8 @@ test_that("extract_content respects overwrite flag", {
 
   crate <- rocrateR::rocrate() |>
     rocrateR::add_dataset(
-      iris,
-      file_id = "iris.csv"
+      file_id = "iris.csv",
+      data = iris
     )
 
   rocrateR::extract_content(crate, tmp_dir)
