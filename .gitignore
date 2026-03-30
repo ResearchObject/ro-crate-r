@@ -40,3 +40,4 @@ docs
 CRAN-SUBMISSION
 cran-comments.md
 *.html
+inst/doc
