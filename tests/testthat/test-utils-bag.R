@@ -271,13 +271,22 @@ test_that("load_rocrate_bag works", {
   dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
 
   # missing path
-  expect_error(rocrateR::load_rocrate_bag())
+  ## ignore function deprecation error
+  suppressWarnings(
+    expect_error(rocrateR::load_rocrate_bag())
+  )
 
   # invalid path
-  expect_error(rocrateR::load_rocrate_bag("/invalid/path"))
+  ## ignore function deprecation error
+  suppressWarnings(
+    expect_error(rocrateR::load_rocrate_bag("/invalid/path"))
+  )
 
   # path to empty directory
-  expect_error(rocrateR::load_rocrate_bag(tmp_dir))
+  ## ignore function deprecation error
+  suppressWarnings(
+    expect_error(rocrateR::load_rocrate_bag(tmp_dir))
+  )
 
   # write RO-Crate to temporary file
   tmp_file <- file.path(tmp_dir, "ro-crate-metadata.json")
@@ -304,18 +313,24 @@ test_that("load_rocrate_bag works", {
   expect_true(file.exists(rocrate_bag_filename))
 
   # extract RO-Crate bag
-  rocrate_bag_contents <- rocrateR::load_rocrate_bag(
-    rocrate_bag_filename,
-    load_content = TRUE
+  ## ignore function deprecation error
+  suppressWarnings(
+    rocrate_bag_contents <- rocrateR::load_rocrate_bag(
+      rocrate_bag_filename,
+      load_content = TRUE
+    )
   )
 
   # compare contents extracted from the bag and the original R object
   expect_equal(rocrate_bag_contents, basic_crate)
 
   # extract RO-Crate bag without loading the contents from disk, for File ents.
-  rocrate_bag_contents_wo_contents <- rocrateR::load_rocrate_bag(
-    rocrate_bag_filename,
-    load_content = FALSE
+  ## ignore function deprecation error
+  suppressWarnings(
+    rocrate_bag_contents_wo_contents <- rocrateR::load_rocrate_bag(
+      rocrate_bag_filename,
+      load_content = FALSE
+    )
   )
 
   my_json_ent <- rocrateR::get_entity(
