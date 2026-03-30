@@ -9,18 +9,13 @@
 #' @returns Invisibly the RO-Crate stored in `path`.
 #' @export
 read_rocrate <- function(path, simplifyVector = FALSE, ...) {
-  # reads the input file as a JSON file
-  rocrate <- jsonlite::read_json(path, simplifyVector = simplifyVector, ...)
-  # assigns it the 'rocrate' class
-  class(rocrate) <- c("rocrate", class(rocrate))
-  # assign the entity class to each element in the `@graph`
-  for (i in seq_along(rocrate$`@graph`)) {
-    class(rocrate$`@graph`[[i]]) <- c("entity", class(rocrate$`@graph`[[i]]))
-  }
-  # checks the object has the basic structure of an RO-Crate
-  is_rocrate(rocrate)
-  # returns the new object as an RO-crate
-  return(invisible(rocrate))
+  lifecycle::deprecate_warn(
+    "0.2.0",
+    "read_rocrate()",
+    "load_rocrate()"
+  )
+
+  load_rocrate(x = path, ...)
 }
 
 #' Wrapper for [jsonlite::write_json]
@@ -49,6 +44,32 @@ write_rocrate <- function(x, path, ...) {
 
   # return (invisibly) the input object
   invisible(x)
+}
+
+#' Wrapper for [jsonlite::read_json]
+#'
+#' Wrapper for [jsonlite::read_json]. Enforces that the object read is an
+#'     RO-Crate.
+#'
+#' @inheritParams jsonlite::read_json
+#' @inheritDotParams jsonlite::fromJSON
+#'
+#' @returns Invisibly the RO-Crate stored in `path`.
+#' @keywords internal
+#' @noRd
+.read_rocrate_json <- function(path, simplifyVector = FALSE, ...) {
+  # reads the input file as a JSON file
+  rocrate <- jsonlite::read_json(path, simplifyVector = simplifyVector, ...)
+  # assigns it the 'rocrate' class
+  class(rocrate) <- c("rocrate", class(rocrate))
+  # assign the entity class to each element in the `@graph`
+  for (i in seq_along(rocrate$`@graph`)) {
+    class(rocrate$`@graph`[[i]]) <- c("entity", class(rocrate$`@graph`[[i]]))
+  }
+  # checks the object has the basic structure of an RO-Crate
+  is_rocrate(rocrate)
+  # returns the new object as an RO-crate
+  return(invisible(rocrate))
 }
 
 #' Validate JSON syntax for RO-Crate metadata file

@@ -379,7 +379,7 @@ load_rocrate_bag <- function(
   # load RO-Crate
   rocrate_path <- file.path(bag_root, "data", "ro-crate-metadata.json")
 
-  rocrate_obj <- rocrateR::read_rocrate(rocrate_path)
+  rocrate_obj <- .read_rocrate_json(rocrate_path)
 
   # check if the user request to load content from File entities
   if (isTRUE(load_content)) {

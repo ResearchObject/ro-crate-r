@@ -539,12 +539,12 @@ load_rocrate.character <- function(
   }
 
   # case 1: direct metadata file
-  if (grepl("ro-crate-metadata\\.json$", x)) {
+  if (grepl("\\.json$", x)) {
     if (verbose) {
       message("Detected metadata JSON file.")
     }
 
-    rocrate <- read_rocrate(x)
+    rocrate <- .read_rocrate_json(x)
 
     # check if the user request to load content from File entities
     if (isTRUE(load_content)) {
@@ -596,7 +596,7 @@ load_rocrate.character <- function(
         message("Detected plain RO-Crate directory.")
       }
 
-      rocrate <- read_rocrate(metadata_path)
+      rocrate <- .read_rocrate_json(metadata_path)
 
       # check if the user request to load content from File entities
       if (isTRUE(load_content)) {
