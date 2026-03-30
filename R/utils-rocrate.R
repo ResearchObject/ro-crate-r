@@ -560,7 +560,7 @@ load_rocrate.character <- function(
       message("Detected ZIP archive. Extracting...")
     }
 
-    rocrate <- load_rocrate_bag(
+    rocrate <- .load_rocrate_bag(
       x,
       bagit_version = bagit_version,
       load_content = load_content,
@@ -578,7 +578,7 @@ load_rocrate.character <- function(
         message("Detected BagIt directory.")
       }
 
-      rocrate <- load_rocrate_bag(
+      rocrate <- .load_rocrate_bag(
         x,
         bagit_version = bagit_version,
         load_content = load_content,

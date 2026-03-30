@@ -353,44 +353,19 @@ load_rocrate_bag <- function(
   load_content = FALSE,
   max_file_size = 10 * 1024^2
 ) {
-  # attempt extracting contents if bag is a zip archive
-  aux <- .extract_bag_if_zip(path, prefix = "load_rocrate_bag-")
-  bag_root <- aux$path
-
-  if (is.null(bag_root)) {
-    stop(aux$msg, call. = FALSE)
-  }
-
-  # delete temporary directory after function ends
-  if (!is.null(aux$cleanup)) {
-    on.exit(
-      unlink(aux$cleanup, recursive = TRUE, force = TRUE),
-      add = TRUE
-    )
-  }
-
-  # strict validation (throws if invalid)
-  .validate_rocrate_bag(
-    path = bag_root,
-    algo = ifelse(is.null(algo), .detect_manifest_algo(bag_root), algo),
-    bagit_version = bagit_version
+  lifecycle::deprecate_warn(
+    "0.2.0",
+    "load_rocrate_bag()",
+    "load_rocrate()"
   )
 
-  # load RO-Crate
-  rocrate_path <- file.path(bag_root, "data", "ro-crate-metadata.json")
-
-  rocrate_obj <- .read_rocrate_json(rocrate_path)
-
-  # check if the user request to load content from File entities
-  if (isTRUE(load_content)) {
-    rocrate_obj <- .load_content(
-      rocrate_obj,
-      file.path(bag_root, "data"),
-      max_file_size
-    )
-  }
-
-  return(rocrate_obj)
+  load_rocrate(
+    x = path,
+    algo = algo,
+    bagit_version = bagit_version,
+    load_content = load_content,
+    max_file_size = max_file_size
+  )
 }
 
 #' 'Unbag' (extract) RO-Crate packed with BagIt
@@ -778,6 +753,60 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
   }
 
   return(NULL)
+}
+
+#' Load an RO-Crate BagIt archive
+#'
+#' @inheritParams is_rocrate_bag
+#' @inheritParams load_rocrate
+#'
+#' @return An object with the \link[rocrateR]{rocrate} class.
+#' @noRd
+.load_rocrate_bag <- function(
+  path,
+  algo = NULL,
+  bagit_version = "1.0",
+  load_content = FALSE,
+  max_file_size = 10 * 1024^2
+) {
+  # attempt extracting contents if bag is a zip archive
+  aux <- .extract_bag_if_zip(path, prefix = "load_rocrate_bag-")
+  bag_root <- aux$path
+
+  if (is.null(bag_root)) {
+    stop(aux$msg, call. = FALSE)
+  }
+
+  # delete temporary directory after function ends
+  if (!is.null(aux$cleanup)) {
+    on.exit(
+      unlink(aux$cleanup, recursive = TRUE, force = TRUE),
+      add = TRUE
+    )
+  }
+
+  # # strict validation (throws if invalid)
+  # .validate_rocrate_bag(
+  #   path = bag_root,
+  #   algo = ifelse(is.null(algo), .detect_manifest_algo(bag_root), algo),
+  #   bagit_version = bagit_version
+  # )
+
+  # load RO-Crate
+  rocrate_path <- file.path(bag_root, "data", "ro-crate-metadata.json")
+
+  rocrate_obj <- .read_rocrate_json(rocrate_path)
+
+  # check if the user request to load content from File entities
+  if (isTRUE(load_content)) {
+    rocrate_obj <- .load_content(
+      rocrate_obj,
+      file.path(bag_root, "data"),
+      max_file_size
+    )
+  }
+
+  return(rocrate_obj)
 }
 
 #' Create new temporary directory
