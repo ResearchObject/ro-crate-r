@@ -16,7 +16,9 @@ test_that("read_rocrate and write_rocrate works", {
   expect_true(file.exists(tmp_file))
 
   # read RO-crate from the temporary file
-  new_ro_crate <- rocrateR::read_rocrate(tmp_file)
+  suppressWarnings(
+    new_ro_crate <- rocrateR::read_rocrate(tmp_file)
+  )
 
   # compare the original RO-Crate to the loaded from the temporary file
   expect_equal(new_ro_crate, basic_crate)

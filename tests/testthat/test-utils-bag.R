@@ -388,11 +388,13 @@ test_that("unbag_rocrate works", {
   expect_false(file.exists(rocrate_bag_filename))
 
   # read RO-Crate metadata descriptor file
-  basic_crate_from_bag <- file.path(
-    rocrate_bag_files,
-    "data/ro-crate-metadata.json"
-  ) |>
-    rocrateR::read_rocrate()
+  suppressWarnings(
+    basic_crate_from_bag <- file.path(
+      rocrate_bag_files,
+      "data/ro-crate-metadata.json"
+    ) |>
+      rocrateR::read_rocrate()
+  )
 
   # compare with the original RO-Crate
   expect_equal(basic_crate_from_bag, basic_crate)
