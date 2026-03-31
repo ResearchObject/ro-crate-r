@@ -383,7 +383,7 @@ extract_content <- function(rocrate, path, overwrite = FALSE) {
   suppressWarnings({
     file_ents <- rocrate |>
       rocrateR::get_entity(type = "File") |>
-      Filter(function(x) !is.null(x$content), x = _)
+      (\(.) Filter(f = function(x) !is.null(x$content), x = .))()
   })
   # cycle through each File entity (if any) and attempt writing contents
   for (ent in file_ents) {
