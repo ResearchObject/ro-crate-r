@@ -4,7 +4,7 @@
 \alias{print.rocrate}
 \title{Print RO-Crate}
 \usage{
-\method{print}{rocrate}(x, ..., max_lines = getOption("max_lines", 500))
+\method{print}{rocrate}(x, ..., max_lines = getOption("max_lines", 100))
 }
 \arguments{
 \item{x}{RO-Crate object, see \link{rocrate}.}
