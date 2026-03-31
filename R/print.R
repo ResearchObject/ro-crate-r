@@ -5,19 +5,35 @@
 #'
 #' @param x RO-Crate object, see [rocrateR::rocrate].
 #' @param ... Optional arguments, not used.
+#' @param max_lines Max number of lines to display.
 #'
 #' @returns Invisibly the input RO-Crate, `x`.
 #' @export
 #'
 #' @examples
 #' rocrateR::rocrate()
-print.rocrate <- function(x, ...) {
+print.rocrate <- function(x, ..., max_lines = getOption("max_lines", 100)) {
   # check the `x` object
   is_rocrate(x)
   # reformat the input to JSON style
-  jsonlite::toJSON(x, pretty = TRUE, auto_unbox = TRUE) |>
+  x_json <- jsonlite::toJSON(x, pretty = TRUE, auto_unbox = TRUE)
+  x_json_lines <- strsplit(x_json, "\n")[[1]]
+  # check if max_lines is finite
+  if (is.finite(max_lines) && max_lines > 2) {
+    # check if number of lines is bigger than (max_lines - 2)
+    if (length(x_json_lines) > (max_lines - 2)) {
+      x_json_lines <- c(
+        x_json_lines[seq_len(max_lines - 2)],
+        "  \U2757 <file truncated, set `options(max_lines = Inf)` to display all>",
+        x_json_lines[length(x_json_lines) - c(1, 0)]
+      )
+    }
+  }
+
+  x_json_lines |>
     paste0(collapse = "\n") |>
     message()
+
   # return (invisibly) the input object
   invisible(x)
 }
@@ -41,13 +57,9 @@ print.entity <- function(x, ...) {
 
   # display formatted RO-Crate entity
   message(
-    "RO-Crate entity:",
-    "\n @id = '",
-    getElement(x, "@id"),
-    "'",
-    "\n @type = '",
-    getElement(x, "@type"),
-    "'"
+    "<RO-Crate entity>",
+    sprintf("\n @id = '%s'", getElement(x, "@id")),
+    sprintf("\n @type = '%s'", getElement(x, "@type"))
   )
   # return (invisibly) the input object
   invisible(x)
@@ -55,7 +67,7 @@ print.entity <- function(x, ...) {
 
 #' @export
 print.rocrate_validation <- function(x, ...) {
-  cat("<rocrate_validation>\n")
+  msg <- "<RO-Crate validation>"
 
   is_valid <- function(x) {
     inherits(x, "rocrate_validation") &&
@@ -63,20 +75,22 @@ print.rocrate_validation <- function(x, ...) {
   }
 
   if (is_valid(x)) {
-    cat("\U2714 Valid RO-Crate\n")
+    msg <- c(msg, "\U2714 Valid RO-Crate")
   } else {
-    cat("\U2716 Invalid RO-Crate\n")
+    msg <- c(msg, "\U2716 Invalid RO-Crate")
   }
 
   if (length(x$errors)) {
-    cat("\nErrors:\n")
-    cat(paste0(" - ", x$errors, collapse = "\n"), "\n")
+    msg <- c(msg, "\nErrors:")
+    msg <- c(msg, paste0(" - ", x$errors, collapse = "\n"))
   }
 
   if (length(x$warnings)) {
-    cat("\nWarnings:\n")
-    cat(paste0(" - ", x$warnings, collapse = "\n"), "\n")
+    msg <- c(msg, "\nWarnings:")
+    msg <- c(msg, paste0(" - ", x$warnings, collapse = "\n"))
   }
+
+  message(paste0(msg, collapse = "\n"))
 
   invisible(x)
 }
