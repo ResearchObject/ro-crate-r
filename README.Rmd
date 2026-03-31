@@ -13,31 +13,24 @@ knitr::opts_chunk$set(
 )
 ```
 
-# rocrateR: RO-Crate R Package Wrapper <img src="man/figures/logo.png" alt="logo" align="right" height=200px/>
+# rocrateR: Tools for Creating and Manipulating RO-Crates <img src="man/figures/logo.png" alt="logo" align="right" height=200px style="float:right; height:200px;"/>
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/rocrateR)](https://CRAN.R-project.org/package=rocrateR)
 [![R-CMD-check](https://github.com/ResearchObject/ro-crate-r/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ResearchObject/ro-crate-r/actions/workflows/R-CMD-check.yaml)
 [![Codecov test coverage](https://codecov.io/gh/ResearchObject/ro-crate-r/graph/badge.svg)](https://app.codecov.io/gh/ResearchObject/ro-crate-r)
+![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange)
 <!-- badges: end -->
 
-The goal of `{rocrateR}` is to provide an R package for creating, manipulating and reading RO-Crates. Latest supported version of the specification: https://w3id.org/ro/crate/1.2/.
+`{rocrateR}` provides a native R interface for creating, manipulating, validating and packaging RO-Crates.
+RO-Crate is a lightweight approach to packaging research data with structured metadata using JSON-LD.
 
-#### What is an RO-Crate?
-
-> An RO-Crate is an integrated view through which you can see an entire Research Object; the methods, the data, the output and the outcomes of a project or a piece of work. Linking all this together enables the sharing of research outputs with their context, as a coherent whole.
->
-> RO-Crates link data and metadata no matter where they are stored – so that from a paper, you can find the data, and from the data, you can find its authors, and so on.
-
-For more details, please visit: https://www.researchobject.org/ro-crate/about_ro_crate
-
-## 0. Installation
+## Installation
 
 You can install the released version of `{rocrateR}` from [CRAN](https://cran.r-project.org/package=rocrateR) with:
 
 ``` r
-# install.packages("pak")
-pak::pak("rocrateR")
+install.packages("rocrateR")
 ```
 
 And the development version from [GitHub](https://github.com/ResearchObject/ro-crate-r/) with:
@@ -47,313 +40,113 @@ And the development version from [GitHub](https://github.com/ResearchObject/ro-c
 pak::pak("ResearchObject/ro-crate-r@dev")
 ```
 
-## 1. Functions Overview
-
-| Function | Purpose |
-|-----------|----------|
-| `rocrate()` | Create an empty or initialized RO-Crate |
-| `entity()` | Define a new entity (Person, Dataset, etc.) |
-| `add_entity()` / `add_entities()` | Add entities to a crate |
-| `get_entity()` | Retrieve entities by `@id` or `@type` |
-| `remove_entity()` / `remove_entities()` | Remove one or more entities |
-| `write_rocrate()` | Save RO-Crate to disk |
-| `bag_rocrate()` / `is_rocrate_bag()` / `unbag_rocrate()` | Bagging and unbagging RO-Crates |
-| `validate_rocrate()` *(planned)* | Validate RO-Crate using external Python validator |
-
-
-## 2. First RO-Crate
-
-The following command creates an RO-Crate Metadata descriptor (`ro-crate-metadata.json`). This should be stored inside the root (`./`) of your RO-Crate.
-
-```{r example}
-# library(rocrateR)
-my_first_ro_crate <- rocrateR::rocrate()
-```
-
-This object is a list with the basic components of an RO-Crate. It can be visualised in the console with the `print` command:
-
-```{r}
-print(my_first_ro_crate)
-```
-
-This object can be saved to disk using the following command:
+## Quick Start
 
 ```{r, eval = FALSE}
-my_first_ro_crate |>
-  rocrateR::write_rocrate("/path/to/ro-crate/ro-crate-metadata.json")
-```
+# create a crate
+crate <- rocrateR::rocrate()
 
-For example, using a temporary directory:
+crate <- crate |>
+  # add a dataset entity
+  rocrateR::add_dataset("iris.csv", iris) |>
+  # add workflow entity
+  rocrateR::add_workflow(
+    file_id = "analysis.R",
+    name = "Data analysis pipeline",
+    content = c(
+      "data <- read.csv('iris.csv')",
+      "summary(data)"
+    )
+  ) |>
+  # add software entity
+  rocrateR::add_software("R", version = R.version.string)
 
-```{r}
-tmp <- file.path(tempdir(), "ro-crate-metadata.json")
-my_first_ro_crate |>
-  rocrateR::write_rocrate(tmp)
+# write to disk
+path_to_rocrate_bag <- rocrateR::bag_rocrate(crate, path = "./my_roc")
 
-# load lines / flat file
-readLines(tmp)
-
-# delete temporal file
-unlink(tmp)
-```
-
-## 3. Including additional entities
-
-In the previous section we created a very basic RO-Crate with the `rocrateR::rocrate()` function; however, you are likely to include additional entities in your RO-Crate. Entities must contain at least two components `@id` and `@type` (see [https://w3id.org/ro/crate/1.2/](https://w3id.org/ro/crate/1.2/) for details).
-
-For example, a contextual entity can be defined as follows:
-
-```{r}
-# create entity for an organisation
-organisation_uol <- rocrateR::entity(
-  x = "https://ror.org/04xs57h96",
-  type = "Organization",
-  name = "University of Liverpool",
-  url = "http://www.liv.ac.uk"
-)
-
-# create an entity for a person
-person_rvd <- rocrateR::entity(
-  x = "https://orcid.org/0000-0001-5036-8661",
-  type = "Person",
-  name = "Roberto Villegas-Diaz"
-)
-```
-
-These two can be linked to each other via the `@id` field:
-
-```{r}
-person_rvd$affiliation <- list(`@id` = organisation_uol$`@id`)
-```
-
-These entities can be attached to an RO-Crate using the `rocrateR::add_entity()` function:
-
-```{r}
-my_second_ro_crate <- rocrateR::rocrate() |>
-  rocrateR::add_entity(person_rvd) |>
-  rocrateR::add_entity_value(id = "./", key = "author", value = list(`@id` = person_rvd$`@id`)) |>
-  rocrateR::add_entity(organisation_uol)
-```
-
-Alternatively, the same result can be achieved with the following code:
-
-```{r, eval = FALSE}
-my_second_ro_crate <- rocrateR::rocrate(person_rvd, organisation_uol) |>
-  rocrateR::add_entity_value(id = "./", key = "author", value = list(`@id` = person_rvd$`@id`))
-```
-
-```{r}
-print(my_second_ro_crate)
-```
-## 4. Wrangle RO-Crate
-Previously, we covered how to include additional entities, other valid 
-operations are to extract (`rocrateR::get_entity()`) and remove 
-(`rocrateR::remove_entities()`).
-
-### 4.1. Set up
-
-```{r}
-# create basic RO-Crate
-basic_ro_crate <- rocrateR::rocrate()
-
-# create some entities for a project and datasets
-dataset_entities <- seq_len(5) |>
-  lapply(\(x) rocrateR::entity(x, type = "Dataset", name = paste0("Data ", x)))
-project_entity <- rocrateR::entity(
-  "#proj101", 
-  type = "Project", 
-  name = "Project 101",
-  hasPart = dataset_entities |>
-      lapply(\(x) list(`@id` = x[["@id"]]))
-  )
-
-# add project and entities to the RO-Crate
-basic_ro_crate <- basic_ro_crate |>
-  rocrateR::add_entity(project_entity) |>
-  # note that here we are using `rocrateR::add_entities` and `rocrateR::add_entity`
-  rocrateR::add_entities(dataset_entities)
-
-print(basic_ro_crate)
-```
-
-### 4.2. Extract entity
-
-We can extract entities via the `@id`, `@type` or both:
-
-#### 4.2.1. Extract using `@id`
-
-```{r}
-basic_ro_crate_project <- basic_ro_crate |>
-  rocrateR::get_entity(id = "#proj101")
-
-print(basic_ro_crate_project)
-```
-
-#### 4.2.2. Extract using `@type`
-
-```{r}
-basic_ro_crate_datasets <- basic_ro_crate |>
-  rocrateR::get_entity(type = "Dataset")
-
-print(basic_ro_crate_datasets)
-```
-
-#### 4.2.3. Extract using `@id` and `@type`
-
-```{r}
-basic_ro_crate_dataset_root <- basic_ro_crate |>
-  rocrateR::get_entity(id = "./", type = "Dataset")
-
-print(basic_ro_crate_dataset_root)
-```
-
-### 4.3. Remove entity
-
-Similarly, we can remove entities from an RO-Crate:
-
-#### 4.3.1. Remove using scalar `@id`
-```{r}
-basic_ro_crate_alt <- basic_ro_crate |>
-  rocrateR::remove_entity("#proj101")
-```
-
-#### 4.3.2. Remove using `entity` object
-```{r}
-basic_ro_crate_alt <- basic_ro_crate |>
-  rocrateR::remove_entity(project_entity)
-```
-
-#### 4.3.3. Remove multiple entities
-```{r}
-basic_ro_crate_alt <- basic_ro_crate |>
-  rocrateR::remove_entities(dataset_entities)
-```
-
-## 5. Create an RO-Crate Bag
-
-Here we will explore the BagIt file packaging format, which is the recommended
-to use for _bagging_ RO-Crates. BagIt is described in 
-[RFC 8493](https://doi.org/10.17487/RFC8493):
-
-> [BagIt is] … a set of hierarchical file layout conventions for storage and transfer of arbitrary digital content. A “bag” has just enough structure to enclose descriptive metadata “tags” and a file “payload” but does not require knowledge of the payload’s internal semantics. This BagIt format is suitable for reliable storage and transfer.
-
-In this package, the function `rocrateR::bag_rocrate` will take either a `path`
-pointing to the root of an RO-Crate (must have at least an RO-Crate metadata 
-descriptor file, `ro-crate-metadata.json`) or an RO-Crate object created with
-`rocrateR::rocrate` (and alternatives), as shown in step 1.
-
-For more details, run the following command:
-
-```r
-?rocrateR::bag_rocrate
-```
-
-### 5.1. `rocrateR::bag_rocrate()` 
-
-Here we will create an RO-Crate bag inside temporary directory:
-
-```{r}
-# create basic RO-Crate
-basic_ro_crate <- rocrateR::rocrate()
-
-# create temporary directory
-tmp_dir <- file.path(tempdir(), paste0("rocrate-", digest::digest(Sys.time())))
-dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
-
-# then, we can create the RO-Crate bag
-path_to_rocrate_bag <- basic_ro_crate |>
-  rocrateR::bag_rocrate(path = tmp_dir)
-```
-
-
-### 5.2. `rocrateR::is_rocrate_bag()`
-
-We can use the function `rocrateR::is_rocrate_bag()` to verify that a given path
-points to a ZIP file or a directory with a valid RO-Crate bag. The expected 
-files are
-
-- `bagit.txt` with the BagIt [definition](https://www.rfc-editor.org/rfc/rfc8493.html#section-2.2.2)
-- `data` directory with [payload](https://www.rfc-editor.org/rfc/rfc8493.html#section-2.1.2) of the RO-Crate
-- `manifest-[algorithm].txt` with the checksum for each file inside the `data` directory; .
-
-```{r}
-basic_ro_crate_contents <- path_to_rocrate_bag |>
-  rocrateR::is_rocrate_bag()
-```
-
-And then, the RO-Crate can be displayed
-
-```{r}
-print(basic_ro_crate_contents)
-```
-
-
-### 5.3. `rocrateR::unbag_rocrate()`
-
-We can explore the contents of the RO-Crate bag with the following commands:
-
-```{r, echo=FALSE, eval=FALSE}
-# list files without unzipping
-unzip(path_to_rocrate_bag, list = TRUE)
-```
-
-```{r}
-# extract files in temporary directory
 path_to_rocrate_bag_contents <- path_to_rocrate_bag |>
-  rocrateR::unbag_rocrate(output = file.path(tmp_dir, "ROC"))
+    rocrateR::unbag_rocrate(output = "ROC")
+```
+
+
+```{r, echo = FALSE}
+# create a crate
+crate <- rocrateR::rocrate()
+
+crate <- crate |>
+  # add a dataset entity
+  rocrateR::add_dataset("iris.csv", iris) |>
+  # add workflow entity
+  rocrateR::add_workflow(
+    file_id = "analysis.R",
+    name = "Data analysis pipeline",
+    content = c(
+      "data <- read.csv('iris.csv')",
+      "summary(data)"
+    )
+  ) |>
+  # add software entity
+  rocrateR::add_software("R", version = R.version.string)
+
+# write to disk
+tmp_dir <- "./my_roc"
+dir.create(tmp_dir, showWarnings = FALSE, recursive = TRUE)
+suppressMessages(
+  path_to_rocrate_bag <- rocrateR::bag_rocrate(crate, path = tmp_dir)
+)
+# extract files in temporary directory
+suppressMessages(
+  path_to_rocrate_bag_contents <- path_to_rocrate_bag |>
+    rocrateR::unbag_rocrate(output = file.path(tmp_dir, "ROC"))
+)
 
 # create tree with the files
-fs::dir_tree(path_to_rocrate_bag_contents)
+withr::with_dir(
+  dirname(path_to_rocrate_bag_contents),
+  fs::dir_tree(basename(path_to_rocrate_bag_contents))
+)
+unlink(tmp_dir, recursive = TRUE)
 ```
 
-```{r}
-# delete temporary directory
-unlink(tmp_dir, recursive = TRUE, force = TRUE)
+
+## What You Can Do
+
+* 📦 Create RO-Crates from projects or folders
+* 📄 Add datasets, software, workflows, notebooks, authors
+* ✏️ Edit and enrich metadata 
+* 🔍 Inspect crate contents
+* ✅ Validate structure and metadata
+* 🧳 Create RO-Crate Bags for preservation
+
+## Typical Workflow
+
+```{r, eval = FALSE}
+roc_bag_path <- rocrateR::crate_project() |>
+  rocrateR::add_author("Alice Smith") |>
+  rocrateR::add_dataset("data/raw.csv") |>
+  rocrateR::add_software("analysis.R") |>
+  rocrateR::bag_rocrate(path = ".")
+```
+
+## Validation
+
+```{r, eval = FALSE}
+rocrateR::validate_rocrate(roc_bag_path)
 ```
 
 
-## 6. Validation (experimental)
+## Learn More
 
-As you develop your RO-Crates, you might want to validate them. There are few validators online (some of which can be found at https://www.researchobject.org/ro-crate/tools), here we will explore the Python package [`rocrate-validator`](https://github.com/crs4/rocrate-validator). For installation details, please visit https://github.com/crs4/rocrate-validator.
+For further details, see the following vignette:
 
-⚠️ The validation workflow depends on Python’s [`rocrate-validator`](https://github.com/crs4/rocrate-validator). Ensure you have a working Python installation and [`{reticulate}`](https://cran.r-project.org/package=reticulate) configured correctly (`reticulate::py_config()`). On Windows, you may need to restart R after installation.
-
-### 6.1. Install [`{reticulate}`](https://cran.r-project.org/package=reticulate)
-``` r
-pak::pkg_install("reticulate")
+```{r, eval = TRUE}
+vignette("rocrateR-intro")
 ```
 
-### 6.2. Install [`rocrate-validator`](https://github.com/crs4/rocrate-validator)
+## Why rocrateR?
 
-``` r
-reticulate::py_install("roc-validator", env = "rocrateR")
-```
-
-### 6.3. Create example RO-Crate and validate it
-
-```{r}
-basic_ro_crate <- rocrateR::rocrate()
-
-# store crate inside temporal directory
-tmp <- file.path(tempdir(), "ro-crate-metadata.json")
-basic_ro_crate |>
-  rocrateR::write_rocrate(tmp)
-# wrap crate into zip file (expected by validator)
-tmp_zip <- paste(tmp, ".zip")
-zip(tmp_zip, tmp)
-
-# validate (note the name of the module: rocrate_validator)
-reticulate::use_virtualenv("rocrateR")
-rocrate_validator <- reticulate::import("rocrate_validator")
-status <- rocrate_validator$utils$validate_rocrate_uri(tmp_zip)
-
-if (status) {
-  message("RO-Crate is valid!")
-} else {
-  message("RO-Crate is invalid!")
-}
-
-# delete temporal files
-unlink(tmp)
-unlink(tmp_zip)
-```
+- Native R interface to RO-Crate
+- No external system dependencies
+- Supports BagIt packaging (RFC 8493)
+- Structural validation tools
+- Designed for reproducible research workflows
