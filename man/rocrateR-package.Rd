@@ -8,7 +8,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Tools for creating, manipulating and reading Research Object Crates (RO-Crates), a lightweight approach to packaging research data with structured metadata. Supports generation of crate metadata, entity management, validation utilities and reading existing RO-Crate structures following the specification \url{https://w3id.org/ro/crate/1.2/}.
+Provides tools for creating, manipulating and reading Research Object Crates (RO-Crates), a lightweight approach to packaging research data with structured metadata. Includes utilities for metadata generation, entity management, validation and reading existing RO-Crates following the specification \url{https://w3id.org/ro/crate/1.2/}.
 }
 \seealso{
 Useful links:
