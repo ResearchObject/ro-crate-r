@@ -113,7 +113,7 @@ unlink(tmp_dir, recursive = TRUE)
 
 * 📦 Create RO-Crates from projects or folders
 * 📄 Add datasets, software, workflows, notebooks, authors
-* ✏️ Edit and enrich metadata 
+* ✏️ Edit and enrich metadata
 * 🔍 Inspect crate contents
 * ✅ Validate structure and metadata
 * 🧳 Create RO-Crate Bags for preservation
@@ -139,8 +139,8 @@ rocrateR::validate_rocrate(roc_bag_path)
 
 For further details, see the following vignette:
 
-```{r, eval = TRUE}
-vignette("rocrateR-intro")
+```{r, eval = FALSE}
+vignette("getting-started-with-rocrateR")
 ```
 
 ## Why rocrateR?

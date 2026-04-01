@@ -103,8 +103,7 @@ rocrateR::validate_rocrate(roc_bag_path)
 For further details, see the following vignette:
 
 ``` r
-vignette("rocrateR-intro")
-#> Warning: vignette 'rocrateR-intro' not found
+vignette("getting-started-with-rocrateR")
 ```
 
 ## Why rocrateR?
