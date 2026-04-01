@@ -87,7 +87,7 @@ add_author <- function(
 #' @param description Optional dataset description.
 #' @param encodingFormat MIME type (default `"text/csv"`).
 #'
-#' @returns Updated `rocrate` object.
+#' @returns Updated RO-Crate object.
 #'
 #' @export
 add_dataset <- function(
@@ -200,7 +200,7 @@ add_project <- function(rocrate, name, description = NULL) {
 #' @param text Character vector with README content.
 #' @param filename README filename.
 #'
-#' @return Updated rocrate object.
+#' @returns Updated RO-Crate object.
 #' @export
 add_readme <- function(
   rocrate,
@@ -255,7 +255,7 @@ add_software <- function(rocrate, name, version = NULL) {
 #' @param language Programming language (default `"R"`).
 #' @param content Optional script contents.
 #'
-#' @returns Updated `rocrate` object.
+#' @returns Updated RO-Crate object.
 #'
 #' @export
 add_workflow <- function(
@@ -479,7 +479,7 @@ is_rocrate <- function(rocrate, strict = FALSE, error = TRUE) {
 #' @param max_file_size Maximum file size (bytes) allowed when loading
 #'   content. Default 10MB.
 #'
-#' @return An `rocrate` object.
+#' @returns An RO-Crate object.
 #' @export
 #'
 #' @examples
@@ -621,7 +621,7 @@ load_rocrate.character <- function(
 #' @param mode Either `"stop"` or `"report"`.
 #' @param strict Logical. Enable profile validation.
 #'
-#' @return A `rocrate_validation` object (in report mode).
+#' @returns A `rocrate_validation` object (in report mode).
 #' @export
 #'
 #' @examples
@@ -775,7 +775,7 @@ validate_rocrate <- function(
 #'
 #' @param rocrate RO-Crate object, see [rocrateR::rocrate].
 #'
-#' @return Character vector of errors.
+#' @returns Character vector of errors.
 #' @keywords internal
 #' @noRd
 .validate_structure <- function(rocrate) {
@@ -802,7 +802,7 @@ validate_rocrate <- function(
 #'
 #' @param rocrate RO-Crate object, see [rocrateR::rocrate].
 #'
-#' @return Character vector of errors.
+#' @returns Character vector of errors.
 #' @keywords internal
 #' @noRd
 .validate_semantics <- function(rocrate) {
@@ -866,7 +866,7 @@ validate_rocrate <- function(
 #'
 #' @param rocrate RO-Crate object, see [rocrateR::rocrate].
 #'
-#' @return Character vector of errors.
+#' @returns Character vector of errors.
 #' @keywords internal
 #' @noRd
 .validate_rocrate_profile <- function(rocrate) {

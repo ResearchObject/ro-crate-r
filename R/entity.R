@@ -8,7 +8,7 @@
 #' @param verbose Boolean flag to indicate if status messages should be hidden
 #'     (default: `FALSE`).
 #'
-#' @returns Updated RO-Crate with the new entity.
+#' @returns Updated RO-Crate object.
 #' @export
 #'
 #' @examples
@@ -96,7 +96,7 @@ add_entity <- function(rocrate, entity, overwrite = FALSE, verbose = FALSE) {
 #' @param verbose Boolean flag to indicate if status messages should be hidden
 #'     (default: `FALSE`).
 #'
-#' @returns RO-Crate object.
+#' @returns Updated RO-Crate object.
 #' @export
 #'
 #' @examples

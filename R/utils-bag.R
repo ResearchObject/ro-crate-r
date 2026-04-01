@@ -23,7 +23,7 @@
 #' @param create_dir Boolean flag to indicate if the `path` should be created,
 #'    if it doesn't exist.
 #'
-#' @returns String with full path to the final RO-Crate bag.
+#' @returns String with full path to the RO-Crate bag.
 #'
 #' @export
 #'
@@ -321,7 +321,7 @@ is_rocrate_bag <- function(
 #' @inheritParams is_rocrate_bag
 #' @inheritParams load_rocrate
 #'
-#' @return An object with the \link[rocrateR]{rocrate} class.
+#' @returns An object with the \link[rocrateR]{rocrate} class.
 #' @export
 #'
 #' @family RO-Crate BagIt archive functions
@@ -760,7 +760,7 @@ unbag_rocrate <- function(path, output = dirname(path), quiet = FALSE) {
 #' @inheritParams is_rocrate_bag
 #' @inheritParams load_rocrate
 #'
-#' @return An object with the \link[rocrateR]{rocrate} class.
+#' @returns An object with the \link[rocrateR]{rocrate} class.
 #' @noRd
 .load_rocrate_bag <- function(
   path,

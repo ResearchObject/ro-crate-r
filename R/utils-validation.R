@@ -6,7 +6,7 @@
 #' @param warnings Character vector of warnings.
 #' @param info Character vector of informational messages.
 #'
-#' @return A `rocrate_validation` object.
+#' @returns A `rocrate_validation` object.
 #' @keywords internal
 #' @noRd
 new_rocrate_validation <- function(
