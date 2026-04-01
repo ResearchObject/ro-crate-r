@@ -13,7 +13,6 @@
 ^pkgdown$
 ^CRAN-SUBMISSION$
 ^data-raw$
-^build$
 ^doc$
 ^Meta$
 ^LICENSE\.md$
