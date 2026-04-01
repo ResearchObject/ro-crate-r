@@ -10,7 +10,7 @@
 #' @export
 read_rocrate <- function(path, simplifyVector = FALSE, ...) {
   lifecycle::deprecate_warn(
-    "0.2.0",
+    "0.1.0",
     "read_rocrate()",
     "load_rocrate()"
   )

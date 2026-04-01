@@ -354,7 +354,7 @@ load_rocrate_bag <- function(
   max_file_size = 10 * 1024^2
 ) {
   lifecycle::deprecate_warn(
-    "0.2.0",
+    "0.1.0",
     "load_rocrate_bag()",
     "load_rocrate()"
   )

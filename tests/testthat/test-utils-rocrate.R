@@ -204,7 +204,7 @@ test_that("extract_content writes dataset files", {
         id = "my_json.json",
         type = "File",
         encodingFormat = "application/json",
-        content = list('[{"rocrateR":"0.0.2"}]')
+        content = list('[{"rocrateR":"0.1.0"}]')
       )
     ) |>
     # add text file
@@ -213,7 +213,7 @@ test_that("extract_content writes dataset files", {
         id = "text.txt",
         type = "File",
         encodingFormat = "text/plain",
-        content = list('rocrateR v0.0.2')
+        content = list('rocrateR v0.1.0')
       )
     )
 

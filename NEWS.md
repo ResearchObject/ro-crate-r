@@ -1,4 +1,4 @@
-# rocrateR 0.0.2
+# rocrateR 0.1.0
 
 * Added higher level function to load RO-Crates from various inputs, 
 `load_rocrate`.

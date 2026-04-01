@@ -182,7 +182,7 @@ add_entity_value <- function(
 #' @export
 add_entities <- function(rocrate, entity, overwrite = FALSE, verbose = FALSE) {
   lifecycle::deprecate_warn(
-    "0.2.0",
+    "0.1.0",
     "add_entities()",
     "add_entity()"
   )
@@ -457,7 +457,7 @@ remove_entity <- function(rocrate, entity, verbose = FALSE) {
 #' @export
 remove_entities <- function(rocrate, entity, verbose = TRUE) {
   lifecycle::deprecate_warn(
-    "0.2.0",
+    "0.1.0",
     "remove_entities()",
     "remove_entity()"
   )
