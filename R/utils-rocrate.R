@@ -722,7 +722,7 @@ validate_rocrate <- function(
   suppressWarnings({
     file_ents <- rocrate |>
       rocrateR::get_entity(type = "File") |>
-      Filter(function(x) is.null(x$content), x = _)
+      (\(.) Filter(f = function(x) !is.null(x$content), x = .))()
   })
   # attempt loading contents, if any entities were found
   for (ent in file_ents) {
