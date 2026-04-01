@@ -41,3 +41,5 @@ CRAN-SUBMISSION
 cran-comments.md
 *.html
 inst/doc
+/doc/
+/Meta/
