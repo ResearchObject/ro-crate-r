@@ -37,7 +37,7 @@ contents into the \code{content} field for entities of type \code{File}.}
 content. Default 10MB.}
 }
 \value{
-An \code{rocrate} object.
+An RO-Crate object.
 }
 \description{
 High-level loader that can read:

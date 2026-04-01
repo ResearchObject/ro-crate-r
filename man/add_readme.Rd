@@ -14,7 +14,7 @@ add_readme(rocrate, text, filename = "README.md")
 \item{filename}{README filename.}
 }
 \value{
-Updated rocrate object.
+Updated RO-Crate object.
 }
 \description{
 Add README file to an RO-Crate

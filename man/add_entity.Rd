@@ -22,7 +22,7 @@ given RO-Crate) should be overwritten.}
 (default: \code{FALSE}).}
 }
 \value{
-Updated RO-Crate with the new entity.
+Updated RO-Crate object.
 }
 \description{
 Add entity to RO-Crate

@@ -51,7 +51,7 @@ file should be overwritten if already inside \code{path} (default: \code{FALSE})
 if it doesn't exist.}
 }
 \value{
-String with full path to the final RO-Crate bag.
+String with full path to the RO-Crate bag.
 }
 \description{
 Bag the contents of an RO-Crate using the BagIt file packaging format v1.0.

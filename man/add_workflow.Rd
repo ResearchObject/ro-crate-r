@@ -27,7 +27,7 @@ add_workflow(
 \item{content}{Optional script contents.}
 }
 \value{
-Updated \code{rocrate} object.
+Updated RO-Crate object.
 }
 \description{
 Register a workflow script (e.g. R, Python, Nextflow) as a

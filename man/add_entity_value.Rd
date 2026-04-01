@@ -22,7 +22,7 @@ should be overwritten (default: \code{FALSE}).}
 (default: \code{FALSE}).}
 }
 \value{
-RO-Crate object.
+Updated RO-Crate object.
 }
 \description{
 Add entity value to RO-Crate, under entity with \verb{@id} = \code{{id}}, using the

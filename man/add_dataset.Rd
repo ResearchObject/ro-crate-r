@@ -27,7 +27,7 @@ add_dataset(
 \item{encodingFormat}{MIME type (default \code{"text/csv"}).}
 }
 \value{
-Updated \code{rocrate} object.
+Updated RO-Crate object.
 }
 \description{
 This helper converts an R object (typically a \code{data.frame}) into a
