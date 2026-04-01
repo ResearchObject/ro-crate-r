@@ -94,3 +94,38 @@ print.rocrate_validation <- function(x, ...) {
 
   invisible(x)
 }
+
+#' @export
+print.summary.entity <- function(x, ...) {
+  msg <- c(
+    "<RO-Crate Entity Summary>",
+    paste(" ID:", x$id),
+    paste(" Type:", x$type)
+  )
+
+  if (!is.na(x$name)) {
+    msg <- c(msg, paste(" Name:", x$name))
+  }
+
+  msg <- c(msg, paste(" Metadata fields:", x$n_fields))
+
+  message(paste0(msg, collapse = "\n"))
+  invisible(x)
+}
+
+#' @export
+print.summary.rocrate <- function(x, ...) {
+  msg <- c(
+    "<RO-Crate Summary>",
+    paste(" Entities:", x$n_entities),
+    paste(" Files:", x$n_files)
+  )
+
+  if (!is.na(x$root_name) && nchar(x$root_name) > 0) {
+    msg <- c(msg, paste(" Root dataset:", x$root_name))
+  } else {
+    msg <- c(msg, " Root dataset: <unnamed>")
+  }
+  message(paste0(msg, collapse = "\n"))
+  invisible(x)
+}
