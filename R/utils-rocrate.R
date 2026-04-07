@@ -13,6 +13,7 @@
 #' @param set_author Logical, used to indicate if the current user should be set
 #'     as the author of the RO-Crate.
 #'
+#' @returns Updated RO-Crate object.
 #' @export
 add_author <- function(
   rocrate,
@@ -88,7 +89,6 @@ add_author <- function(
 #' @param encodingFormat MIME type (default `"text/csv"`).
 #'
 #' @returns Updated RO-Crate object.
-#'
 #' @export
 add_dataset <- function(
   rocrate,
@@ -142,6 +142,7 @@ add_dataset <- function(
 #' @param name Optional, notebook's name.
 #' @param content Optional, notebook's content.
 #'
+#' @returns Updated RO-Crate object.
 #' @export
 add_notebook <- function(rocrate, file_id, name = NULL, content = NULL) {
   if (is.null(name)) {
@@ -178,6 +179,7 @@ add_notebook <- function(rocrate, file_id, name = NULL, content = NULL) {
 #' @param name Project's name.
 #' @param description Optional, project's description.
 #'
+#' @returns Updated RO-Crate object.
 #' @export
 add_project <- function(rocrate, name, description = NULL) {
   id <- paste0("#project-", gsub(" ", "_", tolower(name)))
@@ -226,6 +228,7 @@ add_readme <- function(
 #' @param name Software name.
 #' @param version Version string.
 #'
+#' @returns Updated RO-Crate object.
 #' @export
 add_software <- function(rocrate, name, version = NULL) {
   id <- paste0("#software-", gsub(" ", "_", tolower(name)))
@@ -256,7 +259,6 @@ add_software <- function(rocrate, name, version = NULL) {
 #' @param content Optional script contents.
 #'
 #' @returns Updated RO-Crate object.
-#'
 #' @export
 add_workflow <- function(
   rocrate,
@@ -313,6 +315,7 @@ add_workflow <- function(
 #'
 #' @param path String with project directory.
 #'
+#' @returns RO-Crate object for the project given by `path`.
 #' @export
 crate_project <- function(path = NULL) {
   # create basic RO-Crate
@@ -370,7 +373,6 @@ crate_project <- function(path = NULL) {
 #' @param overwrite Logical. Overwrite existing files.
 #'
 #' @returns Invisibly returns updated `rocrate` without contents.
-#'
 #' @export
 extract_content <- function(rocrate, path, overwrite = FALSE) {
   # check if the path exists

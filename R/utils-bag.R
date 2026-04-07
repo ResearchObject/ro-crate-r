@@ -24,7 +24,6 @@
 #'    if it doesn't exist.
 #'
 #' @returns String with full path to the RO-Crate bag.
-#'
 #' @export
 #'
 #' @family RO-Crate BagIt archive functions
@@ -376,9 +375,8 @@ load_rocrate_bag <- function(
 #' @param quiet Boolean flag to indicate if messages should be suppressed
 #'     (default: `FALSE` - display messages).
 #'
-#' @export
-#'
 #' @returns String with path to root of the RO-Crate.
+#' @export
 #'
 #' @family RO-Crate BagIt archive functions
 #'
