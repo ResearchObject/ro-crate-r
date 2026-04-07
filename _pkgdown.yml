@@ -1,3 +1,4 @@
+url: https://github.com/ResearchObject/ro-crate-r/
 template:
   bootstrap: 5
 
@@ -13,6 +14,8 @@ reference:
   - read_rocrate
   - rocrate
   - rocrate_5s
+  - summary.entity
+  - summary.rocrate
   - validate_rocrate
   - write_rocrate
 - subtitle: BagIt functions
@@ -41,4 +44,3 @@ reference:
   - add_software
   - add_workflow
   - crate_project
-  
