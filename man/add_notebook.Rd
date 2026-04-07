@@ -15,6 +15,9 @@ add_notebook(rocrate, file_id, name = NULL, content = NULL)
 
 \item{content}{Optional, notebook's content.}
 }
+\value{
+Updated RO-Crate object.
+}
 \description{
 Add a notebook to an RO-Crate
 }

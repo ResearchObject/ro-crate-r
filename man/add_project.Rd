@@ -13,6 +13,9 @@ add_project(rocrate, name, description = NULL)
 
 \item{description}{Optional, project's description.}
 }
+\value{
+Updated RO-Crate object.
+}
 \description{
 Add project metadata
 }

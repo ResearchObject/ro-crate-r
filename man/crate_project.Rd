@@ -9,6 +9,9 @@ crate_project(path = NULL)
 \arguments{
 \item{path}{String with project directory.}
 }
+\value{
+RO-Crate object for the project given by \code{path}.
+}
 \description{
 Automatically create an RO-Crate from a project directory
 }

@@ -13,6 +13,9 @@ add_software(rocrate, name, version = NULL)
 
 \item{version}{Version string.}
 }
+\value{
+Updated RO-Crate object.
+}
 \description{
 Add software application entity
 }

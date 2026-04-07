@@ -29,6 +29,9 @@ add_author(
 \item{set_author}{Logical, used to indicate if the current user should be set
 as the author of the RO-Crate.}
 }
+\value{
+Updated RO-Crate object.
+}
 \description{
 This helper creates an author entity and if \code{affiliation} is provided, then
 creates an organisation entity for the user's affiliation.
