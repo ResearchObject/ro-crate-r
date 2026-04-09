@@ -1,6 +1,6 @@
 Package: rocrateR
 Title: Tools for Creating and Manipulating RO-Crates
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R: c(
     person(given = "Roberto",
            family = "Villegas-Diaz",
