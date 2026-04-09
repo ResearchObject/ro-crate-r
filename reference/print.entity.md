@@ -13,7 +13,8 @@ print(x, ...)
 
 - x:
 
-  RO-Crate entity object, see [entity](entity.md).
+  RO-Crate entity object, see
+  [entity](https://github.com/ResearchObject/ro-crate-r/reference/entity.md).
 
 - ...:
 
@@ -29,7 +30,7 @@ Invisibly the input RO-Crate entity, `x`.
 rocrateR::rocrate() |>
   rocrateR::get_entity("./")
 #> [[1]]
-#> RO-Crate entity:
+#> <RO-Crate entity>
 #>  @id = './'
 #>  @type = 'Dataset'
 #> 

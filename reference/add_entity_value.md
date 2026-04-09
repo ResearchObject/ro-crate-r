@@ -6,14 +6,15 @@ the pair `{key}`-`{value}` within `@graph`.
 ## Usage
 
 ``` r
-add_entity_value(rocrate, id, key, value, overwrite = TRUE)
+add_entity_value(rocrate, id, key, value, overwrite = FALSE, verbose = FALSE)
 ```
 
 ## Arguments
 
 - rocrate:
 
-  RO-Crate object, see [rocrate](rocrate.md).
+  RO-Crate object, see
+  [rocrate](https://github.com/ResearchObject/ro-crate-r/reference/rocrate.md).
 
 - id:
 
@@ -30,11 +31,16 @@ add_entity_value(rocrate, id, key, value, overwrite = TRUE)
 - overwrite:
 
   Boolean flag to indicate if the existing value (if any), should be
-  overwritten (default: `TRUE`).
+  overwritten (default: `FALSE`).
+
+- verbose:
+
+  Boolean flag to indicate if status messages should be hidden (default:
+  `FALSE`).
 
 ## Value
 
-RO-Crate object.
+Updated RO-Crate object.
 
 ## Examples
 
@@ -43,7 +49,7 @@ basic_crate <- rocrate()
 
 # create entity for an organisation
 organisation_uol <- rocrateR::entity(
-  x = "https://ror.org/04xs57h96",
+  "https://ror.org/04xs57h96",
   type = "Organization",
   name = "University of Liverpool",
   url = "http://www.liv.ac.uk"
@@ -51,12 +57,16 @@ organisation_uol <- rocrateR::entity(
 
 # create an entity for a person
 person_rvd <- rocrateR::entity(
-  x = "https://orcid.org/0000-0001-5036-8661",
+  "https://orcid.org/0000-0001-5036-8661",
   type = "Person",
   name = "Roberto Villegas-Diaz",
   affiliation = list(`@id` = organisation_uol$`@id`)
 )
 
 basic_crate_v2 <- basic_crate |>
-  rocrateR::add_entity_value(id = "./", key = "author", value = list(`@id` = person_rvd$`@id`))
+  rocrateR::add_entity_value(
+    id = "./",
+    key = "author",
+    value = list(`@id` = person_rvd$`@id`)
+  )
 ```

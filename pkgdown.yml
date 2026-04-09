@@ -1,5 +1,9 @@
 pandoc: 3.1.11
 pkgdown: 2.2.0
 pkgdown_sha: ~
-articles: {}
-last_built: 2025-11-13T15:54Z
+articles:
+  getting-started-with-rocrateR: getting-started-with-rocrateR.html
+last_built: 2026-04-09T06:38Z
+urls:
+  reference: https://github.com/ResearchObject/ro-crate-r/reference
+  article: https://github.com/ResearchObject/ro-crate-r/articles

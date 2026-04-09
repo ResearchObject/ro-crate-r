@@ -14,7 +14,8 @@ write_rocrate(x, path, ...)
 
 - x:
 
-  RO-Crate object, see [rocrate](rocrate.md).
+  RO-Crate object, see
+  [rocrate](https://github.com/ResearchObject/ro-crate-r/reference/rocrate.md).
 
 - path:
 
