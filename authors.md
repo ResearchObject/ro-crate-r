@@ -16,16 +16,16 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/ResearchObject/ro-crate-r/blob/v0.1.0/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/ResearchObject/ro-crate-r/blob/main/DESCRIPTION)
 
 Villegas-Diaz R, Wilson R, Butters O, Wheater S (2026). *rocrateR: Tools
-for Creating and Manipulating RO-Crates*. R package version 0.1.0,
+for Creating and Manipulating RO-Crates*. R package version 0.1.0.9000,
 <https://github.com/ResearchObject/ro-crate-r/>.
 
     @Manual{,
       title = {rocrateR: Tools for Creating and Manipulating RO-Crates},
       author = {Roberto Villegas-Diaz and Rebecca Wilson and Olly Butters and Stuart Wheater},
       year = {2026},
-      note = {R package version 0.1.0},
+      note = {R package version 0.1.0.9000},
       url = {https://github.com/ResearchObject/ro-crate-r/},
     }

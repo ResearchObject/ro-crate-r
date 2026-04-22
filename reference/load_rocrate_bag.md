@@ -74,7 +74,7 @@ dir.create(tmp_dir)
 # bag RO-Crate
 path_to_roc_bag <- rocrateR::bag_rocrate(basic_crate, path = tmp_dir)
 #> RO-Crate successfully 'bagged'!
-#> For details, see: /tmp/Rtmp8YBzuX/dcd849f72b176aa793214f88faec8c0c/rocrate-6c6637f40625740c70c55a454b775455.zip
+#> For details, see: /tmp/Rtmpd8irt2/3c9f3a9c60605d7d165d602ff0122f18/rocrate-f1e9242af268d0ca1ba0cb2b7d3c4d2d.zip
 
 # -------- INPUT: RO-Crate BagIt archive --------
 rocrateR::load_rocrate_bag(path_to_roc_bag)
@@ -98,7 +98,7 @@ rocrateR::load_rocrate_bag(path_to_roc_bag)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2026-04-09",
+#>       "datePublished": "2026-04-22",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -110,7 +110,7 @@ rocrateR::load_rocrate_bag(path_to_roc_bag)
 rocrateR::unbag_rocrate(path_to_roc_bag) |>
   rocrateR::load_rocrate_bag()
 #> RO-Crate bag successfully extracted! For details, see:
-#> Root directory: /tmp/Rtmp8YBzuX/dcd849f72b176aa793214f88faec8c0c
+#> Root directory: /tmp/Rtmpd8irt2/3c9f3a9c60605d7d165d602ff0122f18
 #> {
 #>   "@context": "https://w3id.org/ro/crate/1.2/context",
 #>   "@graph": [
@@ -129,7 +129,7 @@ rocrateR::unbag_rocrate(path_to_roc_bag) |>
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2026-04-09",
+#>       "datePublished": "2026-04-22",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }

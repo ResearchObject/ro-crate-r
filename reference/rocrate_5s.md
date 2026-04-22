@@ -93,7 +93,7 @@ rocrateR::rocrate_5s()
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2026-04-09",
+#>       "datePublished": "2026-04-22",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       },

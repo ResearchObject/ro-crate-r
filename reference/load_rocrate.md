@@ -96,7 +96,7 @@ rocrateR::load_rocrate(basic_crate, verbose = TRUE)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2026-04-09",
+#>       "datePublished": "2026-04-22",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -131,7 +131,7 @@ rocrateR::load_rocrate(tmp, verbose = TRUE)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2026-04-09",
+#>       "datePublished": "2026-04-22",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }
@@ -161,7 +161,7 @@ rocrateR::load_rocrate(tmp_dir, verbose = TRUE)
 #>       "@type": "Dataset",
 #>       "name": "",
 #>       "description": "",
-#>       "datePublished": "2026-04-09",
+#>       "datePublished": "2026-04-22",
 #>       "license": {
 #>         "@id": "http://spdx.org/licenses/CC-BY-4.0"
 #>       }

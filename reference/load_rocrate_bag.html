@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rocrateR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,7 +32,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Load an RO-Crate BagIt archive</h1>
-      <small class="dont-index">Source: <a href="https://github.com/ResearchObject/ro-crate-r/blob/v0.1.0/R/utils-bag.R"><code>R/utils-bag.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/ResearchObject/ro-crate-r/blob/main/R/utils-bag.R"><code>R/utils-bag.R</code></a></small>
       <div class="d-none name"><code>load_rocrate_bag.Rd</code></div>
     </div>
 
@@ -109,7 +109,7 @@ content. Default 10MB.</p></dd>
 <span class="r-in"><span><span class="co"># bag RO-Crate</span></span></span>
 <span class="r-in"><span><span class="va">path_to_roc_bag</span> <span class="op">&lt;-</span> <span class="fu">rocrateR</span><span class="fu">::</span><span class="fu"><a href="bag_rocrate.html">bag_rocrate</a></span><span class="op">(</span><span class="va">basic_crate</span>, path <span class="op">=</span> <span class="va">tmp_dir</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> RO-Crate successfully 'bagged'!</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> For details, see: /tmp/Rtmp8YBzuX/dcd849f72b176aa793214f88faec8c0c/rocrate-6c6637f40625740c70c55a454b775455.zip</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> For details, see: /tmp/Rtmpd8irt2/3c9f3a9c60605d7d165d602ff0122f18/rocrate-f1e9242af268d0ca1ba0cb2b7d3c4d2d.zip</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># -------- INPUT: RO-Crate BagIt archive --------</span></span></span>
 <span class="r-in"><span><span class="fu">rocrateR</span><span class="fu">::</span><span class="fu">load_rocrate_bag</span><span class="op">(</span><span class="va">path_to_roc_bag</span><span class="op">)</span></span></span>
@@ -133,7 +133,7 @@ content. Default 10MB.</p></dd>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>       "@type": "Dataset",</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>       "name": "",</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>       "description": "",</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>       "datePublished": "2026-04-09",</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>       "datePublished": "2026-04-22",</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>       "license": {</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>         "@id": "http://spdx.org/licenses/CC-BY-4.0"</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>       }</span>
@@ -145,7 +145,7 @@ content. Default 10MB.</p></dd>
 <span class="r-in"><span><span class="fu">rocrateR</span><span class="fu">::</span><span class="fu"><a href="unbag_rocrate.html">unbag_rocrate</a></span><span class="op">(</span><span class="va">path_to_roc_bag</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu">rocrateR</span><span class="fu">::</span><span class="fu">load_rocrate_bag</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> RO-Crate bag successfully extracted! For details, see:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Root directory: /tmp/Rtmp8YBzuX/dcd849f72b176aa793214f88faec8c0c</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Root directory: /tmp/Rtmpd8irt2/3c9f3a9c60605d7d165d602ff0122f18</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> {</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   "@context": "https://w3id.org/ro/crate/1.2/context",</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   "@graph": [</span>
@@ -164,7 +164,7 @@ content. Default 10MB.</p></dd>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>       "@type": "Dataset",</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>       "name": "",</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>       "description": "",</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>       "datePublished": "2026-04-09",</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>       "datePublished": "2026-04-22",</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>       "license": {</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>         "@id": "http://spdx.org/licenses/CC-BY-4.0"</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>       }</span>

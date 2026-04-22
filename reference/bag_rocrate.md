@@ -99,12 +99,12 @@ dir.create(tmp_dir)
 # -------- INPUT: RO-Crate --------
 rocrateR::bag_rocrate(basic_crate, path = tmp_dir)
 #> RO-Crate successfully 'bagged'!
-#> For details, see: /tmp/Rtmp8YBzuX/c6dd60785b96d07936e4b09221774c0b/rocrate-ada797de162ce3c2002e5e7bd70b75a2.zip
+#> For details, see: /tmp/Rtmpd8irt2/ccca7be6be95a3fbb56e4aff61a79097/rocrate-d0217fc17e92da9351cc503d31ca1f8e.zip
 
 # -------- INPUT: Path --------
 rocrateR::bag_rocrate(tmp_dir, output = tmp_dir)
 #> RO-Crate successfully 'bagged'!
-#> For details, see: /tmp/Rtmp8YBzuX/c6dd60785b96d07936e4b09221774c0b/rocrate-e41d04d9c98cce3c96e3282afeebc3ef.zip
+#> For details, see: /tmp/Rtmpd8irt2/ccca7be6be95a3fbb56e4aff61a79097/rocrate-44a0f3e6fb8726a0c8f2dff2eda21b1c.zip
 
 # delete temp directory
 unlink(tmp_dir, recursive = TRUE)
