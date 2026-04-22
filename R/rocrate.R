@@ -31,24 +31,26 @@
 #'
 #' @examples
 #' rocrateR::rocrate()
-rocrate <- function(...,
-                    context = "https://w3id.org/ro/crate/1.2/context",
-                    conformsTo = gsub("\\/context$", "\\1", context),
-                    datePublished = Sys.Date(),
-                    description = "",
-                    license = "http://spdx.org/licenses/CC-BY-4.0",
-                    name = "") {
+rocrate <- function(
+  ...,
+  context = "https://w3id.org/ro/crate/1.2/context",
+  conformsTo = gsub("\\/context$", "\\1", context),
+  datePublished = Sys.Date(),
+  description = "",
+  license = "http://spdx.org/licenses/CC-BY-4.0",
+  name = ""
+) {
   new_ro_crate <- list(
     `@context` = context,
     `@graph` = list(
       rocrateR::entity(
-        x = "ro-crate-metadata.json",
+        "ro-crate-metadata.json",
         type = "CreativeWork",
         about = list(`@id` = "./"),
         conformsTo = list(`@id` = conformsTo)
       ),
       rocrateR::entity(
-        x = "./",
+        "./",
         type = "Dataset",
         name = name,
         description = description,
@@ -61,22 +63,29 @@ rocrate <- function(...,
 
   # capture additional entities
   extra_entities <- .capture_extra_entities(...)
-  extra_entities_tbl <- tibble::tibble(
-    x = extra_entities,
-    ent_name = names(extra_entities),
-    required = list(c("@id", "@type"))
-  )
 
   # validate any additional entities
-  idx <- seq_len(nrow(extra_entities_tbl)) |>
-    sapply(\(i) do.call(.validate_entity, lapply(extra_entities_tbl, `[[`, i)))
+  if (length(extra_entities) > 0) {
+    # Validate each extra entity
+    idx <- sapply(seq_along(extra_entities), function(i) {
+      .validate_entity(
+        x = extra_entities[[i]],
+        ent_name = names(extra_entities)[i],
+        required = c("@id", "@type")
+      )
+    })
 
-  # combine the base crate with any extra entities
-  if (length(idx) > 0)
-    new_ro_crate$`@graph` <- c(new_ro_crate$`@graph`, unname(extra_entities[idx]))
+    # Add only valid entities
+    if (any(idx)) {
+      new_ro_crate$`@graph` <- c(
+        new_ro_crate$`@graph`,
+        unname(extra_entities[idx])
+      )
+    }
+  }
 
   # set class for the new object
-  class(new_ro_crate) <- c("rocrate", class(new_ro_crate))
+  new_ro_crate <- structure(new_ro_crate, class = c("rocrate", "list"))
 
   return(new_ro_crate)
 }
@@ -99,37 +108,41 @@ rocrate <- function(...,
 #'
 #' @examples
 #' rocrateR::rocrate_5s()
-rocrate_5s <- function(...,
-                       context = "https://w3id.org/ro/crate/1.2/context",
-                       conformsTo = gsub("\\/context$", "\\1", context),
-                       datePublished = Sys.Date(),
-                       description = "",
-                       license = "http://spdx.org/licenses/CC-BY-4.0",
-                       name = "",
-                       v5scrate = 0.4) {
+rocrate_5s <- function(
+  ...,
+  context = "https://w3id.org/ro/crate/1.2/context",
+  conformsTo = gsub("\\/context$", "\\1", context),
+  datePublished = Sys.Date(),
+  description = "",
+  license = "http://spdx.org/licenses/CC-BY-4.0",
+  name = "",
+  v5scrate = 0.4
+) {
   # create entity for the 5 safes profile
   v5scrate_id <- paste0("https://w3id.org/5s-crate/", v5scrate)
-  prof_5scrate <- list(
-    `@id` = v5scrate_id,
-    `@type` = c("CreativeWork", "Profile"),
+  prof_5scrate <- rocrateR::entity(
+    id = v5scrate_id,
+    type = c("CreativeWork", "Profile"),
     name = "Five Safes RO-Crate profile"
   )
 
   # create basic RO-Crate
-  new_ro_crate <- rocrate(...,
-                          context = context,
-                          conformsTo = conformsTo,
-                          datePublished = datePublished,
-                          description = description,
-                          license = license,
-                          name = name)
+  new_ro_crate <- rocrate(
+    ...,
+    context = context,
+    conformsTo = conformsTo,
+    datePublished = datePublished,
+    description = description,
+    license = license,
+    name = name
+  )
 
   # edit the new RO-Crate
   new_ro_crate <- new_ro_crate |>
     # attach the 5 safes profile entity
-    add_entity(prof_5scrate) |>
+    rocrateR::add_entity(prof_5scrate) |>
     # update the root entity's conformsTo property
-    add_entity_value(
+    rocrateR::add_entity_value(
       id = "./",
       key = "conformsTo",
       value = list(`@id` = paste0("https://w3id.org/5s-crate/", v5scrate))

@@ -1,13 +1,19 @@
 BagIt
 CMD
 Codecov
+LD
+Lifecycle
+Nextflow
 ORCID
 POSIXt
 RO
+ROR
 Unbag
 columnmajor
 com
+etc
 ies
+json
 mongo
 org
 rfc
@@ -15,5 +21,6 @@ ro
 rocrate
 rowmajor
 stackoverflow
+unbagging
 unclass
 www

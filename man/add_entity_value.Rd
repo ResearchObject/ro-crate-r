@@ -4,7 +4,7 @@
 \alias{add_entity_value}
 \title{Add entity value to RO-Crate}
 \usage{
-add_entity_value(rocrate, id, key, value, overwrite = TRUE)
+add_entity_value(rocrate, id, key, value, overwrite = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{rocrate}{RO-Crate object, see \link{rocrate}.}
@@ -16,10 +16,13 @@ add_entity_value(rocrate, id, key, value, overwrite = TRUE)
 \item{value}{String with the \code{value} for \code{key}.}
 
 \item{overwrite}{Boolean flag to indicate if the existing value (if any),
-should be overwritten (default: \code{TRUE}).}
+should be overwritten (default: \code{FALSE}).}
+
+\item{verbose}{Boolean flag to indicate if status messages should be hidden
+(default: \code{FALSE}).}
 }
 \value{
-RO-Crate object.
+Updated RO-Crate object.
 }
 \description{
 Add entity value to RO-Crate, under entity with \verb{@id} = \code{{id}}, using the
@@ -30,7 +33,7 @@ basic_crate <- rocrate()
 
 # create entity for an organisation
 organisation_uol <- rocrateR::entity(
-  x = "https://ror.org/04xs57h96",
+  "https://ror.org/04xs57h96",
   type = "Organization",
   name = "University of Liverpool",
   url = "http://www.liv.ac.uk"
@@ -38,12 +41,16 @@ organisation_uol <- rocrateR::entity(
 
 # create an entity for a person
 person_rvd <- rocrateR::entity(
-  x = "https://orcid.org/0000-0001-5036-8661",
+  "https://orcid.org/0000-0001-5036-8661",
   type = "Person",
   name = "Roberto Villegas-Diaz",
   affiliation = list(`@id` = organisation_uol$`@id`)
 )
 
 basic_crate_v2 <- basic_crate |>
-  rocrateR::add_entity_value(id = "./", key = "author", value = list(`@id` = person_rvd$`@id`))
+  rocrateR::add_entity_value(
+    id = "./",
+    key = "author",
+    value = list(`@id` = person_rvd$`@id`)
+  )
 }

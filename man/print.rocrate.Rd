@@ -4,12 +4,14 @@
 \alias{print.rocrate}
 \title{Print RO-Crate}
 \usage{
-\method{print}{rocrate}(x, ...)
+\method{print}{rocrate}(x, ..., max_lines = getOption("max_lines", 100))
 }
 \arguments{
 \item{x}{RO-Crate object, see \link{rocrate}.}
 
 \item{...}{Optional arguments, not used.}
+
+\item{max_lines}{Max number of lines to display.}
 }
 \value{
 Invisibly the input RO-Crate, \code{x}.

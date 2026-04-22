@@ -2,21 +2,27 @@
 % Please edit documentation in R/entity.R
 \name{add_entity}
 \alias{add_entity}
+\alias{add_entities}
 \title{Add entity to RO-Crate}
 \usage{
-add_entity(rocrate, entity, overwrite = FALSE)
+add_entity(rocrate, entity, overwrite = FALSE, verbose = FALSE)
+
+add_entities(rocrate, entity, overwrite = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{rocrate}{RO-Crate object, see \link{rocrate}.}
 
 \item{entity}{Entity object (list) that contains at least the following
-components: \verb{@id} and \verb{@type}.}
+components: \verb{@id} and \verb{@type}. Alternatively, a list of entities.}
 
 \item{overwrite}{Boolean flag to indicate if the entity (if found in the
 given RO-Crate) should be overwritten.}
+
+\item{verbose}{Boolean flag to indicate if status messages should be hidden
+(default: \code{FALSE}).}
 }
 \value{
-Updated RO-Crate with the new entity.
+Updated RO-Crate object.
 }
 \description{
 Add entity to RO-Crate
@@ -26,7 +32,7 @@ basic_crate <- rocrateR::rocrate()
 
 # create entity for an organisation
 organisation_uol <- rocrateR::entity(
-  x = "https://ror.org/04xs57h96",
+  "https://ror.org/04xs57h96",
   type = "Organization",
   name = "University of Liverpool",
   url = "http://www.liv.ac.uk"
@@ -34,7 +40,7 @@ organisation_uol <- rocrateR::entity(
 
 # create an entity for a person
 person_rvd <- rocrateR::entity(
-  x = "https://orcid.org/0000-0001-5036-8661",
+  "https://orcid.org/0000-0001-5036-8661",
   type = "Person",
   name = "Roberto Villegas-Diaz",
   affiliation = list(`@id` = organisation_uol$`@id`)
@@ -42,6 +48,10 @@ person_rvd <- rocrateR::entity(
 
 basic_crate_v2 <- basic_crate |>
   rocrateR::add_entity(person_rvd) |>
-  rocrateR::add_entity_value(id = "./", key = "author", value = list(`@id` = person_rvd$`@id`)) |>
+  rocrateR::add_entity_value(
+    id = "./",
+    key = "author",
+    value = list(`@id` = person_rvd$`@id`)
+  ) |>
   rocrateR::add_entity(organisation_uol)
 }

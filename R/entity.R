@@ -2,11 +2,13 @@
 #'
 #' @inheritParams is_rocrate
 #' @param entity Entity object (list) that contains at least the following
-#'     components: `@id` and `@type`.
+#'     components: `@id` and `@type`. Alternatively, a list of entities.
 #' @param overwrite Boolean flag to indicate if the entity (if found in the
 #'     given RO-Crate) should be overwritten.
+#' @param verbose Boolean flag to indicate if status messages should be hidden
+#'     (default: `FALSE`).
 #'
-#' @returns Updated RO-Crate with the new entity.
+#' @returns Updated RO-Crate object.
 #' @export
 #'
 #' @examples
@@ -14,7 +16,7 @@
 #'
 #' # create entity for an organisation
 #' organisation_uol <- rocrateR::entity(
-#'   x = "https://ror.org/04xs57h96",
+#'   "https://ror.org/04xs57h96",
 #'   type = "Organization",
 #'   name = "University of Liverpool",
 #'   url = "http://www.liv.ac.uk"
@@ -22,7 +24,7 @@
 #'
 #' # create an entity for a person
 #' person_rvd <- rocrateR::entity(
-#'   x = "https://orcid.org/0000-0001-5036-8661",
+#'   "https://orcid.org/0000-0001-5036-8661",
 #'   type = "Person",
 #'   name = "Roberto Villegas-Diaz",
 #'   affiliation = list(`@id` = organisation_uol$`@id`)
@@ -30,31 +32,51 @@
 #'
 #' basic_crate_v2 <- basic_crate |>
 #'   rocrateR::add_entity(person_rvd) |>
-#'   rocrateR::add_entity_value(id = "./", key = "author", value = list(`@id` = person_rvd$`@id`)) |>
+#'   rocrateR::add_entity_value(
+#'     id = "./",
+#'     key = "author",
+#'     value = list(`@id` = person_rvd$`@id`)
+#'   ) |>
 #'   rocrateR::add_entity(organisation_uol)
-add_entity <- function(rocrate, entity, overwrite = FALSE) {
+add_entity <- function(rocrate, entity, overwrite = FALSE, verbose = FALSE) {
   # check the `rocrate` object
   is_rocrate(rocrate)
 
-  # validate entity
-  .validate_entity(entity)
-
-  # verify if the `entity` exists in the given crate
-  idx <- .find_id_index(rocrate, getElement(entity, "@id"))
-
-  if (sum(idx) > 0) {
-    if (!overwrite) {
-      stop("The entity, `@id = '", getElement(entity, "@id"),
-           "'`, is part of the RO-Crate, `rocrate`. \n",
-           "Try a different `@id` or set `overwrite = TRUE`.")
-    }
-    warning("Overwritting the entity with @id = '",
-            getElement(entity, "@id"), "'")
-
-    rocrate$`@graph`[idx][[1]] <- entity
+  if (!is.list(entity) || inherits(entity, "entity")) {
+    entity <- list(entity)
   }
-  else {
-    rocrate$`@graph` <- c(rocrate$`@graph`, list(entity))
+
+  for (ent in entity) {
+    # validate entity
+    .validate_entity(ent)
+
+    # verify if the `entity` exists in the given crate
+    id <- ent$`@id`
+    idx <- .find_id_index(rocrate, id)
+
+    if (any(idx)) {
+      if (!overwrite) {
+        stop(
+          "The entity, `@id = '",
+          getElement(entity, "@id"),
+          "'`, is part of the RO-Crate, `rocrate`. \n",
+          "Try a different `@id` or set `overwrite = TRUE`.",
+          call. = FALSE
+        )
+      }
+
+      if (verbose) {
+        message("Overwriting entity with `@id = '", id, "'`")
+      }
+
+      rocrate$`@graph`[[which(idx)]] <- ent
+    } else {
+      if (verbose) {
+        message("Adding entity with `@id = '", id, "'`")
+      }
+
+      rocrate$`@graph` <- c(rocrate$`@graph`, list(ent))
+    }
   }
 
   return(rocrate)
@@ -70,9 +92,11 @@ add_entity <- function(rocrate, entity, overwrite = FALSE) {
 #' @param key String with the `key` of the entity with `id` to be modified.
 #' @param value String with the `value` for `key`.
 #' @param overwrite Boolean flag to indicate if the existing value (if any),
-#'     should be overwritten (default: `TRUE`).
+#'     should be overwritten (default: `FALSE`).
+#' @param verbose Boolean flag to indicate if status messages should be hidden
+#'     (default: `FALSE`).
 #'
-#' @returns RO-Crate object.
+#' @returns Updated RO-Crate object.
 #' @export
 #'
 #' @examples
@@ -80,7 +104,7 @@ add_entity <- function(rocrate, entity, overwrite = FALSE) {
 #'
 #' # create entity for an organisation
 #' organisation_uol <- rocrateR::entity(
-#'   x = "https://ror.org/04xs57h96",
+#'   "https://ror.org/04xs57h96",
 #'   type = "Organization",
 #'   name = "University of Liverpool",
 #'   url = "http://www.liv.ac.uk"
@@ -88,67 +112,95 @@ add_entity <- function(rocrate, entity, overwrite = FALSE) {
 #'
 #' # create an entity for a person
 #' person_rvd <- rocrateR::entity(
-#'   x = "https://orcid.org/0000-0001-5036-8661",
+#'   "https://orcid.org/0000-0001-5036-8661",
 #'   type = "Person",
 #'   name = "Roberto Villegas-Diaz",
 #'   affiliation = list(`@id` = organisation_uol$`@id`)
 #' )
 #'
 #' basic_crate_v2 <- basic_crate |>
-#'   rocrateR::add_entity_value(id = "./", key = "author", value = list(`@id` = person_rvd$`@id`))
-add_entity_value <- function(rocrate, id, key, value, overwrite = TRUE) {
+#'   rocrateR::add_entity_value(
+#'     id = "./",
+#'     key = "author",
+#'     value = list(`@id` = person_rvd$`@id`)
+#'   )
+add_entity_value <- function(
+  rocrate,
+  id,
+  key,
+  value,
+  overwrite = FALSE,
+  verbose = FALSE
+) {
   # check the `rocrate` object
   is_rocrate(rocrate)
 
   # find the index in `@graph` with the matching {id}
-  idx <- rocrate$`@graph` |>
-    sapply(\(x) getElement(x, "@id") == id && (overwrite || is.null(getElement(x, key))))
+  idx <- .find_id_index(rocrate, id)
+
   # verify that only one index was found for the matching {id}
-  if(sum(idx) != 1) {
-    stop("Please, ensure the given {id} is unique and part of the RO-Crate.")
+  if (sum(idx) != 1) {
+    stop(
+      "Please ensure the given `id` is unique and part of the RO-Crate.",
+      call. = FALSE
+    )
   }
+
+  entity <- rocrate$`@graph`[[which(idx)]]
+
+  # check if key already exists
+  if (!is.null(entity[[key]]) && !overwrite) {
+    stop(
+      "Entity with `@id = '",
+      id,
+      "'`` already contains key `'",
+      key,
+      "'`.\n",
+      "Use `overwrite = TRUE` to replace the existing value.",
+      call. = FALSE
+    )
+  }
+
+  if (!is.null(entity[[key]]) && overwrite && verbose) {
+    message(
+      "Overwriting key '",
+      key,
+      "' for entity with @id='",
+      id,
+      "'."
+    )
+  }
+
   # set the new {value} for {key} associated to {id}
-  rocrate$`@graph`[idx][[1]][key] <- list(value)
+  # rocrate$`@graph`[idx][[1]][key] <- list(value)
+  rocrate$`@graph`[[which(idx)]][[key]] <- value
+
   return(rocrate)
 }
 
-#' Wrapper for \link[rocrateR]{add_entity}
-#' 
-#' Wrapper for \link[rocrateR]{add_entity}, can be use to add multiple entities.
-#'
-#' @inheritParams add_entity
-#' @param entity List with entity objects.
-#' @param quiet Boolean flag to indicate if status messages should be hidden
-#'     (default: `FALSE`).
-#'
-#' @returns Updated RO-Crate with the new entities.
+#' @rdname add_entity
 #' @export
-add_entities <- function(rocrate, entity, overwrite = FALSE, quiet = FALSE) {
-  for (i in seq_along(entity)) {
-    if (!quiet) {
-      # extract entity @id, if missing, then use index, `i`
-      ent_id <- getElement(entity[[i]], "@id")
-      ent_id <- ifelse(is.null(ent_id), 
-                       paste0("with index=", i), 
-                       paste0("with @id='", ent_id, "'")
-                       )
-      message("Adding entity ", ent_id, "...\n")
-    }
-    # call the add_entity function
-    rocrate <- rocrate |>
-      rocrateR::add_entity(entity[[i]], overwrite = overwrite)
-  }
-  return(rocrate)
+add_entities <- function(rocrate, entity, overwrite = FALSE, verbose = FALSE) {
+  lifecycle::deprecate_warn(
+    "0.1.0",
+    "add_entities()",
+    "add_entity()"
+  )
+
+  add_entity(
+    rocrate = rocrate,
+    entity = entity,
+    overwrite = overwrite,
+    verbose = verbose
+  )
 }
 
 #' Create a data entity
 #'
-#' @param x New entity. If a single value (e.g., `character`, `numeric`) is
-#'     given, this is assumed to be the entity's `@id`, if a `list` is given,
-#'     this is assumed to be a complete entity. Other options are objects of
-#'     type `person` and `organisation` (equivalently `organization`).
-#' @param ... Optional additional entity values/properties. Used when `x` is
-#'     a single value.
+#' @param id Scalar value with `@id` for the entity (e.g., `character`,
+#'     `numeric`).
+#' @param type String with `@type` for the entity (e.g., `Dataset`, `File`).
+#' @param ... Optional additional entity values/properties.
 #'
 #' @returns List with an entity object.
 #' @export
@@ -156,7 +208,7 @@ add_entities <- function(rocrate, entity, overwrite = FALSE, quiet = FALSE) {
 #' @examples
 #' # create entity for an organisation
 #' organisation_uol <- rocrateR::entity(
-#'   x = "https://ror.org/04xs57h96",
+#'   "https://ror.org/04xs57h96",
 #'   type = "Organization",
 #'   name = "University of Liverpool",
 #'   url = "http://www.liv.ac.uk"
@@ -164,37 +216,30 @@ add_entities <- function(rocrate, entity, overwrite = FALSE, quiet = FALSE) {
 #'
 #' # create an entity for a person
 #' person_rvd <- rocrateR::entity(
-#'   x = "https://orcid.org/0000-0001-5036-8661",
+#'   "https://orcid.org/0000-0001-5036-8661",
 #'   type = "Person",
 #'   name = "Roberto Villegas-Diaz",
 #'   affiliation = list(`@id` = organisation_uol$`@id`)
 #' )
-#'
-entity <- function(x, ...) {
-  .validate_entity(x, ...)
-  UseMethod("entity", x)
-}
-
-#' @export
-entity.default <- function(x, ...) {
-  # define local bindings
-  id <- type <- NULL
+entity <- function(id, type, ...) {
   args <- list(...)
-  new_entity <- list(
-    `@id` = c(x, getElement(args, "id"))[1],
-    `@type` = getElement(args, "type")
-  ) |>
-    # append any additional properties
-    c(suppressWarnings(within(args, rm(id, type))))
-  # attach 'entity' as a new class
-  class(new_entity) <- c("entity", class(new_entity))
-  return(new_entity)
+
+  # drop NULL entries
+  args <- args[!vapply(args, is.null, logical(1))]
+
+  # create entity and attach additional args
+  new_entity <- c(list(`@id` = id, `@type` = type), args)
+
+  .validate_entity(new_entity)
+  new_entity <- structure(new_entity, class = c("entity", "list"))
+
+  new_entity
 }
 
 #' Get entity(ies)
 #'
 #' @inheritParams is_rocrate
-#' @param id String with the ID of the RO-Crate entity within `@graph` 
+#' @param id String with the ID of the RO-Crate entity within `@graph`
 #'     (optional if `type` is provided). Alternatively, an entity object / list
 #'     with `@id` and `@type`.
 #' @param type String with the type of the RO-Crate entity(ies) within `@graph`
@@ -202,13 +247,13 @@ entity.default <- function(x, ...) {
 #'
 #' @returns List with found entity object(s), if any, `NULL` otherwise.
 #' @export
-#' 
+#'
 #' @examples
 #' basic_crate <- rocrateR::rocrate()
 #'
 #' # create entity for an organisation
 #' organisation_uol <- rocrateR::entity(
-#'   x = "https://ror.org/04xs57h96",
+#'   "https://ror.org/04xs57h96",
 #'   type = "Organization",
 #'   name = "University of Liverpool",
 #'   url = "http://www.liv.ac.uk"
@@ -216,7 +261,7 @@ entity.default <- function(x, ...) {
 #'
 #' # create an entity for a person
 #' person_rvd <- rocrateR::entity(
-#'   x = "https://orcid.org/0000-0001-5036-8661",
+#'   "https://orcid.org/0000-0001-5036-8661",
 #'   type = "Person",
 #'   name = "Roberto Villegas-Diaz",
 #'   affiliation = list(`@id` = organisation_uol$`@id`)
@@ -224,68 +269,104 @@ entity.default <- function(x, ...) {
 #'
 #' basic_crate_person <- basic_crate |>
 #'   rocrateR::add_entity(person_rvd) |>
-#'   rocrateR::add_entity_value(id = "./", key = "author", value = list(`@id` = person_rvd$`@id`)) |>
+#'   rocrateR::add_entity_value(
+#'     id = "./",
+#'     key = "author",
+#'     value = list(`@id` = person_rvd$`@id`)
+#'   ) |>
 #'   rocrateR::add_entity(organisation_uol) |>
 #'   rocrateR::get_entity(person_rvd)
-#'   
+#'
 #' basic_crate_person[[1]]$name == person_rvd$name
 #' basic_crate_person[[1]]$`@id` == person_rvd$`@id`
 get_entity <- function(rocrate, id = NULL, type = NULL) {
   # check the `rocrate` object
   is_rocrate(rocrate)
-  
+
   # if `id` is given as an entity object / list, extract @id and @type
   if (is.list(id)) {
     type <- getElement(id, "@type")
     id <- getElement(id, "@id")
   }
-  
+
   # check that either `id` or `type` were provided
   if (all(is.null(id), is.null(type))) {
-    stop("You must provide a value for either `id` or `type`!",
-         call. = FALSE)
+    stop("You must provide a value for either `id` or `type`!", call. = FALSE)
   }
-  
+
   # initialise local variables
   idx_by_id <- idx_by_type <- NULL
-  
-  # if `id` was provided, then find elements with that @id
-  if (!is.null(id)) {
-    idx_by_id <- .find_id_index(rocrate, id)
-  }
-  # if `type` was provided, then find elements with that @type
-  if (!is.null(type)) {
-    idx_by_type <- .find_type_index(rocrate, type)
-  }
-  
-  # combine (if both id and type were provided) the indices
-  idx <- NULL
+
+  # length validation / recycling rules
   if (!is.null(id) && !is.null(type)) {
-    idx <- idx_by_id & idx_by_type
+    len_id <- length(id)
+    len_type <- length(type)
+
+    if (len_id > 1 && len_type > 1 && len_id != len_type) {
+      stop(
+        "`id` and `type` must have equal length, ",
+        "or one of them must be length 1.",
+        call. = FALSE
+      )
+    }
+
+    # recycle shorter
+    if (len_id == 1 && len_type > 1) {
+      id <- rep(id, len_type)
+    } else if (len_type == 1 && len_id > 1) {
+      type <- rep(type, len_id)
+    }
+  }
+
+  results <- list()
+
+  if (!is.null(id) && !is.null(type)) {
+    # case 1: both id and type
+    for (i in seq_along(id)) {
+      idx_id <- .find_id_index(rocrate, id[i])
+      idx_type <- .find_type_index(rocrate, type[i])
+      idx <- idx_id & idx_type
+
+      if (any(idx)) {
+        results <- c(
+          results,
+          rocrate$`@graph`[idx]
+        )
+      }
+    }
   } else if (!is.null(id)) {
-    idx <- idx_by_id
-  } else if (!is.null(type)) {
-    idx <- idx_by_type
-  }
-  if (sum(idx) > 0) { # at least one entity was found
-    matching_entities <- rocrate$`@graph`[idx] |>
-      lapply(function(x) {
-        class(x) <- unique(c("entity", class(x)))
-        return(x)
-      })
-    return(matching_entities)
+    # case 2: only id (possibly vector)
+    idx <- .find_id_index(rocrate, id)
+    if (any(idx)) {
+      results <- rocrate$`@graph`[idx]
+    }
   } else {
-    msg <- "No entities were found with "
-    msg_id <- paste0("@id = '", id, "'")
-    msg_type <- paste0("@type = '", type, "'")
-    warning(msg,
-            ifelse(is.null(id), "", msg_id),
-            ifelse(!is.null(id) && !is.null(type), " and ", ""),
-            ifelse(is.null(type), "", msg_type),
-            "!",
-            call. = FALSE)
+    # case 3: only type (possibly vector)
+    idx <- .find_type_index(rocrate, type)
+    if (any(idx)) {
+      results <- rocrate$`@graph`[idx]
+    }
   }
-  
+
+  if (length(results) > 0) {
+    results <- lapply(results, function(x) {
+      class(x) <- unique(c("entity", class(x)))
+      x
+    })
+    return(results)
+  }
+
+  msg <- "No matching entities were found with "
+  msg_id <- paste0("@id = '", id, "'")
+  msg_type <- paste0("@type = '", type, "'")
+  warning(
+    msg,
+    ifelse(is.null(id), "", msg_id),
+    ifelse(!is.null(id) && !is.null(type), " and ", ""),
+    ifelse(is.null(type), "", msg_type),
+    "!",
+    call. = FALSE
+  )
   # return NULL invisibly, if no entities were found
   return(invisible(NULL))
 }
@@ -294,7 +375,9 @@ get_entity <- function(rocrate, id = NULL, type = NULL) {
 #'
 #' @inheritParams is_rocrate
 #' @param entity Entity object (list) that contains at least the following
-#'     components: `@id` and `@type`. Or, scalar value with entity `@id`.
+#'     components: `@id` and `@type`. Alternatively, a list of entities.
+#' @param verbose Boolean flag to indicate if status messages should be hidden
+#'     (default: `FALSE`).
 #'
 #' @returns Updated RO-Crate object.
 #' @export
@@ -304,7 +387,7 @@ get_entity <- function(rocrate, id = NULL, type = NULL) {
 #'
 #' # create entity for an organisation
 #' organisation_uol <- rocrateR::entity(
-#'   x = "https://ror.org/04xs57h96",
+#'   "https://ror.org/04xs57h96",
 #'   type = "Organization",
 #'   name = "University of Liverpool",
 #'   url = "http://www.liv.ac.uk"
@@ -312,7 +395,7 @@ get_entity <- function(rocrate, id = NULL, type = NULL) {
 #'
 #' # create an entity for a person
 #' person_rvd <- rocrateR::entity(
-#'   x = "https://orcid.org/0000-0001-5036-8661",
+#'   "https://orcid.org/0000-0001-5036-8661",
 #'   type = "Person",
 #'   name = "Roberto Villegas-Diaz",
 #'   affiliation = list(`@id` = organisation_uol$`@id`)
@@ -320,47 +403,68 @@ get_entity <- function(rocrate, id = NULL, type = NULL) {
 #'
 #' basic_crate_v2 <- basic_crate |>
 #'   rocrateR::add_entity(person_rvd) |>
-#'   rocrateR::add_entity_value(id = "./", key = "author", value = list(`@id` = person_rvd$`@id`)) |>
+#'   rocrateR::add_entity_value(
+#'     id = "./",
+#'     key = "author",
+#'     value = list(`@id` = person_rvd$`@id`)
+#'   ) |>
 #'   rocrateR::add_entity(organisation_uol) |>
 #'   rocrateR::remove_entity(person_rvd)
-remove_entity <- function(rocrate, entity) {
+remove_entity <- function(rocrate, entity, verbose = FALSE) {
   # check the `rocrate` object
   is_rocrate(rocrate)
 
-  if (is.list(entity)) {
-    entity_id <- getElement(entity, "@id")
-  } else {
-    entity_id <- entity
+  if (is.list(entity) && !inherits(entity, "entity")) {
+    entity <- vapply(
+      entity,
+      function(x) {
+        if (is.list(x)) as.character(x$`@id`) else as.character(x)
+      },
+      character(1)
+    )
   }
 
-  # verify if the `entity` exists in the given crate
-  idx <- .find_id_index(rocrate, entity_id)
+  if (inherits(entity, "entity")) {
+    entity <- entity$`@id`
+  }
 
-  if (sum(idx) > 0) {
-    message("Removing the entity with @id = '",
-            entity_id, "'.")
-    rocrate$`@graph`[idx] <- NULL
-  } else {
-    warning("No entity found with @id = '", entity_id, "'.")
+  ids <- as.character(entity)
+
+  for (id in ids) {
+    # verify if the `entity` exists in the given crate
+    idx <- .find_id_index(rocrate, id)
+
+    if (any(idx)) {
+      if (verbose) {
+        message("Removing the entity with `@id = '", id, "'`.")
+      }
+
+      rocrate$`@graph`[idx] <- NULL
+    } else {
+      warning(
+        "No entity found with `@id = '",
+        id,
+        "'`.",
+        call. = FALSE
+      )
+    }
   }
 
   return(rocrate)
 }
 
-#' Wrapper for \link[rocrateR]{remove_entity}
-#' 
-#' Wrapper for \link[rocrateR]{remove_entity}, can be use to remove multiple 
-#' entities.
-#'
-#' @inheritParams remove_entity
-#'
-#' @returns Updated RO-Crate.
+#' @rdname remove_entity
 #' @export
-remove_entities <- function(rocrate, entity) {
-  for (i in seq_along(entity)) {
-    # call the add_entity function
-    rocrate <- rocrate |>
-      rocrateR::remove_entity(entity[[i]])
-  }
-  return(rocrate)
+remove_entities <- function(rocrate, entity, verbose = TRUE) {
+  lifecycle::deprecate_warn(
+    "0.1.0",
+    "remove_entities()",
+    "remove_entity()"
+  )
+
+  remove_entity(
+    rocrate = rocrate,
+    entity = entity,
+    verbose = verbose
+  )
 }

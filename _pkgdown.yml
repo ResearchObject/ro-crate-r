@@ -1,4 +1,46 @@
-url: ~
+url: https://github.com/ResearchObject/ro-crate-r/
 template:
   bootstrap: 5
 
+reference:
+- title: Core functions
+  desc: >
+    Core functions to handle RO-Crates with R.
+  contents:
+  - is_rocrate
+  - load_rocrate
+  - print.entity
+  - print.rocrate
+  - read_rocrate
+  - rocrate
+  - rocrate_5s
+  - summary.entity
+  - summary.rocrate
+  - validate_rocrate
+  - write_rocrate
+- subtitle: BagIt functions
+  contents:
+  - bag_rocrate
+  - is_rocrate_bag
+  - load_rocrate_bag
+  - unbag_rocrate
+- subtitle: Entity functions
+  contents:
+  - entity
+  - extract_content
+  - get_entity
+  - remove_entity
+- title: Utilitarian functions
+  desc: >
+    Utilitarian functions to add specific entity types to an RO-Crate.
+  contents:
+  - add_author
+  - add_dataset
+  - add_entity
+  - add_entity_value
+  - add_notebook
+  - add_project
+  - add_readme
+  - add_software
+  - add_workflow
+  - crate_project

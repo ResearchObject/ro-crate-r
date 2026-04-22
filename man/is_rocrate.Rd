@@ -4,13 +4,19 @@
 \alias{is_rocrate}
 \title{Check if object is an RO-Crate}
 \usage{
-is_rocrate(rocrate)
+is_rocrate(rocrate, strict = FALSE, error = TRUE)
 }
 \arguments{
 \item{rocrate}{RO-Crate object, see \link{rocrate}.}
+
+\item{strict}{Boolean to indicate if stricter checks should be done (e.g.,
+check profile specification).}
+
+\item{error}{Boolean to indicate if the function should throw an error, if
+any errors are found (default: \code{TRUE}).}
 }
 \value{
-Returns invisibly the input RO-Crate object.
+Boolean flag with RO-Crate validity.
 }
 \description{
 Check if object is an RO-Crate

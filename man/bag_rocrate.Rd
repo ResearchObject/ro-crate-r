@@ -8,9 +8,19 @@
 \usage{
 bag_rocrate(x, ...)
 
-\method{bag_rocrate}{character}(x, ..., output = x, force_bag = FALSE)
+\method{bag_rocrate}{character}(x, ..., output = x, force_bag = FALSE, extra_bag_info = NULL)
 
-\method{bag_rocrate}{rocrate}(x, ..., path, output = path, overwrite = FALSE, force_bag = FALSE)
+\method{bag_rocrate}{rocrate}(
+  x,
+  ...,
+  path,
+  output = path,
+  overwrite = FALSE,
+  force_bag = FALSE,
+  extra_bag_info = NULL,
+  write_content = TRUE,
+  create_dir = TRUE
+)
 }
 \arguments{
 \item{x}{A string to a path containing at the very minimum an RO-Crate
@@ -26,22 +36,49 @@ object with the \link[rocrateR]{rocrate} class.}
 a 'bag' even if not all the files were successfully bagged
 (default: \code{FALSE} ~ check if all the files were copied successfully).}
 
+\item{extra_bag_info}{Vector of strings to include in the \code{bag-info.txt}
+file (e.g., \code{Contact-Email: first.last@rocrate.org}).}
+
 \item{path}{String with path to the root of the RO-Crate.}
 
 \item{overwrite}{Boolean flag to indicate if the RO-Crate metadata descriptor
 file should be overwritten if already inside \code{path} (default: \code{FALSE}).}
+
+\item{write_content}{Logical. If TRUE, write \code{content} fields of
+\code{File} entities to disk before bagging.}
+
+\item{create_dir}{Boolean flag to indicate if the \code{path} should be created,
+if it doesn't exist.}
 }
 \value{
-String with full path to the final RO-Crate bag.
+String with full path to the RO-Crate bag.
 }
 \description{
 Bag the contents of an RO-Crate using the BagIt file packaging format v1.0.
 For more details see the definition:
 \doi{10.17487/RFC8493}
 }
+\examples{
+# -------- SETUP --------
+basic_crate <- rocrateR::rocrate()
+# temp file
+tmp_dir <- file.path(tempdir(), digest::digest(basename(tempfile())))
+tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
+dir.create(tmp_dir)
+
+# -------- INPUT: RO-Crate --------
+rocrateR::bag_rocrate(basic_crate, path = tmp_dir)
+
+# -------- INPUT: Path --------
+rocrateR::bag_rocrate(tmp_dir, output = tmp_dir)
+
+# delete temp directory
+unlink(tmp_dir, recursive = TRUE)
+}
 \seealso{
-Other bag_rocrate: 
+Other RO-Crate BagIt archive functions: 
 \code{\link{is_rocrate_bag}()},
+\code{\link{load_rocrate_bag}()},
 \code{\link{unbag_rocrate}()}
 }
-\concept{bag_rocrate}
+\concept{RO-Crate BagIt archive functions}

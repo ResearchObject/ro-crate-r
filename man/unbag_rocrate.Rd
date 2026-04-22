@@ -16,14 +16,32 @@ unbag_rocrate(path, output = dirname(path), quiet = FALSE)
 (default: \code{FALSE} - display messages).}
 }
 \value{
-String with path to root of the RO-Crate, invisibly.
+String with path to root of the RO-Crate.
 }
 \description{
 'Unbag' (extract) RO-Crate packed with BagIt
 }
-\seealso{
-Other bag_rocrate: 
-\code{\link{bag_rocrate}()},
-\code{\link{is_rocrate_bag}()}
+\examples{
+# -------- SETUP --------
+basic_crate <- rocrateR::rocrate()
+# temp file
+tmp_dir <- file.path(tempdir(), digest::digest(basename(tempfile())))
+tmp <- file.path(tmp_dir, "ro-crate-metadata.json")
+dir.create(tmp_dir)
+
+# bag RO-Crate
+path_to_roc_bag <- rocrateR::bag_rocrate(basic_crate, path = tmp_dir)
+
+# -------- INPUT: Path --------
+rocrateR::unbag_rocrate(path_to_roc_bag)
+
+# delete temp directory
+unlink(tmp_dir, recursive = TRUE)
 }
-\concept{bag_rocrate}
+\seealso{
+Other RO-Crate BagIt archive functions: 
+\code{\link{bag_rocrate}()},
+\code{\link{is_rocrate_bag}()},
+\code{\link{load_rocrate_bag}()}
+}
+\concept{RO-Crate BagIt archive functions}

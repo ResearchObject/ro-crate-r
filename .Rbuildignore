@@ -5,9 +5,14 @@
 ^cran-comments.md$
 ^README.Rmd$
 ^LICENSE.md$
-^inst$
+^inst/images$
+^inst/R\.ignore$
 ^cran-comments\.md$
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
 ^CRAN-SUBMISSION$
+^data-raw$
+^doc$
+^Meta$
+^LICENSE\.md$

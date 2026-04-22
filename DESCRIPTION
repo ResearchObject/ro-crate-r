@@ -1,18 +1,36 @@
 Package: rocrateR
-Title: RO-Crate R Package Wrapper
-Version: 0.0.1
+Title: Tools for Creating and Manipulating RO-Crates
+Version: 0.1.0.9000
 Authors@R: c(
     person(given = "Roberto",
            family = "Villegas-Diaz",
            role = c("aut", "cre"),
            email = "r.villegas-diaz@outlook.com",
            comment = c(ORCID = "0000-0001-5036-8661")),
+    person(given = "Rebecca",
+           family = "Wilson",
+           role = c("aut"),
+           comment = c(ORCID = "0000-0003-2294-593X")),
+    person(given = "Olly",
+           family = "Butters",
+           role = c("aut"),
+           comment = c(ORCID = "0000-0003-0354-8461")),
+    person(given = "Stuart",
+           family = "Wheater",
+           role = c("aut"),
+           comment = c(ORCID = "0009-0003-2419-1964")),
     person("Research Object community", role = c("cph")))
-Description: R package for creating, manipulating and reading RO-Crates. Latest
-    supported version of the specification: <https://w3id.org/ro/crate/1.2/>.
+Description: Provides tools for creating, manipulating and reading Research 
+    Object Crates (RO-Crates), a lightweight approach to packaging research 
+    data with structured metadata. Includes utilities for metadata generation,
+    entity management, validation and reading existing RO-Crates following 
+    the specification <https://w3id.org/ro/crate/1.2/>.
 License: MIT + file LICENSE
 Suggests:
-    spelling, 
+    fs,
+    knitr,
+    rmarkdown,
+    spelling,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 Encoding: UTF-8
@@ -24,7 +42,8 @@ RoxygenNote: 7.3.3
 Imports: 
     digest,
     jsonlite,
-    tibble,
+    lifecycle,
     zip
 Depends: 
     R (>= 4.1.0)
+VignetteBuilder: knitr

@@ -2,15 +2,21 @@
 % Please edit documentation in R/entity.R
 \name{remove_entity}
 \alias{remove_entity}
+\alias{remove_entities}
 \title{Remove entity}
 \usage{
-remove_entity(rocrate, entity)
+remove_entity(rocrate, entity, verbose = FALSE)
+
+remove_entities(rocrate, entity, verbose = TRUE)
 }
 \arguments{
 \item{rocrate}{RO-Crate object, see \link{rocrate}.}
 
 \item{entity}{Entity object (list) that contains at least the following
-components: \verb{@id} and \verb{@type}. Or, scalar value with entity \verb{@id}.}
+components: \verb{@id} and \verb{@type}. Alternatively, a list of entities.}
+
+\item{verbose}{Boolean flag to indicate if status messages should be hidden
+(default: \code{FALSE}).}
 }
 \value{
 Updated RO-Crate object.
@@ -23,7 +29,7 @@ basic_crate <- rocrateR::rocrate()
 
 # create entity for an organisation
 organisation_uol <- rocrateR::entity(
-  x = "https://ror.org/04xs57h96",
+  "https://ror.org/04xs57h96",
   type = "Organization",
   name = "University of Liverpool",
   url = "http://www.liv.ac.uk"
@@ -31,7 +37,7 @@ organisation_uol <- rocrateR::entity(
 
 # create an entity for a person
 person_rvd <- rocrateR::entity(
-  x = "https://orcid.org/0000-0001-5036-8661",
+  "https://orcid.org/0000-0001-5036-8661",
   type = "Person",
   name = "Roberto Villegas-Diaz",
   affiliation = list(`@id` = organisation_uol$`@id`)
@@ -39,7 +45,11 @@ person_rvd <- rocrateR::entity(
 
 basic_crate_v2 <- basic_crate |>
   rocrateR::add_entity(person_rvd) |>
-  rocrateR::add_entity_value(id = "./", key = "author", value = list(`@id` = person_rvd$`@id`)) |>
+  rocrateR::add_entity_value(
+    id = "./",
+    key = "author",
+    value = list(`@id` = person_rvd$`@id`)
+  ) |>
   rocrateR::add_entity(organisation_uol) |>
   rocrateR::remove_entity(person_rvd)
 }

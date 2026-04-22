@@ -27,7 +27,7 @@ basic_crate <- rocrateR::rocrate()
 
 # create entity for an organisation
 organisation_uol <- rocrateR::entity(
-  x = "https://ror.org/04xs57h96",
+  "https://ror.org/04xs57h96",
   type = "Organization",
   name = "University of Liverpool",
   url = "http://www.liv.ac.uk"
@@ -35,7 +35,7 @@ organisation_uol <- rocrateR::entity(
 
 # create an entity for a person
 person_rvd <- rocrateR::entity(
-  x = "https://orcid.org/0000-0001-5036-8661",
+  "https://orcid.org/0000-0001-5036-8661",
   type = "Person",
   name = "Roberto Villegas-Diaz",
   affiliation = list(`@id` = organisation_uol$`@id`)
@@ -43,10 +43,14 @@ person_rvd <- rocrateR::entity(
 
 basic_crate_person <- basic_crate |>
   rocrateR::add_entity(person_rvd) |>
-  rocrateR::add_entity_value(id = "./", key = "author", value = list(`@id` = person_rvd$`@id`)) |>
+  rocrateR::add_entity_value(
+    id = "./",
+    key = "author",
+    value = list(`@id` = person_rvd$`@id`)
+  ) |>
   rocrateR::add_entity(organisation_uol) |>
   rocrateR::get_entity(person_rvd)
-  
+
 basic_crate_person[[1]]$name == person_rvd$name
 basic_crate_person[[1]]$`@id` == person_rvd$`@id`
 }
