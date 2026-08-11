@@ -762,7 +762,7 @@ validate_rocrate <- function(
         rocrateR::add_entity_value(
           id = ent$`@id`,
           key = "content",
-          value = ifelse(is.list(content), content, list(content)),
+          value = ifelse("list" %in% class(content), content, list(content)),
           overwrite = TRUE
         )
     }
