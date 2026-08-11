@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-json.R
 \name{write_rocrate}
 \alias{write_rocrate}
-\title{Wrapper for \link[jsonlite:read_json]{jsonlite::write_json}}
+\title{Wrapper for \link[jsonlite:write_json]{jsonlite::write_json}}
 \usage{
 write_rocrate(x, path, ...)
 }
@@ -12,8 +12,13 @@ write_rocrate(x, path, ...)
 \item{path}{file on disk}
 
 \item{...}{
-  Arguments passed on to \code{\link[jsonlite:fromJSON]{jsonlite::toJSON}}
+  Arguments passed on to \code{\link[jsonlite:toJSON]{jsonlite::toJSON}}
   \describe{
+    \item{\code{txt}}{a JSON string, URL or file}
+    \item{\code{simplifyVector}}{coerce JSON arrays containing only primitives into an atomic vector}
+    \item{\code{simplifyDataFrame}}{coerce JSON arrays containing only records (JSON objects) into a data frame}
+    \item{\code{simplifyMatrix}}{coerce JSON arrays containing vectors of equal mode and dimension into matrix or array}
+    \item{\code{flatten}}{automatically \code{\link[jsonlite:flatten]{flatten()}} nested data frames into a single non-nested data frame}
     \item{\code{dataframe}}{how to encode data.frame objects: must be one of 'rows', 'columns' or 'values'}
     \item{\code{matrix}}{how to encode matrices and higher dimensional arrays: must be one of 'rowmajor' or 'columnmajor'.}
     \item{\code{Date}}{how to encode Date objects: must be one of 'ISO8601' or 'epoch'}
@@ -31,6 +36,6 @@ write_rocrate(x, path, ...)
 Invisibly the input RO-Crate, \code{x}.
 }
 \description{
-Wrapper for \link[jsonlite:read_json]{jsonlite::write_json}. Enforces that the input object is an
+Wrapper for \link[jsonlite:write_json]{jsonlite::write_json}. Enforces that the input object is an
 RO-Crate.
 }

@@ -38,7 +38,6 @@ Language: en-GB
 URL: https://github.com/ResearchObject/ro-crate-r/
 BugReports: https://github.com/ResearchObject/ro-crate-r/issues/
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Imports: 
     digest,
     jsonlite,
@@ -47,3 +46,4 @@ Imports:
 Depends: 
     R (>= 4.1.0)
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0

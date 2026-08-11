@@ -18,6 +18,21 @@ read_rocrate(path, simplifyVector = FALSE, ...)
     \item{\code{simplifyDataFrame}}{coerce JSON arrays containing only records (JSON objects) into a data frame}
     \item{\code{simplifyMatrix}}{coerce JSON arrays containing vectors of equal mode and dimension into matrix or array}
     \item{\code{flatten}}{automatically \code{\link[jsonlite:flatten]{flatten()}} nested data frames into a single non-nested data frame}
+    \item{\code{x}}{the object to be encoded}
+    \item{\code{dataframe}}{how to encode data.frame objects: must be one of 'rows', 'columns' or 'values'}
+    \item{\code{matrix}}{how to encode matrices and higher dimensional arrays: must be one of 'rowmajor' or 'columnmajor'.}
+    \item{\code{Date}}{how to encode Date objects: must be one of 'ISO8601' or 'epoch'}
+    \item{\code{POSIXt}}{how to encode POSIXt (datetime) objects: must be one of 'string', 'ISO8601', 'epoch' or 'mongo'}
+    \item{\code{factor}}{how to encode factor objects: must be one of 'string' or 'integer'}
+    \item{\code{complex}}{how to encode complex numbers: must be one of 'string' or 'list'}
+    \item{\code{raw}}{how to encode raw objects: must be one of 'base64', 'hex' or 'mongo'}
+    \item{\code{null}}{how to encode NULL values within a list: must be one of 'null' or 'list'}
+    \item{\code{na}}{how to print NA values: must be one of 'null' or 'string'. Defaults are class specific}
+    \item{\code{auto_unbox}}{automatically \code{\link[jsonlite:unbox]{unbox()}} all atomic vectors of length 1. It is usually safer to avoid this and instead use the \code{\link[jsonlite:unbox]{unbox()}} function to unbox individual elements.
+An exception is that objects of class \code{AsIs} (i.e. wrapped in \code{\link[=I]{I()}}) are not automatically unboxed. This is a way to mark single values as length-1 arrays.}
+    \item{\code{digits}}{max number of decimal digits to print for numeric values. Use \code{\link[=I]{I()}} to specify significant digits. Use \code{NA} for max precision.}
+    \item{\code{pretty}}{adds indentation whitespace to JSON output. Can be TRUE/FALSE or a number specifying the number of spaces to indent (default is 2). Use a negative number for tabs instead of spaces.}
+    \item{\code{force}}{unclass/skip objects of classes with no defined JSON mapping}
   }}
 }
 \value{

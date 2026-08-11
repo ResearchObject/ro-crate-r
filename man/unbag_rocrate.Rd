@@ -39,9 +39,9 @@ rocrateR::unbag_rocrate(path_to_roc_bag)
 unlink(tmp_dir, recursive = TRUE)
 }
 \seealso{
-Other RO-Crate BagIt archive functions: 
-\code{\link{bag_rocrate}()},
-\code{\link{is_rocrate_bag}()},
-\code{\link{load_rocrate_bag}()}
+Other RO-Crate BagIt archive functions:
+\code{\link[=bag_rocrate]{bag_rocrate()}},
+\code{\link[=is_rocrate_bag]{is_rocrate_bag()}},
+\code{\link[=load_rocrate_bag]{load_rocrate_bag()}}
 }
 \concept{RO-Crate BagIt archive functions}
